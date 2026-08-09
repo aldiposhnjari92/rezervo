@@ -1,0 +1,22 @@
+node_modules
+.next
+.next-*
+out
+build
+
+# artefakte testesh
+tests/.build
+tests/e2e/actions.json
+tests/e2e/.*-state.json
+
+.env
+.env*.local
+
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-error.log*
+
+.vercel
+next-env.d.ts
+tsconfig.tsbuildinfo

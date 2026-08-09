@@ -1,0 +1,111 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Ban, Loader2, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { formatDayMonthFromInstant } from "@/lib/availability";
+import { setBusinessSuspended } from "@/lib/admin-actions";
+
+export function SuspendControl({
+  businessId,
+  businessName,
+  suspendedAt,
+  suspendedReason,
+}: {
+  businessId: string;
+  businessName: string;
+  suspendedAt: string | null;
+  suspendedReason: string | null;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [reason, setReason] = useState("");
+
+  const isSuspended = Boolean(suspendedAt);
+
+  function submit(suspended: boolean) {
+    startTransition(async () => {
+      const result = await setBusinessSuspended({ businessId, suspended, reason });
+
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(suspended ? `${businessName} u pezullua.` : `${businessName} u rikthye.`);
+      setReason("");
+      router.refresh();
+    });
+  }
+
+  return (
+    <section className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+      <h2 className="font-semibold">{isSuspended ? "Biznes i pezulluar" : "Pezullo biznesin"}</h2>
+
+      {isSuspended ? (
+        <>
+          <p className="mt-1 text-sm text-muted-foreground">
+            I pezulluar më {formatDayMonthFromInstant(suspendedAt!)}. Faqja publike kthen 404 dhe
+            nuk pranohen rezervime të reja. Të dhënat nuk janë prekur.
+          </p>
+          {suspendedReason && (
+            <p className="mt-3 rounded-lg border border-amber-500/30 bg-background px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Arsyeja:</span> {suspendedReason}
+            </p>
+          )}
+
+          <Button
+            variant="outline"
+            className="mt-4 bg-background"
+            disabled={pending}
+            onClick={() => submit(false)}
+          >
+            {pending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RotateCcw className="h-4 w-4" />
+            )}
+            Rikthe biznesin
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Faqja publike do të kthejë 404 dhe rezervimet e reja bllokohen. Rezervimet ekzistuese
+            dhe të dhënat nuk fshihen — veprimi kthehet mbrapsht në çdo moment.
+          </p>
+
+          <div className="mt-4 space-y-2">
+            <Label htmlFor="suspend-reason">
+              Arsyeja <span className="font-normal text-muted-foreground">(opsionale)</span>
+            </Label>
+            <Input
+              id="suspend-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="p.sh. spam, kërkesë e pronarit"
+              maxLength={200}
+              disabled={pending}
+              className="bg-background"
+            />
+          </div>
+
+          <Button
+            variant="destructive"
+            className="mt-4"
+            disabled={pending}
+            onClick={() => submit(true)}
+          >
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+            Pezullo
+          </Button>
+        </>
+      )}
+    </section>
+  );
+}

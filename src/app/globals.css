@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Paleta e errët është e ZGJEDHUR, jo një kthim automatik i asaj të çelët:
+   * sipërfaqet ngrihen me hapa, teksti nuk shkon kurrë në të bardhë të pastër,
+   * dhe blu-ja ndriçohet që të mbajë kontrastin mbi sfond të errët.
+   */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 5%;
+
+    /* Blue #2563eb */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.625rem;
+  }
+
+  /* Zgjedhja e përdoruesit fiton në të dyja drejtimet. */
+  .dark {
+    --background: 224 18% 8%;
+    --foreground: 210 20% 96%;
+
+    --card: 224 16% 11%;
+    --card-foreground: 210 20% 96%;
+
+    --primary: 217 91% 62%;
+    --primary-foreground: 222 47% 8%;
+
+    --secondary: 223 15% 17%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 223 15% 16%;
+    --muted-foreground: 217 12% 65%;
+
+    --accent: 223 15% 18%;
+    --accent-foreground: 210 20% 96%;
+
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 13% 22%;
+    --input: 220 13% 22%;
+    --ring: 217 91% 62%;
+  }
+
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  :focus-visible {
+    @apply outline-none;
+  }
+}
+
+@layer utilities {
+  /* Rreshtë horizontal me scroll të butë në mobile, pa scrollbar të dukshëm */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+}
