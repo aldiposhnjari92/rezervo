@@ -16,10 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TimeSelect, timeOptions } from "@/components/time-select";
 import { formatDuration, formatPrice, tiraneInstant, todayInTirane } from "@/lib/availability";
 import { createManualBooking } from "@/lib/owner-actions";
 import type { Service } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+/** Pronari mund të vendosë çdo orë; hapat 15-minutësh mbulojnë çdo rast real. */
+const SLOT_TIMES = timeOptions(15);
 
 export function ManualBookingDialog({
   open,
@@ -144,14 +148,12 @@ export function ManualBookingDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="mb-time">Ora</Label>
-              <input
-                id="mb-time"
-                type="time"
-                step={300}
+              <TimeSelect
+                label="Ora e rezervimit"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
                 disabled={saving}
-                className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+                options={SLOT_TIMES}
+                onChange={setTime}
               />
             </div>
           </div>

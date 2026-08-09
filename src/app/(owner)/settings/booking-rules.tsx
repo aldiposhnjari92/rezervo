@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { TimeSelect, timeOptions } from "@/components/time-select";
 import { formatDayMonth, todayInTirane } from "@/lib/availability";
 import { addClosure, removeClosure, updateBookingRules } from "@/lib/owner-actions";
 import type { Closure } from "@/lib/types";
@@ -23,6 +24,9 @@ const NOTICE_PRESETS = [
   { minutes: 1440, label: "1 ditë" },
 ];
 const WINDOW_PRESETS = [7, 14, 30, 60];
+
+/** Pushimi lëviz me hapa 15-minutësh; ora e drekës rrallë bie te gjysma. */
+const BREAK_TIMES = timeOptions(15);
 
 export function BookingRules({
   bufferMinutes,
@@ -165,22 +169,25 @@ export function BookingRules({
 
             {hasBreak && (
               <div className="flex items-center gap-2">
-                <input
-                  type="time"
-                  step={900}
+                <TimeSelect
+                  label="Fillimi i pushimit"
                   value={start}
-                  onChange={(e) => setStart(e.target.value)}
                   disabled={saving}
-                  className="h-10 flex-1 rounded-lg border border-border bg-background px-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-none sm:text-sm"
+                  options={BREAK_TIMES}
+                  onChange={(next) => {
+                    setStart(next);
+                    if (end <= next) setEnd(BREAK_TIMES.find((t) => t > next) ?? next);
+                  }}
+                  className="w-[6.5rem]"
                 />
-                <span className="text-muted-foreground">—</span>
-                <input
-                  type="time"
-                  step={900}
+                <span className="text-muted-foreground">–</span>
+                <TimeSelect
+                  label="Fundi i pushimit"
                   value={end}
-                  onChange={(e) => setEnd(e.target.value)}
                   disabled={saving}
-                  className="h-10 flex-1 rounded-lg border border-border bg-background px-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-none sm:text-sm"
+                  options={BREAK_TIMES.filter((t) => t > start)}
+                  onChange={setEnd}
+                  className="w-[6.5rem]"
                 />
               </div>
             )}
