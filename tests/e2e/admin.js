@@ -255,6 +255,16 @@ const PW = "TestPass123!";
   const ownerCal = await get("/calendar?view=day", cookieA);
   check("owner can still reach their calendar", ownerCal.status === 200, `status=${ownerCal.status}`);
 
+  console.log("\n=== 11b. The owner is told, in their own dashboard ===");
+  const suspendedHtml = norm(await (await get("/dashboard", cookieA)).text());
+  check("banner shown to the suspended owner",
+    suspendedHtml.includes("Faqja jote publike është offline"), "no suspension banner");
+  check("banner carries the admin's reason", suspendedHtml.includes("test suspension"));
+  check("banner reassures about data", suspendedHtml.includes("nuk janë prekur"));
+  const onCalendar = norm(await (await get("/calendar", cookieA)).text());
+  check("banner appears on every page, not just one",
+    onCalendar.includes("Faqja jote publike është offline"));
+
   console.log("\n=== 12. Unsuspend restores everything ===");
   const unsusp = await callAction(`/admin/${state.ownerId}`, "setBusinessSuspended",
     [{ businessId: row.business_id, suspended: false }], cookieB);
@@ -264,6 +274,10 @@ const PW = "TestPass123!";
     body: JSON.stringify({ p_slug: state.slug }),
   }).then((r) => r.json());
   check("public page back online", pubRestored && pubRestored.slug === state.slug);
+
+  const restoredHtml = norm(await (await get("/dashboard", cookieA)).text());
+  check("banner disappears once restored",
+    !restoredHtml.includes("Faqja jote publike është offline"), "banner still showing");
 
   console.log("\n=== 13. Non-admin still cannot suspend (after admin exists) ===");
   const attempt = await callAction(`/admin/${state.ownerId}`, "setBusinessSuspended",

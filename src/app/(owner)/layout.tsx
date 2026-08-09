@@ -1,5 +1,6 @@
 import { isPlatformAdmin, requireBusiness } from "@/lib/auth";
 import { OwnerShell } from "./shell";
+import { SuspendedBanner } from "./suspended-banner";
 
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
   const { business } = await requireBusiness();
@@ -12,6 +13,12 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
       slug={business.slug}
       isAdmin={admin}
     >
+      {business.suspended_at && (
+        <SuspendedBanner
+          suspendedAt={business.suspended_at}
+          reason={business.suspended_reason}
+        />
+      )}
       {children}
     </OwnerShell>
   );

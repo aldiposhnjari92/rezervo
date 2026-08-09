@@ -9,9 +9,10 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `unit/calendar.test.js` | 49 | rrjeta e muajit, javët, kolonat e mbivendosjeve |
 | `unit/rules.test.js` | 26 | buffer, pushimi, mbylljet, njoftimi, dritarja |
 | `unit/email.test.js` | 18 | email-i i pezullimit: me/pa arsye, ikja e HTML-së |
+| `unit/email-provider.test.js` | 12 | zgjedhja e provider-it dhe parsimi i EMAIL_FROM |
 | `e2e/main.js` | 67 | rrjedha e plotë: regjistrim → dyqan → rezervim → kalendar |
 | `e2e/features.js` | 59 | rregullat, mbylljet, walk-in-et, paneli, klientët |
-| `e2e/admin.js` | 53 | të drejtat e adminit, pezullimi, fshirja e llogarisë |
+| `e2e/admin.js` | 61 | të drejtat e adminit, pezullimi + njoftimi, fshirja e llogarisë |
 | `e2e/shell.js` | 26 | njoftimet, tema, shtylla anësore, linku i adminit |
 
 ---

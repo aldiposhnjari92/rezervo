@@ -288,6 +288,29 @@ as ekzistenca e panelit.
 Pezullimi e nxjerr faqen publike jashtë linje (404) dhe bllokon rezervimet e reja;
 të dhënat nuk preken dhe veprimi kthehet mbrapsht në çdo moment.
 
+Pronari njoftohet në dy mënyra:
+
+1. **Me email** — arsyeja e adminit i përcillet fjalë për fjalë; pa arsye, dërgohet
+   një njoftim i përgjithshëm. Posta është "best effort": pezullimi mbetet i kryer
+   edhe nëse email-i dështon, dhe admini sheh qartë nëse pronari u njoftua apo jo.
+2. **Me një shirit në panel** — i vazhdueshëm, në çdo faqe, derisa llogaria të
+   riaktivizohet. Pezullimi është një *gjendje*, jo një ngjarje, ndaj nuk shkon te
+   zilja e njoftimeve: ajo lexohet një herë dhe zhduket.
+
+### Email-i
+
+Provider-i nuk është i ngulitur në kod — zgjidhet nga çelësi që gjendet:
+
+| Çelësi | Provider | Falas |
+|---|---|---|
+| `BREVO_API_KEY` | Brevo (serverë në BE) | 300/ditë ≈ 9.000/muaj |
+| `RESEND_API_KEY` | Resend | 3.000/muaj, 100/ditë |
+| asnjë | vetëm log | — |
+
+Të dy fliten me `fetch` mbi HTTP, pa SDK. Pa çelës, email-i shkruhet në log dhe
+asnjë veprim nuk bllokohet. Për një provider tjetër, shtoje te `PROVIDERS` në
+[`src/lib/email.ts`](src/lib/email.ts) — asgjë tjetër nuk ndryshon.
+
 ### Ngjyrat e grafikëve
 
 Të validuara me validatorin e paletës mbi sfond të bardhë — bandë ndriçimi,
