@@ -255,10 +255,24 @@ export function dayOfMonth(date: string): string {
   return String(new Date(`${date}T12:00:00Z`).getUTCDate());
 }
 
-/** Çmimi në formatin shqiptar: 1200 -> "1.200 Lek". Falas nëse 0. */
+/**
+ * ÇMIMI i një shërbimi: 1200 -> "1.200 Lek", 0 -> "Falas".
+ * Vetëm për shërbime — një shërbim me çmim zero vërtet është falas.
+ */
 export function formatPrice(price: number): string {
   if (!price) return "Falas";
   return `${price.toLocaleString("de-DE")} Lek`;
+}
+
+/**
+ * SHUMË parash: 1200 -> "1.200 Lek", 0 -> "0 Lek".
+ *
+ * E ndarë nga `formatPrice` sepse zero do të thotë gjëra krejt të ndryshme:
+ * një shërbim me çmim zero është "Falas", por të ardhura zero janë "0 Lek".
+ * Të ardhurat e shfaqura si "Falas" ishin thjesht gabim.
+ */
+export function formatMoney(amount: number): string {
+  return `${(amount || 0).toLocaleString("de-DE")} Lek`;
 }
 
 /** "45 min" ose "1h 30min". */

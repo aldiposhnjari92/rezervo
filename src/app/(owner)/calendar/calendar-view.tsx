@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { CalendarX2, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatTime } from "@/lib/availability";
+import { formatMoney, formatTime } from "@/lib/availability";
 import {
   CALENDAR_VIEWS,
   groupByDate,
@@ -151,7 +151,7 @@ export function CalendarView({
       {/* --------------------------------------------------------- statistika */}
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Rezervime" value={active.length} />
-        <Stat label="Të ardhura" value={formatPrice(revenue)} />
+        <Stat label="Të ardhura" value={formatMoney(revenue)} />
         <Stat label="Nuk erdhën" value={noShows} tone={noShows ? "warning" : "default"} />
       </div>
 

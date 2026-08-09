@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   formatDayMonthFromInstant,
   formatDuration,
+  formatMoney,
   formatPrice,
   formatTime,
 } from "@/lib/availability";
@@ -148,7 +149,7 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
             value={stats.no_shows}
             tone={stats.no_shows > 0 ? "warning" : "default"}
           />
-          <StatTile label="Vlera" value={formatPrice(stats.gmv)} />
+          <StatTile label="Vlera" value={formatMoney(stats.gmv)} />
         </div>
       )}
 

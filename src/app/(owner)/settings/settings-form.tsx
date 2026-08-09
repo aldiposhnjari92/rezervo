@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WorkingHoursEditor, validateWorkingHours } from "@/components/working-hours-editor";
 import { PageHeader } from "@/components/page-header";
+import { ThemeToggle } from "@/components/theme";
 import { isValidAlbanianPhone } from "@/lib/phone";
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
@@ -154,6 +155,18 @@ export function SettingsForm({
       </Card>
 
       {children}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Pamja</CardTitle>
+          <CardDescription>
+            Tema e panelit. &quot;Sistemi&quot; ndjek rregullimin e telefonit ose kompjuterit.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemeToggle className="max-w-xs" />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronsLeft, ChevronsRight, ExternalLink, ShieldCheck } from "lucide-react";
 
-import { ThemeButton, ThemeToggle } from "@/components/theme";
+import { ThemeButton } from "@/components/theme";
 import { cn } from "@/lib/utils";
 import { BottomNav, SidebarNav } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
@@ -113,7 +113,6 @@ export function OwnerShell({
                   <ExternalLink className="h-3 w-3 shrink-0" />
                 </Link>
               </div>
-              <ThemeToggle className="mt-2" />
             </>
           )}
           <div className={cn("mt-2", collapsed && "flex justify-center")}>
@@ -139,7 +138,14 @@ export function OwnerShell({
               </Link>
             </div>
 
-            <div className="hidden lg:block" />
+            <Link
+              href={`/${slug}`}
+              target="_blank"
+              className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground lg:flex"
+            >
+              Shiko faqen publike
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
 
             <div className="flex shrink-0 items-center gap-1">
               {isAdmin && (
@@ -153,7 +159,7 @@ export function OwnerShell({
                 </Link>
               )}
               <NotificationsBell businessId={businessId} />
-              <ThemeButton className="lg:hidden" />
+              <ThemeButton />
             </div>
           </div>
         </header>

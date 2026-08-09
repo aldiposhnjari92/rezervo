@@ -6,7 +6,7 @@ import { AlertTriangle, Phone, Repeat, Search, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/page-header";
-import { formatDayMonthFromInstant, formatPrice } from "@/lib/availability";
+import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
 import { formatAlbanianPhone } from "@/lib/phone";
 import type { CustomerRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -158,7 +158,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p className="font-medium tabular-nums">{formatPrice(c.total_spent)}</p>
+                    <p className="font-medium tabular-nums">{formatMoney(c.total_spent)}</p>
                     <p className="text-xs text-muted-foreground">gjithsej</p>
                   </div>
                 </div>

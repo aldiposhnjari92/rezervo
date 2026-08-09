@@ -11,10 +11,11 @@ import {
 } from "@/components/charts";
 import { requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatPrice } from "@/lib/availability";
+import { formatMoney } from "@/lib/availability";
 import type { OwnerDashboard } from "@/lib/admin-types";
 import { DAY_KEYS, DAY_LABELS_SHORT_SQ } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GettingStarted } from "./getting-started";
 
 export const metadata: Metadata = { title: "Paneli" };
 export const dynamic = "force-dynamic";
@@ -83,22 +84,43 @@ export default async function OwnerDashboardPage({
       )
     : [];
 
+  // Pa asnjë rezervim, çdo numër është zero dhe çdo grafik bosh. Në atë gjendje
+  // paneli nuk informon — thjesht zë vend. Zëvendësohet me hapat që duhen bërë.
+  const isNew = d.bookings_total === 0;
+
+  if (isNew) {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {servicesCount
+              ? "Gjithçka gati. Mbetet vetëm të ndash linkun."
+              : "Le ta bëjmë gati dyqanin për rezervime."}
+          </p>
+        </div>
+
+        <GettingStarted hasServices={Boolean(servicesCount)} slug={business.slug} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       {/* --------------------------------------------------------------- koka */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Përshëndetje 👋</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {d.today > 0
-              ? `Ke ${d.today} rezervime sot dhe ${d.upcoming} në ditët në vijim.`
+              ? `${d.today} rezervime sot · ${d.upcoming} në ditët në vijim.`
               : d.upcoming > 0
-                ? `Asnjë rezervim sot. ${d.upcoming} të tjera janë në pritje.`
-                : "Ende asnjë rezervim në pritje."}
+                ? `Asnjë rezervim sot · ${d.upcoming} në pritje.`
+                : "Asnjë rezervim në pritje."}
           </p>
         </div>
 
-        <div className="flex rounded-lg border border-border bg-background p-0.5">
+        <div className="flex shrink-0 rounded-lg border border-border bg-background p-0.5">
           {RANGES.map((r) => (
             <Link
               key={r}
@@ -136,7 +158,7 @@ export default async function OwnerDashboardPage({
         <div className="rounded-xl border border-border bg-background p-4">
           <p className="text-xs text-muted-foreground">Të ardhurat ({days} ditë)</p>
           <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight tabular-nums">
-            {formatPrice(d.earnings_period)}
+            {formatMoney(d.earnings_period)}
           </p>
           {delta !== null && (
             <p
@@ -163,7 +185,7 @@ export default async function OwnerDashboardPage({
         <StatTile label="Në pritje" value={d.upcoming} hint={`${d.today} sot`} />
         <StatTile
           label="Humbur nga mosardhjet"
-          value={formatPrice(d.lost_no_show)}
+          value={formatMoney(d.lost_no_show)}
           hint={attendance > 0 ? `${noShowRate.toFixed(0)}% e klientëve` : undefined}
           tone={d.lost_no_show > 0 ? "warning" : "default"}
         />
@@ -228,7 +250,7 @@ export default async function OwnerDashboardPage({
                       {s.bookings}×
                     </span>
                     <span className="w-20 shrink-0 text-right tabular-nums font-medium">
-                      {formatPrice(s.earnings)}
+                      {formatMoney(s.earnings)}
                     </span>
                   </li>
                 ))}

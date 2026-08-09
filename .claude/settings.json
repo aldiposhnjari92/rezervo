@@ -104,7 +104,9 @@
       "Bash(PHASE=1 node tests/e2e/shell.js)",
       "Bash(xargs -I{} echo \"  uncommitted: {}\")",
       "Bash(sed -i 's|const MODULE = path.join\\(__dirname, \"..\", \".build\", \"email-provider.js\"\\);|const MODULE = path.join\\(__dirname, \"..\", \".build\", \"email-provider.js\"\\);|; s|m.__parseFrom|m.parseFrom|g' tests/unit/email-provider.test.js)",
-      "Bash(sed -i 's|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|' tests/unit/email-provider.test.js)"
+      "Bash(sed -i 's|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|' tests/unit/email-provider.test.js)",
+      "Bash(xargs -I{} echo \"  unit suites passing: {}\")",
+      "Bash(node -e 'console.log\\(require\\('\\\\''./__TRACKED_VAR__'\\\\''\\).email\\)')"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

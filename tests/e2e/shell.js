@@ -133,8 +133,14 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
     check("/dashboard renders", page.status === 200, `status=${page.status}`);
     check("notification bell present", html.includes("Njoftimet"));
     check("sidebar collapse control present", html.includes("Palos menunë"));
-    check("theme selector present", html.includes("E errët") && html.includes("Sistemi"));
+    check("quick theme toggle in the header", html.includes("Kalo në temën e errët"),
+    "no theme button in the shell header");
     check("NO admin link for a non-admin", !html.includes("Paneli i platformës"));
+
+  // the three-way control (incl. "Sistemi") lives in settings, not the header
+  const settings = norm(await (await get("/settings")).text());
+  check("full theme control in settings", settings.includes("Sistemi") && settings.includes("E errët"));
+  check("settings explains what Sistemi does", settings.includes("ndjek rregullimin"));
 
     fs.writeFileSync(STATE, JSON.stringify(state, null, 2));
     console.log(`\nPHASE 1: ${pass} passed, ${fail} failed`);

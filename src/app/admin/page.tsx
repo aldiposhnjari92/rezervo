@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { BookingsChart, StatTile, StatusBreakdown } from "@/components/charts";
 import { createClient } from "@/lib/supabase/server";
-import { formatDayMonthFromInstant, formatPrice } from "@/lib/availability";
+import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
 import type {
   AdminBusinessRow,
   AdminOverview,
@@ -76,8 +76,8 @@ export default async function AdminPage() {
         />
         <StatTile
           label="Vlera e shërbimeve"
-          value={formatPrice(overview.gmv_total)}
-          hint={`${formatPrice(overview.gmv_30d)} 30 ditët e fundit`}
+          value={formatMoney(overview.gmv_total)}
+          hint={`${formatMoney(overview.gmv_30d)} 30 ditët e fundit`}
         />
       </div>
 
@@ -171,7 +171,7 @@ export default async function AdminPage() {
                           <span className="text-muted-foreground">0</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-right tabular-nums">{formatPrice(b.gmv)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{formatMoney(b.gmv)}</td>
                       <td className="px-5 py-3 text-right">
                         <Link
                           href={`/admin/${b.owner_id}`}
@@ -207,7 +207,7 @@ export default async function AdminPage() {
                     <p className="truncate text-xs text-muted-foreground">{b.owner_email}</p>
                     <p className="mt-1 text-xs tabular-nums text-muted-foreground">
                       {b.bookings_total} rezervime · {b.services_count} shërbime ·{" "}
-                      {formatPrice(b.gmv)}
+                      {formatMoney(b.gmv)}
                     </p>
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
