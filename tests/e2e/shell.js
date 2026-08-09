@@ -138,6 +138,19 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
     check("quick theme toggle in the header", html.includes("Kalo në temën e errët"),
     "no theme button in the shell header");
     check("NO admin link for a non-admin", !html.includes("Paneli i platformës"));
+  check("avatar menu present", html.includes("Menuja e llogarisë"));
+  check("menu carries the user identity", html.includes(state.email));
+
+  console.log("\n=== 7b. A signed-in owner skips the sales page ===");
+  {
+    const landing = await get("/");
+    check("/ redirects a signed-in owner to /dashboard",
+      landing.status === 307 && (landing.headers.get("location") || "").endsWith("/dashboard"),
+      `status=${landing.status} loc=${landing.headers.get("location")}`);
+
+    const anon = await fetch(BASE + "/", { redirect: "manual" });
+    check("/ stays public for everyone else", anon.status === 200, `status=${anon.status}`);
+  }
 
   // the three-way control (incl. "Sistemi") lives in settings, not the header
   const settings = norm(await (await get("/settings")).text());

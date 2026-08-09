@@ -8,7 +8,7 @@ import { ThemeButton } from "@/components/theme";
 import { cn } from "@/lib/utils";
 import { BottomNav, SidebarNav } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
-import { SignOutButton } from "./sign-out-button";
+import { UserMenu, type UserInfo } from "./user-menu";
 
 const STORAGE_KEY = "rezervo-sidebar-collapsed";
 
@@ -17,12 +17,14 @@ export function OwnerShell({
   businessName,
   slug,
   isAdmin,
+  user,
   children,
 }: {
   businessId: string;
   businessName: string;
   slug: string;
   isAdmin: boolean;
+  user: UserInfo;
   children: React.ReactNode;
 }) {
   // Nis i hapur dhe lexo preferencën pas montimit — serveri s'e di dot,
@@ -115,9 +117,6 @@ export function OwnerShell({
               </div>
             </>
           )}
-          <div className={cn("mt-2", collapsed && "flex justify-center")}>
-            <SignOutButton collapsed={collapsed} />
-          </div>
         </div>
       </aside>
 
@@ -160,6 +159,9 @@ export function OwnerShell({
               )}
               <NotificationsBell businessId={businessId} />
               <ThemeButton />
+              <div className="ml-1">
+                <UserMenu user={user} isAdmin={isAdmin} businessName={businessName} />
+              </div>
             </div>
           </div>
         </header>

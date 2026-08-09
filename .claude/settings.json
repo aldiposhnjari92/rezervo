@@ -109,7 +109,8 @@
       "Bash(node -e 'console.log\\(require\\('\\\\''./__TRACKED_VAR__'\\\\''\\).email\\)')",
       "Bash(node -e \"require\\('./tests/e2e/admin.js'\\)\")",
       "Bash(node tests/e2e/security.js)",
-      "Bash(node tests/e2e/realtime.js)"
+      "Bash(node tests/e2e/realtime.js)",
+      "Bash(git -c user.name=\"Aldi Poshnjari\" -c user.email=\"aldiposhnjari@gmail.com\" commit -q --amend --no-edit)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

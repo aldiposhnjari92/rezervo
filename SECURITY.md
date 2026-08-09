@@ -94,14 +94,35 @@ te skriptet.
 
 ### Sesionet dhe hyrja
 
-- Token-at rrinë në cookies `httpOnly` (`@supabase/ssr`) — JavaScript-i i faqes
-  nuk i lexon dot.
+- Sesioni ruhet në cookies nga `@supabase/ssr`. Këto **nuk** janë `httpOnly`:
+  shfletuesi duhet t'i lexojë vetë për realtime-in dhe për thirrjet te PostgREST
+  (shih më poshtë pse kjo nuk fshihet dot).
 - Shkëmbimi i kodit OAuth bëhet në server te `/auth/callback`.
 - `next=` pranon vetëm rrugë të brendshme; `https://evil.com`, `//evil.com` dhe
   `/\evil.com` refuzohen të treja.
 - Fjalëkalimi minimum 8 karaktere.
 - Çelësat e email-it janë `server-only`: një import gabimisht nga një komponent
   klienti e prish build-in, në vend që t'i dërgojë çelësat te shfletuesi.
+
+### Pse JWT-ja duket te Network tab — dhe pse s'është problem
+
+Token-i i sesionit shkon si `Authorization: Bearer ...` te çdo kërkesë drejt
+Supabase-it. Ai **duket** te DevTools, dhe kjo nuk fshihet dot: kush e hap
+DevTools-in e ka tashmë sesionin e vet të hapur. Të fshehësh token-in nga vetë
+pronari i tij nuk mbron askënd.
+
+Rreziku i vërtetë është ta vjedhë dikush **tjetër**. Kundër tij:
+
+- **CSP me nonce, pa `unsafe-inline`** — një skript i injektuar nuk ekzekutohet
+  dot, ndaj nuk arrin ta lexojë token-in. Kjo është mbrojtja kryesore.
+- **TLS** — mbi rrjet nuk lexohet dot.
+- **Jetëgjatësi e shkurtër** — token-i skadon dhe rifreskohet; sa më i shkurtër,
+  aq më e ngushtë dritarja e një token-i të vjedhur. Rregullohet te Supabase →
+  Authentication → Sessions.
+
+Token-i NUK mund të bëhet `httpOnly`: shfletuesi duhet ta lexojë vetë për
+websocket-in e realtime-it dhe për thirrjet direkte te PostgREST. Heqja e tij nga
+shfletuesi do të thoshte heqja e njoftimeve live.
 
 ---
 

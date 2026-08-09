@@ -36,7 +36,9 @@ function contentSecurityPolicy(nonce: string, isDev: boolean): string {
     // 'unsafe-eval' i duhet vetëm HMR-së në zhvillim; në prodhim nuk lejohet.
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    // Fotot e profilit të Google vijnë nga lh3; pa këtë, CSP-ja i bllokon dhe
+    // avatari mbetet bosh për këdo që hyn me Google.
+    "img-src 'self' data: blob: https://lh3.googleusercontent.com",
     "font-src 'self' data:",
     // Supabase: REST/Auth mbi https, realtime mbi websocket.
     `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS}`,
@@ -85,6 +87,28 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
+
+  /**
+   * Një pronar i kyçur nuk ka pse të shohë faqen e shitjes.
+   *
+   * Kontrollohet vetëm PRANIA e cookie-t të sesionit, jo vlefshmëria e tij: një
+   * `getUser()` këtu do të thoshte një thirrje drejt Supabase-it në ÇDO vizitë të
+   * faqes publike, edhe për vizitorët e panjohur — të cilët janë shumica.
+   * Nëse cookie-ja del e pavlefshme, /dashboard e kontrollon si duhet dhe e çon
+   * te /login. Kostoja e gabimit është një ridrejtim, jo një hyrje e paautorizuar.
+   */
+  if (pathname === "/") {
+    const hasSession = request.cookies
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+
+    if (hasSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return withSecurityHeaders(NextResponse.redirect(url), nonce, isDev);
+    }
+  }
 
   // Faqet publike nuk kanë nevojë për kontroll sesioni — do të ishte një thirrje
   // e kotë drejt Supabase-it në çdo vizitë të faqes së rezervimit.
