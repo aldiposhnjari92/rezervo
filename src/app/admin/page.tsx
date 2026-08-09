@@ -1,9 +1,13 @@
 import Link from "next/link";
-import { ChevronRight, Ban } from "lucide-react";
+import { Ban, ChevronRight, LayoutDashboard } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
-import { BookingsChart, StatTile, StatusBreakdown } from "@/components/charts";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { BookingsChart, StatusBreakdown } from "@/components/charts";
+import { StatTile } from "@/components/stat-tile";
 import { createClient } from "@/lib/supabase/server";
 import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
 import type {
@@ -34,12 +38,11 @@ export default async function AdminPage() {
 
   if (!overview) {
     return (
-      <div className="rounded-xl border border-border bg-background p-8 text-center">
-        <p className="font-medium">Analitika nuk u ngarkua</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {overviewRes.error?.message ?? "Provo të rifreskosh faqen."}
-        </p>
-      </div>
+      <EmptyState
+        icon={LayoutDashboard}
+        title="Analitika nuk u ngarkua"
+        description={overviewRes.error?.message ?? "Provo të rifreskosh faqen."}
+      />
     );
   }
 
@@ -50,12 +53,10 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Pamja e platformës</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Të gjitha bizneset, llogaritë dhe rezervimet në Rezervo.al.
-        </p>
-      </div>
+      <PageHeader
+        title="Pamja e platformës"
+        description="Të gjitha bizneset, llogaritë dhe rezervimet në Rezervo.al."
+      />
 
       {/* ------------------------------------------------------- numrat kryesorë */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -110,7 +111,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ---------------------------------------------------------------- bizneset */}
-      <section className="overflow-hidden rounded-xl border border-border bg-background">
+      <Card className="overflow-hidden">
         <div className="flex items-baseline justify-between gap-3 border-b border-border px-5 py-4">
           <h2 className="font-semibold">Bizneset</h2>
           <span className="text-sm text-muted-foreground">{businesses.length}</span>
@@ -216,11 +217,11 @@ export default async function AdminPage() {
             </div>
           </>
         )}
-      </section>
+      </Card>
 
       {/* ------------------------------------------------- llogari pa biznes */}
       {orphans.length > 0 && (
-        <section className="overflow-hidden rounded-xl border border-border bg-background">
+        <Card className="overflow-hidden">
           <div className="border-b border-border px-5 py-4">
             <h2 className="font-semibold">Llogari pa dyqan</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
@@ -242,7 +243,7 @@ export default async function AdminPage() {
               </Link>
             ))}
           </div>
-        </section>
+        </Card>
       )}
     </div>
   );

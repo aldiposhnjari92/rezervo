@@ -61,7 +61,7 @@ export function SuspendControl({
   }
 
   return (
-    <section className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+    <section className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
       <h2 className="font-semibold">{isSuspended ? "Biznes i pezulluar" : "Pezullo biznesin"}</h2>
 
       {isSuspended ? (

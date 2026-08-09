@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { formatDuration, formatPrice } from "@/lib/availability";
 import type { Service } from "@/lib/types";
@@ -132,7 +134,7 @@ export function ServicesManager({
   return (
     <div className="space-y-5">
       {showWelcome && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
           <p className="font-medium">Dyqani u krijua 🎉</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Shto shërbimet që ofron, pastaj ndaje linkun me klientët.
@@ -160,78 +162,154 @@ export function ServicesManager({
       />
 
       {services.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-background px-6 py-14 text-center">
-          <Scissors className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Shto shërbimin tënd të parë</p>
-          <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            P.sh. &quot;Prerje flokësh&quot; — 30 minuta, 500 Lek.
-          </p>
-          <Button className="mt-4" onClick={openCreate}>
-            <Plus className="h-4 w-4" />
-            Shto shërbim
-          </Button>
-        </div>
+        <EmptyState
+          icon={Scissors}
+          title="Shto shërbimin tënd të parë"
+          description={'P.sh. "Prerje flokësh" — 30 minuta, 500 Lek.'}
+          action={
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Shto shërbim
+            </Button>
+          }
+        />
       ) : (
-        <div className="space-y-3">
-          {services.map((service) => {
-            const isBusy = pending && busyId === service.id;
-            return (
-              <div
-                key={service.id}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition-colors hover:border-foreground/20 sm:p-4",
-                  !service.is_active && "opacity-60",
-                )}
-              >
-                <div
+        <>
+          {/* Tabelë në desktop — njësoj si te klientët dhe te paneli i adminit;
+              më parë kjo ishte e vetmja listë që mbetej kartela edhe në ekran
+              të gjerë, ndaj gjysma e rreshtit rrinte bosh. */}
+          <Card className="hidden overflow-hidden lg:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="px-5 py-3 font-medium">Shërbimi</th>
+                  <th className="px-3 py-3 text-right font-medium">Kohëzgjatja</th>
+                  <th className="px-3 py-3 text-right font-medium">Çmimi</th>
+                  <th className="px-3 py-3 text-center font-medium">Aktiv</th>
+                  <th className="px-5 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {services.map((service) => {
+                  const isBusy = pending && busyId === service.id;
+                  return (
+                    <tr
+                      key={service.id}
+                      className={cn(
+                        "border-b border-border transition-colors last:border-0 hover:bg-muted/40",
+                        !service.is_active && "text-muted-foreground",
+                      )}
+                    >
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <DurationBadge
+                            minutes={service.duration_minutes}
+                            active={service.is_active}
+                          />
+                          <span className="font-medium text-foreground">{service.name}</span>
+                          {!service.is_active && <Badge variant="secondary">Joaktiv</Badge>}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums">
+                        {formatDuration(service.duration_minutes)}
+                      </td>
+                      <td className="px-3 py-3 text-right font-medium tabular-nums text-foreground">
+                        {formatPrice(service.price)}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-center">
+                          <Switch
+                            checked={service.is_active}
+                            disabled={isBusy}
+                            onCheckedChange={() => toggleActive(service)}
+                            aria-label={`Aktiv: ${service.name}`}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEdit(service)}
+                            aria-label={`Ndrysho ${service.name}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setConfirmDelete(service)}
+                            aria-label={`Fshi ${service.name}`}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
+
+          <ul className="space-y-3 lg:hidden">
+            {services.map((service) => {
+              const isBusy = pending && busyId === service.id;
+              return (
+                <li
+                  key={service.id}
                   className={cn(
-                    "flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg text-[11px] font-semibold leading-none",
-                    service.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
+                    "flex items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:p-4",
+                    !service.is_active && "opacity-60",
                   )}
                 >
-                  <span className="tabular-nums">{service.duration_minutes}</span>
-                  <span className="mt-0.5 text-[9px] font-medium opacity-70">min</span>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-medium">{service.name}</p>
-                    {!service.is_active && <Badge variant="secondary">Joaktiv</Badge>}
-                  </div>
-                  <p className="mt-0.5 text-sm text-muted-foreground">
-                    {formatDuration(service.duration_minutes)} · {formatPrice(service.price)}
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1">
-                  <Switch
-                    checked={service.is_active}
-                    disabled={isBusy}
-                    onCheckedChange={() => toggleActive(service)}
-                    aria-label="Aktiv"
+                  <DurationBadge
+                    minutes={service.duration_minutes}
+                    active={service.is_active}
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => openEdit(service)}
-                    aria-label="Ndrysho"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setConfirmDelete(service)}
-                    aria-label="Fshi"
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-medium">{service.name}</p>
+                      {!service.is_active && <Badge variant="secondary">Joaktiv</Badge>}
+                    </div>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {formatDuration(service.duration_minutes)} · {formatPrice(service.price)}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Switch
+                      checked={service.is_active}
+                      disabled={isBusy}
+                      onCheckedChange={() => toggleActive(service)}
+                      aria-label={`Aktiv: ${service.name}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEdit(service)}
+                      aria-label={`Ndrysho ${service.name}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setConfirmDelete(service)}
+                      aria-label={`Fshi ${service.name}`}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       {/* ------------------------------------------------- dialogu shto/ndrysho */}
@@ -335,5 +413,21 @@ export function ServicesManager({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/** Kohëzgjatja lexohet me sy përpara emrit — ajo vendos sa zë në axhendë. */
+function DurationBadge({ minutes, active }: { minutes: number; active: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl text-[11px] font-semibold leading-none",
+        active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
+      )}
+    >
+      <span className="tabular-nums">{minutes}</span>
+      <span className="mt-0.5 text-[9px] font-medium opacity-70">min</span>
+    </span>
   );
 }

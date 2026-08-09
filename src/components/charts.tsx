@@ -30,7 +30,7 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
   const ticks = [max, max / 2, 0];
 
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold">Rezervime për ditë</h2>
         <span className="text-sm text-muted-foreground">{data.length} ditët e fundit</span>
@@ -102,7 +102,7 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
           {/* tooltip */}
           {hover !== null && (
             <div
-              className="pointer-events-none absolute -top-1 z-10 -translate-y-full rounded-lg border border-border bg-background px-2.5 py-1.5 shadow-md"
+              className="pointer-events-none absolute -top-1 z-10 -translate-y-full rounded-lg border border-border bg-card px-2.5 py-1.5 shadow-md"
               style={{
                 left: `${((hover + 0.5) / data.length) * 100}%`,
                 transform: "translate(-50%, -100%)",
@@ -149,7 +149,7 @@ export function StatusBreakdown({
   const noShowRate = attendance > 0 ? (counts.no_show / attendance) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold">Statusi i rezervimeve</h2>
         <span className="text-sm text-muted-foreground">{total.toLocaleString("de-DE")} gjithsej</span>
@@ -217,37 +217,6 @@ export function StatusBreakdown({
 }
 
 // ---------------------------------------------------------------------------
-//  Kutiza numrash
-// ---------------------------------------------------------------------------
-
-export function StatTile({
-  label,
-  value,
-  hint,
-  tone = "default",
-}: {
-  label: string;
-  value: string | number;
-  hint?: string;
-  tone?: "default" | "warning";
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-background p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p
-        className={cn(
-          "mt-1.5 truncate text-2xl font-semibold tracking-tight tabular-nums",
-          tone === "warning" && "text-amber-700 dark:text-amber-400",
-        )}
-      >
-        {typeof value === "number" ? value.toLocaleString("de-DE") : value}
-      </p>
-      {hint && <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p>}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 //  Të ardhurat për ditë — një seri, ndaj pa legjendë
 // ---------------------------------------------------------------------------
 
@@ -265,7 +234,7 @@ export function EarningsChart({
   const best = data.reduce((a, b) => (b.earnings > a.earnings ? b : a), data[0]);
 
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold">Të ardhurat</h2>
         <span className="text-sm text-muted-foreground">{days} ditët e fundit</span>
@@ -332,7 +301,7 @@ export function EarningsChart({
 
           {hover !== null && (
             <div
-              className="pointer-events-none absolute -top-1 z-10 rounded-lg border border-border bg-background px-2.5 py-1.5 shadow-md"
+              className="pointer-events-none absolute -top-1 z-10 rounded-lg border border-border bg-card px-2.5 py-1.5 shadow-md"
               style={{
                 left: `${((hover + 0.5) / data.length) * 100}%`,
                 transform: "translate(-50%, -100%)",
@@ -386,7 +355,7 @@ export function DistributionBars({
   const hasData = data.some((d) => d.value > 0);
 
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <h2 className="font-semibold">{title}</h2>
       {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
 

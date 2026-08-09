@@ -15,7 +15,7 @@ export default async function SetupPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="border-b border-border bg-background">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between px-5">
           <span className="text-lg font-bold tracking-tight">
             Rezervo<span className="text-primary">.al</span>

@@ -162,7 +162,7 @@ export function SetupWizard() {
       </div>
 
       {step === 1 ? (
-        <section className="rounded-2xl border border-border bg-background p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-8">
             <h1 className="text-balance text-2xl font-bold tracking-tight">Të dhënat e biznesit</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
@@ -259,7 +259,7 @@ export function SetupWizard() {
           </div>
         </section>
       ) : (
-        <section className="rounded-2xl border border-border bg-background p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-8">
             <h1 className="text-balance text-2xl font-bold tracking-tight">Orari i punës</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">

@@ -50,7 +50,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-5">
       {!services?.length && (
-        <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-medium">Faqja jote ende s&apos;pranon rezervime</p>
             <p className="text-sm text-muted-foreground">

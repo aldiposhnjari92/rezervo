@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarOff, Check, Clock, Loader2, MessageCircle, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
@@ -196,7 +197,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
   return (
     <div className="min-h-screen bg-muted/30 pb-32">
       {/* ------------------------------------------------------------ header */}
-      <header className="border-b border-border bg-background">
+      <header className="border-b border-border bg-card">
         <div className="container max-w-lg py-6">
           <h1 className="text-2xl font-semibold tracking-tight">{business.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -210,7 +211,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
           <EmptyState
             icon={CalendarOff}
             title="Ende nuk pranohen rezervime"
-            body="Ky biznes nuk ka shtuar shërbime. Provo sërish më vonë ose kontaktoje me telefon."
+            description="Ky biznes nuk ka shtuar shërbime. Provo sërish më vonë ose kontaktoje me telefon."
           />
         ) : (
           <>
@@ -267,7 +268,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
                 <SectionTitle step={2} title="Zgjidh orën" />
 
                 {loadError ? (
-                  <div className="rounded-xl border border-border bg-background p-4 text-center">
+                  <div className="rounded-2xl border border-border bg-card p-4 text-center">
                     <p className="text-sm text-muted-foreground">
                       Nuk u ngarkuan dot oraret e lira.
                     </p>
@@ -354,7 +355,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
               <section ref={formRef} className="scroll-mt-4">
                 <SectionTitle step={3} title="Të dhënat e tua" />
 
-                <div className="space-y-4 rounded-xl border border-border bg-background p-4">
+                <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
                   <div className="space-y-2">
                     <Label htmlFor="customer-name">Emri dhe mbiemri</Label>
                     <Input
@@ -404,7 +405,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
 
       {/* ------------------------------------------------- shiriti i poshtëm */}
       {hasServices && service && slotIso && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur">
           <div className="container max-w-lg py-3">
             {submitError && (
               <p className="mb-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -471,26 +472,8 @@ function SlotsSkeleton() {
 
 function ClosedNotice({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-background px-4 py-8 text-center">
+    <div className="rounded-2xl border border-dashed border-border bg-card px-4 py-8 text-center">
       <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
-}
-
-function EmptyState({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: typeof CalendarOff;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-background px-6 py-14 text-center">
-      <Icon className="mb-3 h-8 w-8 text-muted-foreground" />
-      <p className="font-medium">{title}</p>
-      <p className="mt-1 max-w-xs text-sm text-muted-foreground">{body}</p>
     </div>
   );
 }
@@ -519,7 +502,7 @@ function SuccessScreen({
           Do të merrni një kujtesë në WhatsApp.
         </p>
 
-        <div className="mt-7 w-full rounded-xl border border-border bg-background p-5">
+        <div className="mt-7 w-full rounded-2xl border border-border bg-card p-5">
           <Row label="Biznesi" value={booking.business_name} />
           <Row label="Shërbimi" value={booking.service_name} />
           <Row label="Data" value={day} />

@@ -137,7 +137,7 @@ export function AccountForm({
       />
 
       {isAdmin && (
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-4">
+        <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-4">
           <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />
           <p className="text-sm">
             Kjo llogari ka të drejta admini.{" "}

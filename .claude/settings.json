@@ -122,7 +122,9 @@
       "Bash(curl -s -i http://localhost:3100/settings)",
       "Bash(BASE=http://localhost:3100 PHASE=2 node tests/e2e/admin.js)",
       "Bash(BASE=http://localhost:3100 PHASE=2 node tests/e2e/shell.js)",
-      "Bash(BASE=http://localhost:3100 node tests/e2e/features.js)"
+      "Bash(BASE=http://localhost:3100 node tests/e2e/features.js)",
+      "Bash(sed -i 's|\"rounded-2xl border border-border bg-card p-4\"|\"rounded-2xl border border-border bg-background p-4\"|' src/components/stat-tile.tsx)",
+      "Bash(node tests/unit/design.test.js)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

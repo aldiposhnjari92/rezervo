@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CalendarX2, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Segmented, SegmentedButton } from "@/components/segmented";
 import { formatMoney, formatTime } from "@/lib/availability";
 import {
   CALENDAR_VIEWS,
@@ -89,11 +90,11 @@ export function CalendarView({
       {/* ------------------------------------------------------------ toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-border bg-background">
+          <div className="flex items-center rounded-xl border border-border bg-background">
             <button
               type="button"
               onClick={() => go(view, stepDate(view, date, -1))}
-              className="flex h-9 w-9 items-center justify-center rounded-l-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex h-9 w-9 items-center justify-center rounded-l-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Para"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -108,14 +109,14 @@ export function CalendarView({
             <button
               type="button"
               onClick={() => go(view, stepDate(view, date, 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-r-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex h-9 w-9 items-center justify-center rounded-r-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Pas"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
             {headingForView(view, date)}
             {pending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </h1>
@@ -123,23 +124,13 @@ export function CalendarView({
 
         <div className="flex items-center gap-2">
         {/* ndërruesi i pamjeve */}
-        <div className="flex flex-1 rounded-lg border border-border bg-background p-0.5 sm:flex-none">
+        <Segmented className="flex-1 sm:flex-none">
           {CALENDAR_VIEWS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => go(item, date)}
-              className={cn(
-                "flex-1 rounded-md px-4 py-1.5 text-sm font-medium transition-colors sm:flex-none",
-                view === item
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
+            <SegmentedButton key={item} active={view === item} onClick={() => go(item, date)}>
               {VIEW_LABELS_SQ[item]}
-            </button>
+            </SegmentedButton>
           ))}
-        </div>
+        </Segmented>
 
         <Button size="sm" className="shrink-0" onClick={() => setAdding(true)}>
           <Plus className="h-4 w-4" />
@@ -205,7 +196,7 @@ function Stat({
   tone?: "default" | "warning";
 }) {
   return (
-    <div className="rounded-xl border border-border bg-background p-3">
+    <div className="rounded-2xl border border-border bg-card p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p
         className={cn(
@@ -240,7 +231,7 @@ function MonthView({
   const month = startOfMonth(date);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {/* kokat e ditëve */}
       <div className="grid grid-cols-7 border-b border-border bg-muted/40">
         {DAY_KEYS.map((key) => (
@@ -372,7 +363,7 @@ function TimeGrid({
   const isEmpty = bookings.filter((b) => b.status !== "cancelled").length === 0;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-background">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
       {/* kokat e ditëve (vetëm java) */}
       {variant === "week" && (
         <div className="flex border-b border-border bg-muted/40">

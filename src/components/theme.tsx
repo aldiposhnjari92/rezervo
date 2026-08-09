@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { Monitor, Moon, Sun } from "lucide-react";
 import { Toaster } from "sonner";
 
+import { Segmented, SegmentedButton } from "@/components/segmented";
 import { cn } from "@/lib/utils";
 
 export type Theme = "light" | "dark" | "system";
@@ -78,39 +79,29 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: "system", label: "Sistemi", icon: Monitor },
 ];
 
-/** Zgjedhës me tri pozicione — pa menu, pa surpriza. */
+/**
+ * Zgjedhës me tri pozicione — pa menu, pa surpriza.
+ *
+ * Përdor të njëjtin kontroll me segmente si periudhat te paneli, pamjet te
+ * kalendari dhe skedat te rregullimet: e njëjta zgjedhje, e njëjta pamje.
+ * Etiketat janë të dukshme, jo vetëm ikona — "Sistemi" nuk merret me mend.
+ */
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div
-      className={cn(
-        "flex rounded-lg border border-border bg-background p-0.5",
-        className,
-      )}
-      role="radiogroup"
-      aria-label="Tema"
-    >
-      {OPTIONS.map(({ value, label, icon: Icon }) => (
-        <button
+    <Segmented className={className}>
+      {OPTIONS.map(({ value, label, icon }) => (
+        <SegmentedButton
           key={value}
-          type="button"
-          role="radio"
-          aria-checked={theme === value}
-          aria-label={label}
-          title={label}
+          active={theme === value}
+          icon={icon}
           onClick={() => setTheme(value)}
-          className={cn(
-            "flex flex-1 items-center justify-center rounded-md py-1.5 transition-colors",
-            theme === value
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
         >
-          <Icon className="h-4 w-4" />
-        </button>
+          {label}
+        </SegmentedButton>
       ))}
-    </div>
+    </Segmented>
   );
 }
 

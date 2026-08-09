@@ -48,7 +48,7 @@ export function OwnerShell({
       {/* ---------------------------------------------- shtylla anësore (lg+) */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-background transition-[width] duration-200 lg:flex",
+          "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-border bg-card transition-[width] duration-200 lg:flex",
           collapsed ? "w-[4.5rem]" : "w-60",
         )}
       >
@@ -123,7 +123,7 @@ export function OwnerShell({
       {/* ------------------------------------------------------------ përmbajtja */}
       <div className={cn("transition-[padding] duration-200", collapsed ? "lg:pl-[4.5rem]" : "lg:pl-60")}>
         {/* koka */}
-        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
           <div className="flex h-14 items-center justify-between gap-3 px-4 lg:h-16 lg:px-8">
             <div className="min-w-0 lg:hidden">
               <p className="truncate text-sm font-semibold leading-tight">{businessName}</p>

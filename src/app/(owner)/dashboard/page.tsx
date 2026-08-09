@@ -1,20 +1,19 @@
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight, CalendarDays, PlusCircle, Users } from "lucide-react";
+import { CalendarDays, LineChart, PlusCircle, Users } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
-import {
-  DistributionBars,
-  EarningsChart,
-  StatTile,
-  StatusBreakdown,
-} from "@/components/charts";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { Segmented, SegmentedLink } from "@/components/segmented";
+import { DistributionBars, EarningsChart, StatusBreakdown } from "@/components/charts";
+import { StatTile } from "@/components/stat-tile";
 import { requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatMoney } from "@/lib/availability";
 import type { OwnerDashboard } from "@/lib/admin-types";
 import { DAY_KEYS, DAY_LABELS_SHORT_SQ } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { GettingStarted } from "./getting-started";
 
 export const metadata: Metadata = { title: "Paneli" };
@@ -47,12 +46,11 @@ export default async function OwnerDashboardPage({
 
   if (!d) {
     return (
-      <div className="rounded-xl border border-border bg-background p-8 text-center">
-        <p className="font-medium">Të dhënat nuk u ngarkuan</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {error?.message ?? "Provo të rifreskosh faqen."}
-        </p>
-      </div>
+      <EmptyState
+        icon={LineChart}
+        title="Të dhënat nuk u ngarkuan"
+        description={error?.message ?? "Provo të rifreskosh faqen."}
+      />
     );
   }
 
@@ -91,14 +89,14 @@ export default async function OwnerDashboardPage({
   if (isNew) {
     return (
       <div className="space-y-5">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {servicesCount
+        <PageHeader
+          title={business.name}
+          description={
+            servicesCount
               ? "Gjithçka gati. Mbetet vetëm të ndash linkun."
-              : "Le ta bëjmë gati dyqanin për rezervime."}
-          </p>
-        </div>
+              : "Le ta bëjmë gati dyqanin për rezervime."
+          }
+        />
 
         <GettingStarted hasServices={Boolean(servicesCount)} slug={business.slug} />
       </div>
@@ -109,37 +107,28 @@ export default async function OwnerDashboardPage({
     <div className="space-y-5">
       {/* --------------------------------------------------------------- koka */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {d.today > 0
+        <PageHeader
+          title={business.name}
+          description={
+            d.today > 0
               ? `${d.today} rezervime sot · ${d.upcoming} në ditët në vijim.`
               : d.upcoming > 0
                 ? `Asnjë rezervim sot · ${d.upcoming} në pritje.`
-                : "Asnjë rezervim në pritje."}
-          </p>
-        </div>
+                : "Asnjë rezervim në pritje."
+          }
+        />
 
-        <div className="flex shrink-0 rounded-lg border border-border bg-background p-0.5">
+        <Segmented className="shrink-0">
           {RANGES.map((r) => (
-            <Link
-              key={r}
-              href={`/dashboard?days=${r}`}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                days === r
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
+            <SegmentedLink key={r} href={`/dashboard?days=${r}`} active={days === r}>
               {`${r} ditë`}
-            </Link>
+            </SegmentedLink>
           ))}
-        </div>
+        </Segmented>
       </div>
 
       {!servicesCount && (
-        <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-medium">Faqja jote ende s&apos;pranon rezervime</p>
             <p className="text-sm text-muted-foreground">Shto të paktën një shërbim.</p>
@@ -155,27 +144,11 @@ export default async function OwnerDashboardPage({
 
       {/* ----------------------------------------------------- numrat kryesorë */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-xl border border-border bg-background p-4">
-          <p className="text-xs text-muted-foreground">Të ardhurat ({days} ditë)</p>
-          <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight tabular-nums">
-            {formatMoney(d.earnings_period)}
-          </p>
-          {delta !== null && (
-            <p
-              className={cn(
-                "mt-1 flex items-center gap-1 text-xs font-medium",
-                delta >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400",
-              )}
-            >
-              {delta >= 0 ? (
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              ) : (
-                <ArrowDownRight className="h-3.5 w-3.5" />
-              )}
-              {Math.abs(delta)}% vs periudha e kaluar
-            </p>
-          )}
-        </div>
+        <StatTile
+          label={`Të ardhurat (${days} ditë)`}
+          value={formatMoney(d.earnings_period)}
+          trend={delta !== null ? { percent: delta, label: "vs periudha e kaluar" } : undefined}
+        />
 
         <StatTile
           label={`Rezervime (${days} ditë)`}
@@ -205,7 +178,7 @@ export default async function OwnerDashboardPage({
         />
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-border bg-background p-5">
+          <Card className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-semibold">Klientët</h2>
@@ -233,9 +206,9 @@ export default async function OwnerDashboardPage({
                 style={{ width: `${Math.min(repeatRate, 100)}%` }}
               />
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-xl border border-border bg-background p-5">
+          <Card className="p-5">
             <h2 className="font-semibold">Shërbimet më të kërkuara</h2>
             {d.top_services.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
@@ -256,7 +229,7 @@ export default async function OwnerDashboardPage({
                 ))}
               </ul>
             )}
-          </div>
+          </Card>
         </div>
       </div>
 

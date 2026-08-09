@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Ban, ExternalLink, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Ban, ExternalLink, ShieldCheck, Store } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
-import { StatTile } from "@/components/charts";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { StatTile } from "@/components/stat-tile";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatDayMonthFromInstant,
@@ -46,12 +49,11 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
       </Link>
 
       {/* ---------------------------------------------------------------- koka */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">
-              {business?.name ?? "Llogari pa dyqan"}
-            </h1>
+      <PageHeader
+        title={business?.name ?? "Llogari pa dyqan"}
+        description={user.email}
+        badges={
+          <>
             {user.is_admin && (
               <Badge className="gap-1">
                 <ShieldCheck className="h-3 w-3" />
@@ -64,26 +66,26 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
                 Pezulluar
               </Badge>
             )}
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
-        </div>
-
-        {business && (
-          <a
-            href={`/${business.slug}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm text-primary hover:underline"
-          >
-            rezervo.al/{business.slug}
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        )}
-      </div>
+          </>
+        }
+        action={
+          business && (
+            <a
+              href={`/${business.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              rezervo.al/{business.slug}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )
+        }
+      />
 
       {/* --------------------------------------------------------- të dhënat */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-border bg-background">
+        <Card>
           <h2 className="border-b border-border px-5 py-3 font-semibold">Llogaria</h2>
           <dl className="divide-y divide-border">
             <Row label="Email" value={user.email} />
@@ -103,10 +105,10 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
             />
             <Row label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
           </dl>
-        </section>
+        </Card>
 
         {business ? (
-          <section className="rounded-xl border border-border bg-background">
+          <Card>
             <h2 className="border-b border-border px-5 py-3 font-semibold">Biznesi</h2>
             <dl className="divide-y divide-border">
               <Row label="Emri" value={business.name} />
@@ -125,17 +127,13 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
                 }
               />
             </dl>
-          </section>
+          </Card>
         ) : (
-          <section className="flex items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-center">
-            <div>
-              <p className="font-medium">Kjo llogari nuk ka krijuar dyqan</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                U regjistrua më {formatDayMonthFromInstant(user.created_at)} por nuk e mbaroi
-                konfigurimin.
-              </p>
-            </div>
-          </section>
+          <EmptyState
+            icon={Store}
+            title="Kjo llogari nuk ka krijuar dyqan"
+            description={`U regjistrua më ${formatDayMonthFromInstant(user.created_at)} por nuk e mbaroi konfigurimin.`}
+          />
         )}
       </div>
 
@@ -155,7 +153,7 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
 
       {/* ---------------------------------------------------------- shërbimet */}
       {account.services.length > 0 && (
-        <section className="overflow-hidden rounded-xl border border-border bg-background">
+        <Card className="overflow-hidden">
           <h2 className="border-b border-border px-5 py-3 font-semibold">
             Shërbimet ({account.services.length})
           </h2>
@@ -174,12 +172,12 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       )}
 
       {/* -------------------------------------------------- rezervimet e fundit */}
       {account.recent_bookings.length > 0 && (
-        <section className="overflow-hidden rounded-xl border border-border bg-background">
+        <Card className="overflow-hidden">
           <div className="border-b border-border px-5 py-3">
             <h2 className="font-semibold">Rezervimet e fundit</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -205,7 +203,7 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       )}
 
       {/* ---------------------------------------------------------- pezullimi */}

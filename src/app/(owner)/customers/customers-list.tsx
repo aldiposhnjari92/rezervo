@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Phone, Repeat, Search, Users, X } from "lucide-react";
+import { AlertTriangle, Phone, Repeat, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { SearchInput } from "@/components/search-input";
+import { Segmented, SegmentedButton } from "@/components/segmented";
+import { StatTile } from "@/components/stat-tile";
 import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
 import { formatAlbanianPhone } from "@/lib/phone";
 import type { CustomerRow } from "@/lib/types";
@@ -71,16 +74,11 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
     return (
       <div className="space-y-5">
         <PageHeader title="Klientët" description="Lista ndërtohet vetë nga rezervimet." />
-        <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
-          <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-            <Users className="h-6 w-6 text-primary" />
-          </span>
-          <p className="font-semibold">Ende asnjë klient</p>
-          <p className="mt-1.5 max-w-xs text-sm text-muted-foreground">
-            Sapo dikush të rezervojë, do ta shohësh këtu bashkë me historikun e vizitave dhe
-            sa ka shpenzuar.
-          </p>
-        </div>
+        <EmptyState
+          icon={Users}
+          title="Ende asnjë klient"
+          description="Sapo dikush të rezervojë, do ta shohësh këtu bashkë me historikun e vizitave dhe sa ka shpenzuar."
+        />
       </div>
     );
   }
@@ -93,56 +91,39 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
       />
 
       <div className="grid grid-cols-3 gap-3">
-        <Summary label="Klientë" value={String(totals.all)} />
-        <Summary
+        <StatTile label="Klientë" value={totals.all} />
+        <StatTile
           label="Kthehen sërish"
-          value={String(totals.repeat)}
-          hint={totals.all ? `${Math.round((totals.repeat / totals.all) * 100)}%` : undefined}
+          value={totals.repeat}
+          hint={totals.all ? `${Math.round((totals.repeat / totals.all) * 100)}% e të gjithëve` : undefined}
         />
-        <Summary
+        <StatTile
           label="Me mosardhje"
-          value={String(totals.risky)}
+          value={totals.risky}
           tone={totals.risky ? "warning" : "default"}
         />
       </div>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="relative lg:max-w-xs lg:flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Kërko me emër ose numër"
-            className="pl-9 pr-9"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="Pastro kërkimin"
-              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Kërko me emër ose numër"
+          className="lg:max-w-xs lg:flex-1"
+        />
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar lg:ml-auto">
-          {SORTS.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => setSort(s.key)}
-              className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                sort === s.key
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-background text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
+        <div className="lg:ml-auto">
+          <Segmented scroll>
+            {SORTS.map((s) => (
+              <SegmentedButton
+                key={s.key}
+                active={sort === s.key}
+                onClick={() => setSort(s.key)}
+              >
+                {s.label}
+              </SegmentedButton>
+            ))}
+          </Segmented>
         </div>
       </div>
 
@@ -306,34 +287,5 @@ function Avatar({ name, tone }: { name: string; tone: "risky" | "loyal" | "plain
     >
       {initials(name)}
     </span>
-  );
-}
-
-function Summary({
-  label,
-  value,
-  hint,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  tone?: "default" | "warning";
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 flex items-baseline gap-1.5">
-        <span
-          className={cn(
-            "text-2xl font-semibold tabular-nums",
-            tone === "warning" && "text-amber-700 dark:text-amber-400",
-          )}
-        >
-          {value}
-        </span>
-        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-      </p>
-    </div>
   );
 }

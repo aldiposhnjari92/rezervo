@@ -55,7 +55,7 @@ export function BottomNav() {
   const isActive = useActive();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-md">
         {LINKS.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);

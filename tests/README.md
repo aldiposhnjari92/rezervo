@@ -10,6 +10,7 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `unit/rules.test.js` | 26 | buffer, pushimi, mbylljet, njoftimi, dritarja |
 | `unit/email.test.js` | 18 | email-i i pezullimit: me/pa arsye, ikja e HTML-së |
 | `unit/email-provider.test.js` | 12 | zgjedhja e provider-it dhe parsimi i EMAIL_FROM |
+| `unit/design.test.js` | 17 | pjesët e përbashkëta të pamjes nuk shpërndahen sërish |
 | `e2e/main.js` | 69 | rrjedha e plotë: regjistrim → dyqan → rezervim → kalendar |
 | `e2e/features.js` | 62 | rregullat, mbylljet, walk-in-et, paneli, klientët |
 | `e2e/admin.js` | 68 | të drejtat e adminit, pezullimi/riaktivizimi + njoftimet, fshirja |

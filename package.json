@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:unit": "tsc src/lib/availability.ts src/lib/calendar.ts src/lib/phone.ts src/lib/slug.ts src/lib/email-templates.ts src/lib/email-provider.ts --outDir tests/.build --module commonjs --target es2020 --moduleResolution node --esModuleInterop --skipLibCheck && node tests/unit/availability.test.js && node tests/unit/calendar.test.js && node tests/unit/rules.test.js && node tests/unit/email.test.js && node tests/unit/email-provider.test.js",
+    "test:unit": "tsc src/lib/availability.ts src/lib/calendar.ts src/lib/phone.ts src/lib/slug.ts src/lib/email-templates.ts src/lib/email-provider.ts --outDir tests/.build --module commonjs --target es2020 --moduleResolution node --esModuleInterop --skipLibCheck && node tests/unit/availability.test.js && node tests/unit/calendar.test.js && node tests/unit/rules.test.js && node tests/unit/email.test.js && node tests/unit/email-provider.test.js && node tests/unit/design.test.js",
     "test:e2e": "./tests/run-e2e.sh"
   },
   "dependencies": {
