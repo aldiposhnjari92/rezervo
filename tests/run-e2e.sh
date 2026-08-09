@@ -48,7 +48,7 @@ for _ in $(seq 1 40); do
 done
 
 FAILED=0
-for suite in main features admin shell; do
+for suite in main features admin shell realtime; do
   echo ""
   echo "==================== $suite ===================="
   BASE="$BASE" node "tests/e2e/${suite}.js" || FAILED=1

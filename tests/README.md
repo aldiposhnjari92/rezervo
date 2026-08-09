@@ -14,6 +14,7 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `e2e/features.js` | 59 | rregullat, mbylljet, walk-in-et, paneli, klientët |
 | `e2e/admin.js` | 68 | të drejtat e adminit, pezullimi/riaktivizimi + njoftimet, fshirja |
 | `e2e/shell.js` | 26 | njoftimet, tema, shtylla anësore, linku i adminit |
+| `e2e/realtime.js` | 11 | njoftimet live mbërrijnë vërtet, dhe vetëm te pronari i duhur |
 
 ---
 
@@ -40,6 +41,12 @@ output-i, nis serverin te `:3100` dhe drejton të katër suitat.
 **Pse një dosje tjetër build-i:** `next dev` dhe `next build` shkruajnë të dyja te
 `.next` dhe e prishin njëra-tjetrën. Me `NEXT_DIST_DIR` testet mund të drejtohen
 ndërsa `npm run dev` vazhdon të punojë.
+
+**Pse ka një suitë të veçantë për realtime:** abonimi ndodh në shfletues, ndaj
+testet HTTP nuk e prekin dot. `realtime.js` përdor të njëjtin `supabase-js` me të
+njëjtin token si faqja — nëse ngjarja mbërrin atje, mbërrin edhe te zilja. Mbulon
+gabimin ku, pa `realtime.setAuth()`, socket-i lidhet si `anon` dhe RLS-ja i heq
+të gjitha ngjarjet pa dhënë asnjë gabim.
 
 **Pse nxirren ID-të e veprimeve:** çdo buton i panelit thërret një Server Action,
 dhe Next-i i thërret ato me një POST që mban header-in `Next-Action: <id>`. ID-të

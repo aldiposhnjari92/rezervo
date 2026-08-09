@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, Bell, CalendarPlus, CheckCheck, RotateCcw, UserX, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
@@ -45,15 +46,27 @@ const TONES: Record<NotificationKind, string> = {
 
 export function NotificationsBell({ businessId }: { businessId: string }) {
   const router = useRouter();
+  // Një klient i vetëm: leximi dhe abonimi duhet të ndajnë të njëjtin sesion,
+  // përndryshe socket-i lidhet i paautentikuar.
+  const [supabase] = useState(() => createClient());
+
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * ID-të e njoftimeve që i kemi parë tashmë.
+   *
+   * Ato që ngarkohen nga baza NUK nxjerrin pop-up — përndryshe çdo rifreskim i
+   * faqes do të ribënte njoftimet e vjetra. Vetëm ajo që mbërrin live, pasi
+   * jemi abonuar, shfaqet si njoftim.
+   */
+  const seen = useRef<Set<string>>(new Set());
+
   const unread = items.filter((n) => !n.read_at).length;
 
   const load = useCallback(async () => {
-    const supabase = createClient();
     const { data } = await supabase
       .from("notifications")
       .select("id, kind, title, body, read_at, created_at")
@@ -61,38 +74,96 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
       .order("created_at", { ascending: false })
       .limit(20);
 
-    setItems((data ?? []) as Notification[]);
+    const rows = (data ?? []) as Notification[];
+    for (const row of rows) seen.current.add(row.id);
+
+    // Bashkohet, jo zëvendësohet: leximi dhe abonimi nisin njëkohësisht, ndaj një
+    // njoftim mund të mbërrijë live PARA se kjo pyetje të kthehet. Zëvendësimi do
+    // ta fshinte nga lista pikërisht atë që sapo erdhi.
+    setItems((prev) => {
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      for (const old of prev) if (!byId.has(old.id)) byId.set(old.id, old);
+      return Array.from(byId.values())
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))
+        .slice(0, 20);
+    });
     setLoading(false);
-  }, [businessId]);
+  }, [supabase, businessId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  // Rezervimet e reja mbërrijnë ndërsa pronari punon — dëgjojmë live.
+  /** Pop-up vetëm për atë që sapo ndodhi. */
+  const announce = useCallback((n: Notification) => {
+    const options = {
+      description: n.body ?? undefined,
+      duration: n.kind.startsWith("business_") ? 10_000 : 6_000,
+    };
+
+    if (n.kind === "business_suspended" || n.kind === "booking_no_show") toast.warning(n.title, options);
+    else if (n.kind === "booking_cancelled") toast(n.title, options);
+    else toast.success(n.title, options);
+  }, []);
+
   useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`notifications:${businessId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `business_id=eq.${businessId}`,
-        },
-        (payload) => {
-          setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20));
-          router.refresh();
-        },
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      // RLS zbatohet edhe te realtime: pa token-in e përdoruesit, socket-i lidhet
+      // si `anon` dhe nuk merr KURRË asnjë ngjarje — pa asnjë gabim të dukshëm.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token);
+
+      channel = supabase
+        .channel(`notifications:${businessId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `business_id=eq.${businessId}`,
+          },
+          (payload) => {
+            const row = payload.new as Notification;
+
+            // Pas një rilidhjeje e njëjta ngjarje mund të vijë dy herë.
+            if (seen.current.has(row.id)) return;
+            seen.current.add(row.id);
+
+            setItems((prev) => [row, ...prev].slice(0, 20));
+            announce(row);
+            router.refresh();
+          },
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.error(`[notifications] realtime: ${status}`);
+          }
+        });
+    })();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
-  }, [businessId, router]);
+  }, [supabase, businessId, router, announce]);
+
+  // Token-i rifreskohet periodikisht; pa këtë socket-i mbetet me një token të skaduar.
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token);
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   // Mbyll kur klikohet jashtë ose shtypet Escape.
   useEffect(() => {
@@ -116,7 +187,7 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
   async function markAllRead() {
     const now = new Date().toISOString();
     setItems((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })));
-    await createClient().rpc("mark_notifications_read");
+    await supabase.rpc("mark_notifications_read");
   }
 
   return (
