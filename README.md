@@ -288,14 +288,18 @@ as ekzistenca e panelit.
 Pezullimi e nxjerr faqen publike jashtë linje (404) dhe bllokon rezervimet e reja;
 të dhënat nuk preken dhe veprimi kthehet mbrapsht në çdo moment.
 
-Pronari njoftohet në dy mënyra:
+Pronari njoftohet në tri mënyra, si për pezullimin ashtu edhe për riaktivizimin:
 
-1. **Me email** — arsyeja e adminit i përcillet fjalë për fjalë; pa arsye, dërgohet
-   një njoftim i përgjithshëm. Posta është "best effort": pezullimi mbetet i kryer
-   edhe nëse email-i dështon, dhe admini sheh qartë nëse pronari u njoftua apo jo.
-2. **Me një shirit në panel** — i vazhdueshëm, në çdo faqe, derisa llogaria të
-   riaktivizohet. Pezullimi është një *gjendje*, jo një ngjarje, ndaj nuk shkon te
-   zilja e njoftimeve: ajo lexohet një herë dhe zhduket.
+1. **Me email** — te pezullimi, arsyeja e adminit i përcillet fjalë për fjalë; pa
+   arsye, dërgohet një njoftim i përgjithshëm. Te riaktivizimi, njoftohet që faqja
+   është sërish online. Posta është "best effort": veprimi mbetet i kryer edhe nëse
+   email-i dështon, dhe admini sheh qartë nëse pronari u njoftua apo jo.
+2. **Te zilja e njoftimeve** — një njoftim për çdo kalim gjendjeje. E shkruan një
+   trigger mbi `businesses`, jo aplikacioni, ndaj lind edhe nëse `suspended_at`
+   ndryshohet direkt në bazë. Një ndryshim i zakonshëm i biznesit (emri, orari)
+   nuk prodhon njoftim.
+3. **Me një shirit në panel** — i vazhdueshëm, në çdo faqe, derisa llogaria të
+   riaktivizohet. Shiriti mbulon *gjendjen*; zilja mbulon *ngjarjen*.
 
 ### Email-i
 

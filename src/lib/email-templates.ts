@@ -137,3 +137,54 @@ export function suspensionEmail(params: {
 
   return { subject: `${name} — llogaria juaj është pezulluar`, html, text };
 }
+
+// ---------------------------------------------------------------------------
+//  Riaktivizimi
+// ---------------------------------------------------------------------------
+
+/**
+ * Email-i që merr pronari kur biznesi i rikthehet online.
+ *
+ * Pezullimi e njofton pronarin; heshtja pas rikthimit do të thoshte që ai nuk e
+ * di kurrë se faqja i punon sërish — dhe vazhdon të mos i dërgojë klientët atje.
+ */
+export function restorationEmail(params: { businessName: string }): EmailContent {
+  const name = params.businessName;
+
+  const html = layout({
+    heading: `${name} është sërish online`,
+    body: `
+      <p style="margin:0 0 16px 0;">Përshëndetje,</p>
+      <p style="margin:0 0 16px 0;">
+        Pezullimi i llogarisë suaj është hequr. Faqja publike e rezervimeve për
+        <strong>${escapeHtml(name)}</strong> është sërish e hapur dhe pranon rezervime.
+      </p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="border-left:3px solid #059669;background:#ecfdf5;padding:12px 16px;border-radius:0 6px 6px 0;">
+          Rezervimet, shërbimet dhe klientët tuaj janë pikërisht si i latë.
+        </td></tr>
+      </table>
+      <p style="margin:16px 0 0 0;">
+        Nuk keni nevojë të bëni asgjë — mjafton të ndani sërish linkun tuaj me klientët.
+      </p>`,
+    footer:
+      "Për çdo pyetje, thjesht përgjigjuni këtij email-i. Ky është një njoftim automatik nga Rezervo.al.",
+  });
+
+  const text = [
+    `${name} është sërish online`,
+    "",
+    "Përshëndetje,",
+    "",
+    "Pezullimi i llogarisë suaj është hequr. Faqja publike e rezervimeve për",
+    `${name} është sërish e hapur dhe pranon rezervime.`,
+    "",
+    "Rezervimet, shërbimet dhe klientët tuaj janë pikërisht si i latë.",
+    "",
+    "Nuk keni nevojë të bëni asgjë — mjafton të ndani sërish linkun me klientët.",
+    "",
+    "Rezervo.al",
+  ].join("\n");
+
+  return { subject: `${name} — llogaria juaj është riaktivizuar`, html, text };
+}

@@ -2,34 +2,46 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CalendarPlus, CheckCheck, UserX, X } from "lucide-react";
+import { Ban, Bell, CalendarPlus, CheckCheck, RotateCcw, UserX, X } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
 import { cn } from "@/lib/utils";
 
+type NotificationKind =
+  | "booking_new"
+  | "booking_cancelled"
+  | "booking_no_show"
+  | "booking_completed"
+  | "business_suspended"
+  | "business_restored";
+
 type Notification = {
   id: string;
-  kind: "booking_new" | "booking_cancelled" | "booking_no_show" | "booking_completed";
+  kind: NotificationKind;
   title: string;
   body: string | null;
   read_at: string | null;
   created_at: string;
 };
 
-const ICONS = {
+const ICONS: Record<NotificationKind, typeof Bell> = {
   booking_new: CalendarPlus,
   booking_cancelled: X,
   booking_no_show: UserX,
   booking_completed: CheckCheck,
-} as const;
+  business_suspended: Ban,
+  business_restored: RotateCcw,
+};
 
-const TONES = {
+const TONES: Record<NotificationKind, string> = {
   booking_new: "bg-primary/10 text-primary",
   booking_cancelled: "bg-muted text-muted-foreground",
   booking_no_show: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   booking_completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-} as const;
+  business_suspended: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  business_restored: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+};
 
 export function NotificationsBell({ businessId }: { businessId: string }) {
   const router = useRouter();
@@ -175,7 +187,14 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{n.title}</p>
                         {n.body && (
-                          <p className="truncate text-xs text-muted-foreground">{n.body}</p>
+                          <p
+                            className={cn(
+                              "text-xs text-muted-foreground",
+                              n.kind.startsWith("business_") ? "line-clamp-2" : "truncate",
+                            )}
+                          >
+                            {n.body}
+                          </p>
                         )}
                         <p className="mt-0.5 text-[11px] text-muted-foreground">
                           {formatDayMonthFromInstant(n.created_at)} · {formatTime(n.created_at)}

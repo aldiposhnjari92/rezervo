@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
-import { suspensionEmail } from "@/lib/email-templates";
+import { restorationEmail, suspensionEmail } from "@/lib/email-templates";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -49,20 +49,20 @@ export async function setBusinessSuspended(input: {
 
   revalidatePath("/admin", "layout");
 
-  // Rikthimi nuk njofton — pronari e kërkoi vetëm për pezullimin.
-  if (!input.suspended) return { ok: true, emailSent: false };
-
   if (!result.owner_email) {
     console.error("[suspension] mungon email-i i pronarit; njoftimi u anashkalua");
     return { ok: true, emailSent: false };
   }
 
-  // Posta është "best effort": pezullimi ka ndodhur tashmë dhe mbetet i kryer
-  // edhe nëse email-i dështon. Admini e sheh rezultatin dhe vendos vetë.
-  const mail = suspensionEmail({
-    businessName: result.business_name ?? "Biznesi juaj",
-    reason: result.suspended_reason,
-  });
+  // Posta është "best effort": veprimi ka ndodhur tashmë dhe mbetet i kryer edhe
+  // nëse email-i dështon. Admini e sheh rezultatin dhe vendos vetë.
+  //
+  // Rikthimi njoftohet po aq sa pezullimi: heshtja pas rikthimit do të thoshte
+  // që pronari nuk e di kurrë se faqja i punon sërish.
+  const businessName = result.business_name ?? "Biznesi juaj";
+  const mail = input.suspended
+    ? suspensionEmail({ businessName, reason: result.suspended_reason })
+    : restorationEmail({ businessName });
 
   const delivery = await sendEmail({ to: result.owner_email, ...mail });
 

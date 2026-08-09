@@ -38,7 +38,11 @@ export function SuspendControl({
       }
 
       if (!suspended) {
-        toast.success(`${businessName} u rikthye.`);
+        toast.success(
+          result.emailSent
+            ? `${businessName} u rikthye. Pronari u njoftua me email.`
+            : `${businessName} u rikthye.`,
+        );
       } else if (result.emailSent) {
         toast.success(`${businessName} u pezullua. Pronari u njoftua me email.`);
       } else {

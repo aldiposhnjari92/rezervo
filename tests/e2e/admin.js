@@ -50,6 +50,11 @@ async function callAction(path, name, args, cookie) {
   return { status: res.status, headers: res.headers, text: norm(await res.text()) };
 }
 
+/** Read a table through PostgREST as a given user, so RLS applies. */
+const rest = (query, token) =>
+  fetch(`${SUPABASE_URL}/rest/v1/${query}`,
+    { headers: { apikey: ANON, Authorization: `Bearer ${token}` } }).then((r) => r.json());
+
 /** Call an RPC with a USER's JWT — this is what a hostile client would do. */
 const rpcAs = (fn, body, token) =>
   fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
@@ -255,12 +260,24 @@ const PW = "TestPass123!";
   const ownerCal = await get("/calendar?view=day", cookieA);
   check("owner can still reach their calendar", ownerCal.status === 200, `status=${ownerCal.status}`);
 
+  console.log("\n=== 11a. Suspension reaches the owner's notification bell ===");
+  {
+    const notes = await rest(`notifications?select=kind,title,body&order=created_at.desc`, a.access_token);
+    const susNote = Array.isArray(notes) && notes.find((n) => n.kind === "business_suspended");
+    check("suspension notification created", Boolean(susNote),
+      JSON.stringify(notes).slice(0, 200));
+    check("carries the admin's reason", susNote && susNote.body === "test suspension",
+      JSON.stringify(susNote));
+    check("starts unread", Array.isArray(notes) &&
+      notes.filter((n) => n.kind === "business_suspended").length === 1);
+  }
+
   console.log("\n=== 11b. The owner is told, in their own dashboard ===");
   const suspendedHtml = norm(await (await get("/dashboard", cookieA)).text());
   check("banner shown to the suspended owner",
     suspendedHtml.includes("Faqja jote publike është offline"), "no suspension banner");
   check("banner carries the admin's reason", suspendedHtml.includes("test suspension"));
-  check("banner reassures about data", suspendedHtml.includes("nuk janë prekur"));
+  check("banner reassures about data", suspendedHtml.includes("të paprekura"));
   const onCalendar = norm(await (await get("/calendar", cookieA)).text());
   check("banner appears on every page, not just one",
     onCalendar.includes("Faqja jote publike është offline"));
@@ -278,6 +295,30 @@ const PW = "TestPass123!";
   const restoredHtml = norm(await (await get("/dashboard", cookieA)).text());
   check("banner disappears once restored",
     !restoredHtml.includes("Faqja jote publike është offline"), "banner still showing");
+
+  {
+    const notes = await rest(`notifications?select=kind,title,body&order=created_at.desc`, a.access_token);
+    check("restore notification created",
+      Array.isArray(notes) && notes.some((n) => n.kind === "business_restored"),
+      JSON.stringify(notes).slice(0, 200));
+    check("both transitions are recorded, not just the last",
+      Array.isArray(notes) && notes.some((n) => n.kind === "business_suspended")
+        && notes.some((n) => n.kind === "business_restored"));
+    check("owner emailed on restore too", unsusp.text.includes(state.ownerEmail),
+      "restore did not report an email recipient");
+  }
+
+  console.log("\n=== 12b. Editing the business does NOT create a notification ===");
+  {
+    const before = (await rest(`notifications?select=id`, a.access_token)).length;
+    await callAction("/settings", "updateBusiness", [{ name: "Admin Test Berberi",
+      phone: "069 111 2233",
+      workingHours: { monday: { start: "09:00", end: "18:00" }, tuesday: null, wednesday: null,
+        thursday: null, friday: null, saturday: null, sunday: null } }], cookieA);
+    const after = (await rest(`notifications?select=id`, a.access_token)).length;
+    check("a plain business update is ignored by the trigger", before === after,
+      `before=${before} after=${after}`);
+  }
 
   console.log("\n=== 13. Non-admin still cannot suspend (after admin exists) ===");
   const attempt = await callAction(`/admin/${state.ownerId}`, "setBusinessSuspended",
