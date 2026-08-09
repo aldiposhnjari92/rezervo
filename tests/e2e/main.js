@@ -4,10 +4,11 @@
  * loads, `Next-Action` POSTs for the server actions behind every button.
  */
 const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.join(__dirname, "..", "..");
 
 const BASE = process.env.BASE || "http://localhost:3100";
-const path = require("path");
-const ROOT = path.join(__dirname, "..", "..");
 const ENV = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
 const SUPABASE_URL = /NEXT_PUBLIC_SUPABASE_URL=(.+)/.exec(ENV)[1].trim();
 const ANON = /NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/.exec(ENV)[1].trim();

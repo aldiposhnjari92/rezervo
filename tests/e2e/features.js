@@ -1,9 +1,10 @@
 /** End-to-end test of the new business features + owner dashboard. */
 const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.join(__dirname, "..", "..");
 
 const BASE = process.env.BASE || "http://localhost:3100";
-const path = require("path");
-const ROOT = path.join(__dirname, "..", "..");
 const ENV = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
 const URL = /NEXT_PUBLIC_SUPABASE_URL=(.+)/.exec(ENV)[1].trim();
 const ANON = /NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/.exec(ENV)[1].trim();

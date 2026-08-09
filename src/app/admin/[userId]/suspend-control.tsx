@@ -37,7 +37,20 @@ export function SuspendControl({
         return;
       }
 
-      toast.success(suspended ? `${businessName} u pezullua.` : `${businessName} u rikthye.`);
+      if (!suspended) {
+        toast.success(`${businessName} u rikthye.`);
+      } else if (result.emailSent) {
+        toast.success(`${businessName} u pezullua. Pronari u njoftua me email.`);
+      } else {
+        // Pezullimi ka ndodhur; vetëm posta dështoi. Admini duhet ta dijë
+        // që pronari NUK e mori njoftimin, e jo ta besojë të kundërtën.
+        toast.warning(
+          `${businessName} u pezullua, por email-i nuk u dërgua${
+            result.emailTo ? ` te ${result.emailTo}` : ""
+          }. Njoftoje vetë.`,
+        );
+      }
+
       setReason("");
       router.refresh();
     });
@@ -93,6 +106,11 @@ export function SuspendControl({
               disabled={pending}
               className="bg-background"
             />
+            <p className="text-xs text-muted-foreground">
+              {reason.trim()
+                ? "Kjo arsye i dërgohet pronarit me email, fjalë për fjalë."
+                : "Pa arsye, pronari merr një njoftim të përgjithshëm pezullimi."}
+            </p>
           </div>
 
           <Button

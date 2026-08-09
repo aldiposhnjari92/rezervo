@@ -3,8 +3,15 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email";
+import { suspensionEmail } from "@/lib/email-templates";
 
 type Result = { ok: true } | { ok: false; error: string };
+
+/** Pezullimi kthen edhe nëse pronari u njoftua, që admini ta dijë. */
+type SuspendResult =
+  | { ok: true; emailSent: boolean; emailTo?: string }
+  | { ok: false; error: string };
 
 /**
  * Pezullon ose rikthen një biznes.
@@ -17,7 +24,7 @@ export async function setBusinessSuspended(input: {
   businessId: string;
   suspended: boolean;
   reason?: string;
-}): Promise<Result> {
+}): Promise<SuspendResult> {
   const supabase = createClient();
 
   const { data, error } = await supabase.rpc("admin_set_suspended", {
@@ -31,11 +38,35 @@ export async function setBusinessSuspended(input: {
     return { ok: false, error: "Veprimi nuk u krye. Provo sërish." };
   }
 
-  const result = data as { ok: boolean; error?: string };
+  const result = data as {
+    ok: boolean;
+    error?: string;
+    business_name?: string;
+    owner_email?: string;
+    suspended_reason?: string | null;
+  };
   if (!result?.ok) return { ok: false, error: result?.error ?? "Veprimi nuk u krye." };
 
   revalidatePath("/admin", "layout");
-  return { ok: true };
+
+  // Rikthimi nuk njofton — pronari e kërkoi vetëm për pezullimin.
+  if (!input.suspended) return { ok: true, emailSent: false };
+
+  if (!result.owner_email) {
+    console.error("[suspension] mungon email-i i pronarit; njoftimi u anashkalua");
+    return { ok: true, emailSent: false };
+  }
+
+  // Posta është "best effort": pezullimi ka ndodhur tashmë dhe mbetet i kryer
+  // edhe nëse email-i dështon. Admini e sheh rezultatin dhe vendos vetë.
+  const mail = suspensionEmail({
+    businessName: result.business_name ?? "Biznesi juaj",
+    reason: result.suspended_reason,
+  });
+
+  const delivery = await sendEmail({ to: result.owner_email, ...mail });
+
+  return { ok: true, emailSent: delivery.sent, emailTo: result.owner_email };
 }
 
 /** Fshirja e llogarisë nga vetë pronari. Kaskada merret me pjesën tjetër. */

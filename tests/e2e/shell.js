@@ -1,11 +1,12 @@
 /** Notifications, admin link, theme controls, sidebar. PHASE=1 then promote, PHASE=2. */
 const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.join(__dirname, "..", "..");
 
 const BASE = process.env.BASE || "http://localhost:3100";
 const PHASE = process.env.PHASE || "1";
 const STATE = path.join(__dirname, ".shell-state.json");
-const path = require("path");
-const ROOT = path.join(__dirname, "..", "..");
 const ENV = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
 const URL = /NEXT_PUBLIC_SUPABASE_URL=(.+)/.exec(ENV)[1].trim();
 const ANON = /NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/.exec(ENV)[1].trim();

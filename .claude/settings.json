@@ -91,7 +91,17 @@
       "Bash(git -c user.name=\"Aldi Poshnjari\" -c user.email=\"aldiposhnjari@gmail.com\" commit -q -F -)",
       "Bash(xargs -I{} echo \"  branch: {}\")",
       "Bash(xargs -I{} echo \"  tracked files: {}\")",
-      "Bash(xargs -I{} echo \"  tracked: {} files\")"
+      "Bash(xargs -I{} echo \"  tracked: {} files\")",
+      "Bash(git -c 'user.name=Aldi Poshnjari' -c user.email=aldiposhnjari@gmail.com commit -q -m ' *)",
+      "Bash(xargs -I{} echo \"  uncommitted changes: {}\")",
+      "Bash(npm ls *)",
+      "Bash(sed -i 's|require\\(\"../.build/email.js\"\\)|require\\(\"../.build/email-templates.js\"\\)|' tests/unit/email.test.js)",
+      "Bash(node tests/unit/email.test.js)",
+      "Bash(PHASE=1 node tests/e2e/admin.js)",
+      "Bash(PHASE=2 node tests/e2e/admin.js)",
+      "Bash(node tests/e2e/main.js)",
+      "Bash(node tests/e2e/features.js)",
+      "Bash(PHASE=1 node tests/e2e/shell.js)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

@@ -5,12 +5,13 @@
  * PHASE=2  (after B is promoted via SQL) prove B does, and that suspension works
  */
 const fs = require("fs");
+const path = require("path");
+
+const ROOT = path.join(__dirname, "..", "..");
 
 const BASE = process.env.BASE || "http://localhost:3100";
 const PHASE = process.env.PHASE || "1";
 const STATE = path.join(__dirname, ".admin-state.json");
-const path = require("path");
-const ROOT = path.join(__dirname, "..", "..");
 const ENV = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
 const SUPABASE_URL = /NEXT_PUBLIC_SUPABASE_URL=(.+)/.exec(ENV)[1].trim();
 const ANON = /NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/.exec(ENV)[1].trim();
@@ -100,7 +101,7 @@ const PW = "TestPass123!";
       sunday: null,
     };
     const created = await callAction("/setup", "createBusiness",
-      [{ name: "Admin Test Berberi", slug: state.slug, phone: "069 123 4567", workingHours: hours }], cookieA);
+      [{ name: "Admin Test Berberi", slug: state.slug, phone: "069 111 2233", workingHours: hours }], cookieA);
     check("business created", created.status === 303, `status=${created.status}`);
 
     await callAction("/services", "createService",
@@ -122,7 +123,7 @@ const PW = "TestPass123!";
     const booked = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_booking`, {
       method: "POST", headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
       body: JSON.stringify({ p_slug: state.slug, p_service_id: state.serviceId,
-        p_customer_name: "Ana Hoxha", p_customer_phone: "069 123 4567", p_start_time: state.startIso }),
+        p_customer_name: "Ana Hoxha", p_customer_phone: "068 777 8899", p_start_time: state.startIso }),
     }).then((r) => r.json());
     check("booking created", booked.ok === true, JSON.stringify(booked).slice(0, 160));
 
@@ -213,8 +214,10 @@ const PW = "TestPass123!";
   check("shows business name", detailHtml.includes("Admin Test Berberi"));
   check("shows the service", detailHtml.includes("Prerje flokesh"));
   check("shows recent bookings", detailHtml.includes("Ana Hoxha"));
-  check("does NOT leak customer phone", !detailHtml.includes("069 123 4567")
-    || !detailHtml.includes("Rezervimet e fundit"), "customer phone must not appear in booking list");
+  // distinct numbers: the business phone MAY show, the customer's may never
+  check("business phone is shown to the admin", detailHtml.includes("069 111 2233"));
+  check("customer phone is NOT leaked", !detailHtml.includes("068 777 8899"),
+    "a customer number reached the admin page");
   check("suspend control present", detailHtml.includes("Pezullo biznesin"));
 
   console.log("\n=== 10. Suspension takes the public page offline ===");
@@ -226,6 +229,8 @@ const PW = "TestPass123!";
     [{ businessId: row.business_id, suspended: true, reason: "test suspension" }], cookieB);
   check("suspend action succeeds", susp.status === 200 && !susp.text.includes("Nuk keni leje"),
     susp.text.slice(0, 160));
+  check("owner was targeted for the suspension email", susp.text.includes(state.ownerEmail),
+    "action did not report an email recipient");
 
   const pubAfter = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_business`, {
     method: "POST", headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:unit": "tsc src/lib/availability.ts src/lib/calendar.ts src/lib/phone.ts src/lib/slug.ts --outDir tests/.build --module commonjs --target es2020 --moduleResolution node --esModuleInterop --skipLibCheck && node tests/unit/availability.test.js && node tests/unit/calendar.test.js && node tests/unit/rules.test.js",
+    "test:unit": "tsc src/lib/availability.ts src/lib/calendar.ts src/lib/phone.ts src/lib/slug.ts src/lib/email-templates.ts --outDir tests/.build --module commonjs --target es2020 --moduleResolution node --esModuleInterop --skipLibCheck && node tests/unit/availability.test.js && node tests/unit/calendar.test.js && node tests/unit/rules.test.js && node tests/unit/email.test.js",
     "test:e2e": "./tests/run-e2e.sh"
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "next": "14.2.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "server-only": "^0.0.1",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
