@@ -86,9 +86,9 @@ export function CalendarView({
   const noShows = bookings.filter((b) => b.status === "no_show").length;
 
   return (
-    <div className="space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* ------------------------------------------------------------ toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-xl border border-border bg-background">
             <button
@@ -140,14 +140,14 @@ export function CalendarView({
       </div>
 
       {/* --------------------------------------------------------- statistika */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid shrink-0 grid-cols-3 gap-3">
         <Stat label="Rezervime" value={active.length} />
         <Stat label="Të ardhura" value={formatMoney(revenue)} />
         <Stat label="Nuk erdhën" value={noShows} tone={noShows ? "warning" : "default"} />
       </div>
 
       {/* --------------------------------------------------------------- pamja */}
-      <div className={cn("transition-opacity", pending && "opacity-60")}>
+      <div className={cn("flex min-h-0 flex-1 flex-col transition-opacity", pending && "opacity-60")}>
         {view === "month" ? (
           <MonthView
             date={date}
@@ -231,9 +231,9 @@ function MonthView({
   const month = startOfMonth(date);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
       {/* kokat e ditëve */}
-      <div className="grid grid-cols-7 border-b border-border bg-muted/40">
+      <div className="grid shrink-0 grid-cols-7 border-b border-border bg-muted/40">
         {DAY_KEYS.map((key) => (
           <div
             key={key}
@@ -244,7 +244,10 @@ function MonthView({
         ))}
       </div>
 
-      <div className="grid grid-cols-7">
+      {/* Rreshtat ndajnë njësoj lartësinë që mbetet; nën `min-h` ndalen së
+          ngjeshuri dhe muaji rrëshqet brenda kartelës. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+        <div className="grid flex-1 auto-rows-[minmax(84px,1fr)] grid-cols-7 sm:auto-rows-[minmax(96px,1fr)]">
         {grid.map((day, index) => {
           const dayBookings = (byDate.get(day) ?? []).filter((b) => b.status !== "cancelled");
           const outside = !isSameMonth(day, month);
@@ -256,7 +259,7 @@ function MonthView({
             <div
               key={day}
               className={cn(
-                "min-h-[84px] border-b border-r border-border p-1.5 sm:min-h-[112px]",
+                "border-b border-r border-border p-1.5",
                 index % 7 === 6 && "border-r-0",
                 index >= grid.length - 7 && "border-b-0",
                 outside && "bg-muted/30",
@@ -309,6 +312,7 @@ function MonthView({
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );
@@ -355,18 +359,22 @@ function TimeGrid({
     [workingHours, bookings, dates],
   );
 
-  const hourPx = HOUR_PX[variant];
   const totalMin = endMin - startMin;
-  const height = (totalMin / 60) * hourPx;
   const hours = Array.from({ length: Math.floor(totalMin / 60) + 1 }, (_, i) => startMin + i * 60);
+
+  // Rrjeta pozicionohet me PËRQINDJE, jo me pixel-a fiksë: kështu shtrihet e
+  // mbush lartësinë që i mbetet faqes. `minHeight` e ndal së ngjeshuri kur
+  // ekrani është i shkurtër — atëherë brendia rrëshqet brenda kartelës.
+  const minHeight = (totalMin / 60) * HOUR_PX[variant];
+  const pct = (minute: number) => ((minute - startMin) / totalMin) * 100;
 
   const isEmpty = bookings.filter((b) => b.status !== "cancelled").length === 0;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
       {/* kokat e ditëve (vetëm java) */}
       {variant === "week" && (
-        <div className="flex border-b border-border bg-muted/40">
+        <div className="flex shrink-0 border-b border-border bg-muted/40">
           <div className="w-12 shrink-0 sm:w-14" />
           <div className="grid flex-1 grid-cols-7">
             {dates.map((day) => {
@@ -402,7 +410,7 @@ function TimeGrid({
       )}
 
       {isEmpty && variant === "day" ? (
-        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
           <CalendarX2 className="mb-3 h-8 w-8 text-muted-foreground" />
           <p className="font-medium">Asnjë rezervim këtë ditë</p>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">
@@ -410,35 +418,33 @@ function TimeGrid({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <div className={cn("flex", variant === "week" && "min-w-[640px]")}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto py-3">
+          <div
+            className={cn("flex flex-1", variant === "week" && "min-w-[640px]")}
+            style={{ minHeight }}
+          >
             {/* boshti i orëve */}
-            <div className="w-12 shrink-0 sm:w-14" style={{ height }}>
-              {hours.map((minute, i) => (
-                <div
+            <div className="relative w-12 shrink-0 sm:w-14">
+              {hours.map((minute) => (
+                <span
                   key={minute}
-                  className="relative"
-                  style={{ height: i === hours.length - 1 ? 0 : hourPx }}
+                  className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-muted-foreground"
+                  style={{ top: `${pct(minute)}%` }}
                 >
-                  <span className="absolute -top-2 right-2 text-[11px] tabular-nums text-muted-foreground">
-                    {String(Math.floor(minute / 60)).padStart(2, "0")}:00
-                  </span>
-                </div>
+                  {String(Math.floor(minute / 60)).padStart(2, "0")}:00
+                </span>
               ))}
             </div>
 
             {/* kolonat e ditëve */}
-            <div
-              className={cn("relative flex-1", variant === "week" ? "grid grid-cols-7" : "flex")}
-              style={{ height }}
-            >
+            <div className={cn("relative flex-1", variant === "week" ? "grid grid-cols-7" : "flex")}>
               {/* vijat e orëve */}
               <div className="pointer-events-none absolute inset-0">
-                {hours.map((minute, i) => (
+                {hours.map((minute) => (
                   <div
                     key={minute}
                     className="absolute inset-x-0 border-t border-border"
-                    style={{ top: (i * hourPx) }}
+                    style={{ top: `${pct(minute)}%` }}
                   />
                 ))}
               </div>
@@ -460,17 +466,17 @@ function TimeGrid({
                     {mounted && isToday && nowMin >= startMin && nowMin <= endMin && (
                       <div
                         className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-red-500"
-                        style={{ top: ((nowMin - startMin) / 60) * hourPx }}
+                        style={{ top: `${pct(nowMin)}%` }}
                       >
                         <span className="absolute -left-1 -top-[5px] h-2 w-2 rounded-full bg-red-500" />
                       </div>
                     )}
 
                     {positioned.map(({ booking, startMin: s, endMin: e, lane, lanes }) => {
-                      const top = ((s - startMin) / 60) * hourPx;
-                      const rawHeight = ((e - s) / 60) * hourPx;
-                      const blockHeight = Math.max(rawHeight - 2, 18);
-                      const compact = blockHeight < 40;
+                      // Emri i shërbimit hiqet te rezervimet e shkurtra. Matet me
+                      // kohëzgjatjen, jo me pixel-a: blloku shtrihet bashkë me
+                      // rrjetën, ndaj lartësia e tij nuk dihet paraprakisht.
+                      const compact = e - s < 40;
 
                       return (
                         <button
@@ -482,8 +488,9 @@ function TimeGrid({
                             STATUS_BLOCK[booking.status],
                           )}
                           style={{
-                            top,
-                            height: blockHeight,
+                            top: `${pct(s)}%`,
+                            height: `calc(${((e - s) / totalMin) * 100}% - 2px)`,
+                            minHeight: 18,
                             left: `calc(${(lane / lanes) * 100}% + 2px)`,
                             width: `calc(${100 / lanes}% - 4px)`,
                           }}
@@ -513,7 +520,7 @@ function TimeGrid({
       )}
 
       {/* legjenda */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5">
         {(
           [
             ["confirmed", "Konfirmuar"],

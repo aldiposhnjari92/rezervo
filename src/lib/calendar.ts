@@ -163,6 +163,11 @@ function parseHhMm(value: string | undefined): number | null {
  * për të përfshirë çdo rezervim (edhe ato jashtë orarit, p.sh. pas ndryshimit
  * të orarit). Rrumbullakoset në orë të plota.
  */
+const DAY_MIN = 24 * 60;
+
+/** Sa orë duhen parë të paktën, që rrjeta e shtrirë të mos dalë e zbrazët. */
+const MIN_WINDOW_MIN = 8 * 60;
+
 export function visibleHourRange(
   workingHours: WorkingHours | null,
   bookings: BookingWithService[],
@@ -193,10 +198,21 @@ export function visibleHourRange(
     return { startMin: 8 * 60, endMin: 20 * 60 };
   }
 
-  return {
-    startMin: Math.max(0, Math.floor(start / 60) * 60),
-    endMin: Math.min(24 * 60, Math.ceil(end / 60) * 60),
-  };
+  let startMin = Math.max(0, Math.floor(start / 60) * 60);
+  let endMin = Math.min(DAY_MIN, Math.ceil(end / 60) * 60);
+
+  // Një ditë e mbyllur me dy rezervime jepte një dritare prej dy orësh. Rrjeta
+  // tani shtrihet sa gjithë lartësia e faqes, ndaj ajo dritare do të bëhej dy
+  // orë të gjata sa gjysmë ekrani. Nën minimumin, dritarja zgjerohet në të dyja
+  // anët: mban brendinë në qendër dhe jep kontekstin e orëve përreth.
+  if (endMin - startMin < MIN_WINDOW_MIN) {
+    const missing = MIN_WINDOW_MIN - (endMin - startMin);
+    startMin = Math.max(0, startMin - Math.floor(missing / 120) * 60);
+    endMin = Math.min(DAY_MIN, startMin + MIN_WINDOW_MIN);
+    startMin = Math.max(0, endMin - MIN_WINDOW_MIN);
+  }
+
+  return { startMin, endMin };
 }
 
 export type PositionedBooking = {

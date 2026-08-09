@@ -130,6 +130,15 @@ eq("expands to include early booking",
    c.visibleHourRange(HOURS, [mk("x","2026-08-10T05:00:00Z","2026-08-10T05:30:00Z")], ["2026-08-10"]),
    { startMin: 420, endMin: 1080 });
 eq("null working hours -> fallback", c.visibleHourRange(null, [], ["2026-08-10"]), { startMin: 480, endMin: 1200 });
+// Dritarja e ngushtë zgjerohet: rrjeta shtrihet sa faqja, ndaj dy orë do të
+// dilnin qesharakisht të gjata. E kaluara: e diel e mbyllur me dy rezervime.
+eq("narrow window widens to 8h",
+   c.visibleHourRange(HOURS, [mk("x", "2026-08-09T09:00:00Z", "2026-08-09T10:30:00Z")], ["2026-08-09"]),
+   { startMin: 480, endMin: 960 });
+// Afër mesnatës nuk mund të zgjerohet poshtë, ndaj e gjithë hapësira merret sipër.
+eq("late window clamps at midnight",
+   c.visibleHourRange(null, [mk("y", "2026-08-10T20:00:00Z", "2026-08-10T21:00:00Z")], ["2026-08-10"]),
+   { startMin: 960, endMin: 1440 });
 
 console.log(`\n${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

@@ -166,7 +166,11 @@ export function OwnerShell({
           </div>
         </header>
 
-        <main className="px-4 pb-28 pt-5 lg:px-8 lg:pb-10 lg:pt-8">{children}</main>
+        {/* Kolonë fleksi me lartësi të plotë: faqet që duan gjithë ekranin (kalendari)
+            marrin `flex-1`; të tjerat rrinë në lartësinë e tyre natyrale. */}
+        <main className="flex min-h-[calc(100dvh-3.5rem)] flex-col px-4 pb-28 pt-5 lg:min-h-[calc(100dvh-4rem)] lg:px-8 lg:pb-10 lg:pt-8">
+          {children}
+        </main>
       </div>
 
       <BottomNav />
