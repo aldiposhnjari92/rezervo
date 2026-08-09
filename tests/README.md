@@ -10,10 +10,10 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `unit/rules.test.js` | 26 | buffer, pushimi, mbylljet, njoftimi, dritarja |
 | `unit/email.test.js` | 18 | email-i i pezullimit: me/pa arsye, ikja e HTML-së |
 | `unit/email-provider.test.js` | 12 | zgjedhja e provider-it dhe parsimi i EMAIL_FROM |
-| `e2e/main.js` | 67 | rrjedha e plotë: regjistrim → dyqan → rezervim → kalendar |
-| `e2e/features.js` | 59 | rregullat, mbylljet, walk-in-et, paneli, klientët |
+| `e2e/main.js` | 69 | rrjedha e plotë: regjistrim → dyqan → rezervim → kalendar |
+| `e2e/features.js` | 62 | rregullat, mbylljet, walk-in-et, paneli, klientët |
 | `e2e/admin.js` | 68 | të drejtat e adminit, pezullimi/riaktivizimi + njoftimet, fshirja |
-| `e2e/shell.js` | 26 | njoftimet, tema, shtylla anësore, linku i adminit |
+| `e2e/shell.js` | 32 | njoftimet, tema, shtylla anësore, linku i adminit |
 | `e2e/realtime.js` | 11 | njoftimet live mbërrijnë vërtet, dhe vetëm te pronari i duhur |
 | `e2e/security.js` | 50 | sulme: IDOR, eskalim privilegjesh, rrjedhje të dhënash, koka HTTP |
 
@@ -108,3 +108,12 @@ delete from auth.users where email like 'rezervo.%@gmail.com';
 ```
 
 > Mos i drejto këto teste kundër një baze me klientë realë.
+
+---
+
+## Numrat e telefonit të klientëve
+
+Testet nuk përdorin numra fiksë për klientët. `create_booking()` ka kufi prej 10
+përpjekjesh/orë **për numër**, ndaj numra fiksë do ta ngopnin kuotën vetë suita
+pas disa drejtimesh dhe testet do të dështonin pa asnjë defekt në aplikacion.
+Çdo suitë ndërton numrat me `custPhone(n)` nga stampa e kohës së drejtimit.

@@ -40,6 +40,16 @@ const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
   const stamp = Date.now();
+  /**
+   * Numër i freskët klienti për çdo drejtim testesh.
+   *
+   * Kufizuesi i shpejtësisë numëron PËR NUMËR (10 përpjekje/orë). Me numra fiksë
+   * në kod, vetë suita e ngop kuotën pas disa drejtimesh dhe fillon të dështojë
+   * pa pasur asnjë defekt në aplikacion. Stampa e kohës e mban çdo drejtim në
+   * kovën e vet, ndërsa `n` i mban klientët të dallueshëm brenda një drejtimi.
+   */
+  const custPhone = (n) => "069" + String(stamp).slice(-6) + n;
+
   const email = `rezervo.rt.${stamp}@gmail.com`;
   const slug = `rt-berber-${stamp}`;
 
@@ -104,7 +114,7 @@ const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   const booked = await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_booking`, { method: "POST",
     headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
     body: JSON.stringify({ p_slug: slug, p_service_id: serviceId, p_customer_name: "Ana Hoxha",
-      p_customer_phone: "069 123 4567", p_start_time: startIso }) }).then((r) => r.json());
+      p_customer_phone: custPhone(1), p_start_time: startIso }) }).then((r) => r.json());
   check("booking created", booked.ok === true, JSON.stringify(booked).slice(0, 140));
 
   for (let i = 0; i < 40 && received.length === 0; i++) await waitFor(250);
@@ -122,7 +132,7 @@ const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_booking`, { method: "POST",
     headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
     body: JSON.stringify({ p_slug: slug, p_service_id: serviceId, p_customer_name: "Beni Shala",
-      p_customer_phone: "0681112223",
+      p_customer_phone: custPhone(2),
       p_start_time: new Date(new Date(startIso).getTime() + 3600e3).toISOString() }) })
     .then((r) => r.json());
 
@@ -160,7 +170,7 @@ const waitFor = (ms) => new Promise((r) => setTimeout(r, ms));
   await fetch(`${SUPABASE_URL}/rest/v1/rpc/create_booking`, { method: "POST",
     headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "Content-Type": "application/json" },
     body: JSON.stringify({ p_slug: slug, p_service_id: serviceId, p_customer_name: "Dora Leka",
-      p_customer_phone: "0671112223",
+      p_customer_phone: custPhone(3),
       p_start_time: new Date(new Date(startIso).getTime() + 7200e3).toISOString() }) })
     .then((r) => r.json());
 

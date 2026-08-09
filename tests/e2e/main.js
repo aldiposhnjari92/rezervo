@@ -66,6 +66,16 @@ const sb = (fnName, body) =>
 
 (async () => {
   const stamp = Date.now();
+  /**
+   * Numër i freskët klienti për çdo drejtim testesh.
+   *
+   * Kufizuesi i shpejtësisë numëron PËR NUMËR (10 përpjekje/orë). Me numra fiksë
+   * në kod, vetë suita e ngop kuotën pas disa drejtimesh dhe fillon të dështojë
+   * pa pasur asnjë defekt në aplikacion. Stampa e kohës e mban çdo drejtim në
+   * kovën e vet, ndërsa `n` i mban klientët të dallueshëm brenda një drejtimi.
+   */
+  const custPhone = (n) => "069" + String(stamp).slice(-6) + n;
+
   const email = `rezervo.e2e.${stamp}@gmail.com`;
   const password = "TestPass123!";
   const slug = `e2e-berber-${stamp}`;
@@ -215,14 +225,14 @@ const sb = (fnName, body) =>
 
   let booked = await sb("create_booking", {
     p_slug: slug, p_service_id: svc30.id, p_customer_name: "Ana Hoxha",
-    p_customer_phone: "069 123 4567", p_start_time: startIso,
+    p_customer_phone: custPhone(1), p_start_time: startIso,
   });
   check("booking created", booked && booked.ok === true, JSON.stringify(booked).slice(0, 200));
   check("phone normalized in response flow", booked.ok === true);
 
   const dup = await sb("create_booking", {
     p_slug: slug, p_service_id: svc30.id, p_customer_name: "Beni Shala",
-    p_customer_phone: "0681112223", p_start_time: startIso,
+    p_customer_phone: custPhone(2), p_start_time: startIso,
   });
   check("double booking blocked", dup.ok === false && dup.error.includes("sapo u zu"),
     JSON.stringify(dup).slice(0, 200));
@@ -231,7 +241,7 @@ const sb = (fnName, body) =>
   sunday.setUTCDate(sunday.getUTCDate() + 6);
   const closed = await sb("create_booking", {
     p_slug: slug, p_service_id: svc30.id, p_customer_name: "Test Diel",
-    p_customer_phone: "0691110000", p_start_time: sunday.toISOString(),
+    p_customer_phone: custPhone(3), p_start_time: sunday.toISOString(),
   });
   check("Sunday (closed) rejected", closed.ok === false && closed.error.includes("mbyllur"),
     JSON.stringify(closed).slice(0, 160));
@@ -280,20 +290,27 @@ const sb = (fnName, body) =>
     check("cancel booking", r.status === 200);
     const free = await sb("create_booking", {
       p_slug: slug, p_service_id: svc30.id, p_customer_name: "Dora Leka",
-      p_customer_phone: "0691119999", p_start_time: startIso,
+      p_customer_phone: custPhone(4), p_start_time: startIso,
     });
     check("cancelling frees the slot", free.ok === true, JSON.stringify(free).slice(0, 160));
   }
 
   console.log("\n=== 11. Settings ===");
   {
+    // Faqja është e ndarë në skeda; secila skedë është një URL më vete.
     const r = await get("/settings");
     const html = norm(await r.text());
-    check("/settings 200", r.status === 200);
+    check("/settings 200", r.status === 200, `status=${r.status}`);
     check("public link shown", html.includes(slug));
-    check("working hours editor rendered", html.includes("Orari i punës"));
+    check("all four tabs linked", ["biznesi","orari","rregullat","llogaria"]
+      .every((t) => html.includes(`/settings?tab=${t}`)));
+
+    const rh = await get("/settings?tab=orari");
+    const hours = norm(await rh.text());
+    check("hours tab 200", rh.status === 200, `status=${rh.status}`);
+    check("working hours editor rendered", hours.includes("Orari i punës"));
     check("all 7 days present", ["E hënë","E martë","E mërkurë","E enjte","E premte","E shtunë","E diel"]
-      .every((d) => html.includes(d)));
+      .every((d) => hours.includes(d)));
   }
   {
     const r = await callAction("/settings", "updateBusiness", [{

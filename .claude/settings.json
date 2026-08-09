@@ -110,7 +110,19 @@
       "Bash(node -e \"require\\('./tests/e2e/admin.js'\\)\")",
       "Bash(node tests/e2e/security.js)",
       "Bash(node tests/e2e/realtime.js)",
-      "Bash(git -c user.name=\"Aldi Poshnjari\" -c user.email=\"aldiposhnjari@gmail.com\" commit -q --amend --no-edit)"
+      "Bash(git -c user.name=\"Aldi Poshnjari\" -c user.email=\"aldiposhnjari@gmail.com\" commit -q --amend --no-edit)",
+      "Bash(NEXT_DIST_DIR=.next-test npx next build)",
+      "Bash(node tests/unit/availability.test.js)",
+      "Bash(./tests/run-e2e.sh)",
+      "Bash(NEXT_DIST_DIR=.next-test PORT=3100 npx next start -p 3100)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3100/settings)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3100/dashboard)",
+      "Bash(fuser -k 3100/tcp)",
+      "Bash(NEXT_DIST_DIR=.next-test npx next start -p 3100)",
+      "Bash(curl -s -i http://localhost:3100/settings)",
+      "Bash(BASE=http://localhost:3100 PHASE=2 node tests/e2e/admin.js)",
+      "Bash(BASE=http://localhost:3100 PHASE=2 node tests/e2e/shell.js)",
+      "Bash(BASE=http://localhost:3100 node tests/e2e/features.js)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

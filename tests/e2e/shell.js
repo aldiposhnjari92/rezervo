@@ -50,6 +50,16 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
 (async () => {
   if (PHASE === "1") {
     const stamp = Date.now();
+    /**
+     * Numër i freskët klienti për çdo drejtim testesh.
+     *
+     * Kufizuesi i shpejtësisë numëron PËR NUMËR (10 përpjekje/orë). Me numra fiksë
+     * në kod, vetë suita e ngop kuotën pas disa drejtimesh dhe fillon të dështojë
+     * pa pasur asnjë defekt në aplikacion. Stampa e kohës e mban çdo drejtim në
+     * kovën e vet, ndërsa `n` i mban klientët të dallueshëm brenda një drejtimi.
+     */
+    const custPhone = (n) => "069" + String(stamp).slice(-6) + n;
+
     const state = { email: `rezervo.shell.${stamp}@gmail.com`, other: `rezervo.shell.other.${stamp}@gmail.com`,
       slug: `shell-berber-${stamp}` };
 
@@ -80,7 +90,7 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
     const at = (h) => new Date(`${day}T${String(h - 2).padStart(2, "0")}:00:00Z`).toISOString();
 
     const booked = await rpc("create_booking", { p_slug: state.slug, p_service_id: svc,
-      p_customer_name: "Ana Hoxha", p_customer_phone: "069 123 4567", p_start_time: at(10) });
+      p_customer_name: "Ana Hoxha", p_customer_phone: custPhone(1), p_start_time: at(10) });
     check("booking created", booked.body.ok === true, JSON.stringify(booked.body).slice(0, 120));
     state.bookingId = booked.body.booking.id;
 
@@ -153,7 +163,7 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
   }
 
   // the three-way control (incl. "Sistemi") lives in settings, not the header
-  const settings = norm(await (await get("/settings")).text());
+  const settings = norm(await (await get("/settings?tab=llogaria")).text());
   check("full theme control in settings", settings.includes("Sistemi") && settings.includes("E errët"));
   check("settings explains what Sistemi does", settings.includes("ndjek rregullimin"));
 

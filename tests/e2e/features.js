@@ -43,6 +43,16 @@ const PW = "TestPass123!";
 
 (async () => {
   const stamp = Date.now();
+  /**
+   * Numër i freskët klienti për çdo drejtim testesh.
+   *
+   * Kufizuesi i shpejtësisë numëron PËR NUMËR (10 përpjekje/orë). Me numra fiksë
+   * në kod, vetë suita e ngop kuotën pas disa drejtimesh dhe fillon të dështojë
+   * pa pasur asnjë defekt në aplikacion. Stampa e kohës e mban çdo drejtim në
+   * kovën e vet, ndërsa `n` i mban klientët të dallueshëm brenda një drejtimi.
+   */
+  const custPhone = (n) => "069" + String(stamp).slice(-6) + n;
+
   const email = `rezervo.feat.${stamp}@gmail.com`;
   const slug = `feat-berber-${stamp}`;
 
@@ -91,23 +101,23 @@ const PW = "TestPass123!";
   check("break exposed", pub2.body.break_start === "13:00" && pub2.body.break_end === "14:00");
 
   const onBreak = await rpc("create_booking", { p_slug: slug, p_service_id: svc,
-    p_customer_name: "Test Pushim", p_customer_phone: "0691110000", p_start_time: at(13) });
+    p_customer_name: "Test Pushim", p_customer_phone: custPhone(1), p_start_time: at(13) });
   check("booking during the break is refused",
     onBreak.body.ok === false && onBreak.body.error.includes("pushimin"),
     JSON.stringify(onBreak.body).slice(0, 140));
 
   const ok1 = await rpc("create_booking", { p_slug: slug, p_service_id: svc,
-    p_customer_name: "Ana Hoxha", p_customer_phone: "069 123 4567", p_start_time: at(10) });
+    p_customer_name: "Ana Hoxha", p_customer_phone: custPhone(2), p_start_time: at(10) });
   check("normal booking accepted", ok1.body.ok === true, JSON.stringify(ok1.body).slice(0, 140));
 
   // 10:00-10:30 + 15min buffer blocks a 10:30 start
   const tooClose = await rpc("create_booking", { p_slug: slug, p_service_id: svc,
-    p_customer_name: "Beni Shala", p_customer_phone: "0681112223", p_start_time: at(10, 30) });
+    p_customer_name: "Beni Shala", p_customer_phone: custPhone(3), p_start_time: at(10, 30) });
   check("buffer blocks the adjacent slot",
     tooClose.body.ok === false, JSON.stringify(tooClose.body).slice(0, 140));
 
   const farOk = await rpc("create_booking", { p_slug: slug, p_service_id: svc,
-    p_customer_name: "Dora Leka", p_customer_phone: "0671112223", p_start_time: at(11) });
+    p_customer_name: "Dora Leka", p_customer_phone: custPhone(4), p_start_time: at(11) });
   check("a slot beyond the buffer is accepted", farOk.body.ok === true,
     JSON.stringify(farOk.body).slice(0, 140));
 
@@ -122,7 +132,7 @@ const PW = "TestPass123!";
     JSON.stringify(pub3.body.closures).slice(0, 120));
 
   const onClosed = await rpc("create_booking", { p_slug: slug, p_service_id: svc,
-    p_customer_name: "Test Mbyllur", p_customer_phone: "0691114444", p_start_time: at(15) });
+    p_customer_name: "Test Mbyllur", p_customer_phone: custPhone(5), p_start_time: at(15) });
   check("booking on a closed day refused",
     onClosed.body.ok === false && onClosed.body.error.includes("mbyllur"),
     JSON.stringify(onClosed.body).slice(0, 140));
@@ -183,15 +193,22 @@ const PW = "TestPass123!";
   check("/customers renders", cpage.status === 200);
   check("lists a customer", chtml.includes("Ana Hoxha"));
   check("sort filters present", chtml.includes("Më besnikët"));
+  check("summary tiles present", ["Klientë", "Kthehen sërish", "Me mosardhje"].every((t) => chtml.includes(t)));
+  check("table columns present", ["Klienti", "Vizita", "Erdhi", "Nuk erdhi", "Shpenzuar", "Vizita e fundit"]
+    .every((c) => chtml.includes(c)));
 
   console.log("\n=== 8. Settings page shows the new controls ===");
-  const spage = await get("/settings");
+  const spage = await get("/settings?tab=rregullat");
   const shtml = norm(await spage.text());
-  check("/settings renders", spage.status === 200);
+  check("/settings renders", spage.status === 200, `status=${spage.status}`);
   check("booking rules section", shtml.includes("Rregullat e rezervimit"));
   check("closed days section", shtml.includes("Ditë të mbyllura"));
   check("shows the saved closure", shtml.includes("Festë"));
-  check("account link present", shtml.includes("Llogaria ime"));
+
+  const apage = await get("/settings?tab=llogaria");
+  const ahtml = norm(await apage.text());
+  check("account tab renders", apage.status === 200, `status=${apage.status}`);
+  check("account link present", ahtml.includes("Llogaria ime"));
 
   console.log("\n=== 9. Removing a closure frees the day ===");
   const list = await fetch(`${URL}/rest/v1/business_closures?select=id,closed_on`, {
