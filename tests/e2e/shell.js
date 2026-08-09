@@ -119,10 +119,12 @@ const signIn = (e) => fetch(`${URL}/auth/v1/token?grant_type=password`, { method
     const theirs = await rest(`notifications?select=id,title`, state.otherToken);
     check("other owner sees none", Array.isArray(theirs) && theirs.length === 0,
       JSON.stringify(theirs).slice(0, 160));
-    const anonRead = await fetch(`${URL}/rest/v1/notifications?select=id`,
-      { headers: { apikey: ANON, Authorization: `Bearer ${ANON}` } }).then(r => r.json());
-    check("anon sees none", Array.isArray(anonRead) && anonRead.length === 0,
-      JSON.stringify(anonRead).slice(0, 160));
+    // anon-it i janë hequr grant-et fare, ndaj pret 401 — jo një listë bosh.
+    const anonRes = await fetch(`${URL}/rest/v1/notifications?select=id`,
+      { headers: { apikey: ANON, Authorization: `Bearer ${ANON}` } });
+    const anonBody = await anonRes.text();
+    check("anon sees none", !anonRes.ok || anonBody === "[]",
+      `status=${anonRes.status} body=${anonBody.slice(0, 120)}`);
     const otherMark = await rpc("mark_notifications_read", {}, state.otherToken);
     check("other owner's mark-read cannot touch mine", otherMark.status >= 400 || otherMark.body === 0,
       JSON.stringify(otherMark.body).slice(0, 120));

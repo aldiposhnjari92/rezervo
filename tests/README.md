@@ -15,6 +15,7 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `e2e/admin.js` | 68 | të drejtat e adminit, pezullimi/riaktivizimi + njoftimet, fshirja |
 | `e2e/shell.js` | 26 | njoftimet, tema, shtylla anësore, linku i adminit |
 | `e2e/realtime.js` | 11 | njoftimet live mbërrijnë vërtet, dhe vetëm te pronari i duhur |
+| `e2e/security.js` | 50 | sulme: IDOR, eskalim privilegjesh, rrjedhje të dhënash, koka HTTP |
 
 ---
 

@@ -23,6 +23,9 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
 import { deleteMyAccount } from "@/lib/admin-actions";
 
+/** I njëjti minimum si te regjistrimi. */
+const MIN_PASSWORD = 8;
+
 /** Fjala që duhet shkruar për të konfirmuar fshirjen. */
 const CONFIRM_WORD = "FSHIJ";
 
@@ -79,8 +82,8 @@ export function AccountForm({
   }
 
   async function changePassword() {
-    if (password.length < 6) {
-      toast.error("Fjalëkalimi duhet të ketë të paktën 6 karaktere.");
+    if (password.length < MIN_PASSWORD) {
+      toast.error(`Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`);
       return;
     }
     if (password !== passwordAgain) {
@@ -198,7 +201,7 @@ export function AccountForm({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Fjalëkalimi</CardTitle>
-          <CardDescription>Të paktën 6 karaktere.</CardDescription>
+          <CardDescription>Të paktën {MIN_PASSWORD} karaktere.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

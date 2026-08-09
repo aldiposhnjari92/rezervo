@@ -16,8 +16,87 @@ const PROTECTED_PREFIXES = [
   "/admin",
 ];
 
+const SUPABASE_ORIGIN = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const SUPABASE_WS = SUPABASE_ORIGIN.replace(/^https:/, "wss:");
+
+/**
+ * Content-Security-Policy me nonce të ri për çdo kërkesë.
+ *
+ * `strict-dynamic` do të thotë: beso vetëm skriptet që mbajnë këtë nonce, dhe ato
+ * që ngarkojnë ato vetë. Kështu, edhe nëse dikush arrin të fusë një `<script>` në
+ * faqe, shfletuesi nuk e ekzekuton — nuk e ka nonce-in e kësaj kërkese.
+ *
+ * `style-src` mban 'unsafe-inline': next/font injekton stile inline dhe nonce-t
+ * mbi stile nuk mbulohen mirë nga shfletuesit. Rreziku është shumë më i vogël se
+ * te skriptet.
+ */
+function contentSecurityPolicy(nonce: string, isDev: boolean): string {
+  return [
+    "default-src 'self'",
+    // 'unsafe-eval' i duhet vetëm HMR-së në zhvillim; në prodhim nuk lejohet.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    // Supabase: REST/Auth mbi https, realtime mbi websocket.
+    `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS}`,
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    isDev ? "" : "upgrade-insecure-requests",
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
+function withSecurityHeaders(response: NextResponse, nonce: string, isDev: boolean) {
+  response.headers.set("Content-Security-Policy", contentSecurityPolicy(nonce, isDev));
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  );
+  response.headers.set("X-DNS-Prefetch-Control", "off");
+
+  // HSTS vetëm në prodhim — te localhost do të detyronte https pa nevojë.
+  if (!isDev) {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=63072000; includeSubDomains; preload",
+    );
+  }
+
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  const isDev = process.env.NODE_ENV !== "production";
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+
+  // Nonce-i i kalohet renderimit përmes një header-i kërkese, që layout-i rrënjë
+  // ta vendosë te skripti inline i temës.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+
+  // Faqet publike nuk kanë nevojë për kontroll sesioni — do të ishte një thirrje
+  // e kotë drejt Supabase-it në çdo vizitë të faqes së rezervimit.
+  if (!isProtected && pathname !== "/login") {
+    return withSecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      nonce,
+      isDev,
+    );
+  }
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,12 +108,12 @@ export async function middleware(request: NextRequest) {
         },
         set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
+          response = NextResponse.next({ request: { headers: requestHeaders } });
           response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
+          response = NextResponse.next({ request: { headers: requestHeaders } });
           response.cookies.set({ name, value: "", ...options });
         },
       },
@@ -46,39 +125,27 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  const isProtected = PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    return withSecurityHeaders(NextResponse.redirect(url), nonce, isDev);
   }
 
   if (user && pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
-    return NextResponse.redirect(url);
+    return withSecurityHeaders(NextResponse.redirect(url), nonce, isDev);
   }
 
-  return response;
+  return withSecurityHeaders(response, nonce, isDev);
 }
 
 export const config = {
+  // Çdo rrugë përveç aseteve statike: header-at e sigurisë duhen kudo, jo vetëm
+  // te faqet e mbrojtura.
   matcher: [
-    "/dashboard/:path*",
-    "/calendar/:path*",
-    "/customers/:path*",
-    "/services/:path*",
-    "/settings/:path*",
-    "/setup/:path*",
-    "/account/:path*",
-    "/admin/:path*",
-    "/login",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2)$).*)",
   ],
 };

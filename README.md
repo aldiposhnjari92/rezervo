@@ -360,6 +360,14 @@ besohet kurrë.
 
 ## Siguria
 
+**Shih [`SECURITY.md`](SECURITY.md)** për pamjen e plotë: çfarë mbrohet, si e dimë,
+dhe çfarë mbetet për t'u ndezur te paneli i Supabase-it. Përmbledhje:
+
+- `anon` nuk ka asnjë të drejtë mbi asnjë tabelë; duhen dy shtresa (grant + policy)
+- CSP me nonce për çdo kërkesë, pa `unsafe-inline` te skriptet
+- kufizim shpejtësie brenda `create_booking()`, ku çelësi publik nuk e anashkalon dot
+- 50 kontrolle sigurie të shkruara si sulme, me llogari "viktimë" dhe "sulmues"
+
 Faqja publike nuk lexon tabela direkt. RLS i mbyll të tri tabelat për `anon`,
 dhe çdo veprim publik kalon nëpër një funksion `SECURITY DEFINER`:
 

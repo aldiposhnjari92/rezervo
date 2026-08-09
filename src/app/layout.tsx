@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter } from "next/font/google";
 import { THEME_SCRIPT, ThemeProvider, ThemedToaster } from "@/components/theme";
 
@@ -36,11 +37,15 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Nonce-i vjen nga middleware. Pa të, CSP-ja e bllokon skriptin e temës dhe
+  // faqja do të xixëllonte e bardhë para se të bëhej e errët.
+  const nonce = headers().get("x-nonce") ?? undefined;
+
   return (
     <html lang="sq" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Vendos temën para pikturimit të parë, që të mos xixëllojë e bardha. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-screen bg-background font-sans">
         <ThemeProvider>

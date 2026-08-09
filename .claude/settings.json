@@ -107,7 +107,9 @@
       "Bash(sed -i 's|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|withEnv\\({}, \\(m\\) => eq\\(\"pa çelës -> none\", m.activeProvider\\(\\) === \"none\"\\)\\);|' tests/unit/email-provider.test.js)",
       "Bash(xargs -I{} echo \"  unit suites passing: {}\")",
       "Bash(node -e 'console.log\\(require\\('\\\\''./__TRACKED_VAR__'\\\\''\\).email\\)')",
-      "Bash(node -e \"require\\('./tests/e2e/admin.js'\\)\")"
+      "Bash(node -e \"require\\('./tests/e2e/admin.js'\\)\")",
+      "Bash(node tests/e2e/security.js)",
+      "Bash(node tests/e2e/realtime.js)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

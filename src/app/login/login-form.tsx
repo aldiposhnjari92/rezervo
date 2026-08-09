@@ -12,16 +12,25 @@ import { createClient } from "@/lib/supabase/client";
 
 type Mode = "signin" | "signup";
 
+/**
+ * Kjo llogari mban numra telefoni klientësh. 6 karaktere ishin shumë pak.
+ * Kufiri i vërtetë vendoset te Supabase (Auth -> Policies); ky është vetëm
+ * kontrolli që i kursen përdoruesit një udhëtim te serveri.
+ */
+const MIN_PASSWORD = 8;
+
 /** Mesazhet e Supabase janë në anglisht — i përkthejmë ato që hasen realisht. */
 function translateAuthError(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login credentials")) return "Email-i ose fjalëkalimi është gabim.";
   if (m.includes("user already registered")) return "Ky email është i regjistruar. Provo të hysh.";
   if (m.includes("password should be at least"))
-    return "Fjalëkalimi duhet të ketë të paktën 6 karaktere.";
+    return "Fjalëkalimi është shumë i shkurtër.";
   if (m.includes("email not confirmed"))
     return "Konfirmo email-in tënd përpara se të hysh. Kontrollo inbox-in.";
   if (m.includes("unable to validate email")) return "Adresa e email-it nuk është e vlefshme.";
+  if (m.includes("pwned") || m.includes("compromised") || m.includes("breach"))
+    return "Ky fjalëkalim është parë në rrjedhje të dhënash. Zgjidh një tjetër.";
   if (m.includes("rate limit") || m.includes("too many"))
     return "Shumë përpjekje. Prit pak minuta dhe provo sërish.";
   return "Diçka shkoi keq. Provo sërish.";
@@ -85,8 +94,8 @@ export function LoginForm({
       toast.error("Plotëso email-in dhe fjalëkalimin.");
       return;
     }
-    if (isSignup && password.length < 6) {
-      toast.error("Fjalëkalimi duhet të ketë të paktën 6 karaktere.");
+    if (isSignup && password.length < MIN_PASSWORD) {
+      toast.error(`Fjalëkalimi duhet të ketë të paktën ${MIN_PASSWORD} karaktere.`);
       return;
     }
 
@@ -192,11 +201,11 @@ export function LoginForm({
               id="password"
               type="password"
               autoComplete={isSignup ? "new-password" : "current-password"}
-              placeholder={isSignup ? "Të paktën 6 karaktere" : "••••••••"}
+              placeholder={isSignup ? `Të paktën ${MIN_PASSWORD} karaktere` : "••••••••"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={isSignup ? MIN_PASSWORD : undefined}
               disabled={loading}
             />
           </div>
