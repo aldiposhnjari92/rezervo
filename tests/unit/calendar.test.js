@@ -59,10 +59,22 @@ eq("month +1",  c.stepDate("month", "2026-08-15", 1),  "2026-09-01");
 eq("month -1 across year", c.stepDate("month", "2026-01-15", -1), "2025-12-01");
 
 console.log("\n--- headingForView ---");
-eq("month heading", c.headingForView("month", "2026-08-15"), "Gusht 2026");
-eq("day heading",   c.headingForView("day",   "2026-08-08"), "8 Gusht 2026");
-eq("week same month",  c.headingForView("week", "2026-08-08"), "3 – 9 Gusht 2026");
-eq("week across months", c.headingForView("week", "2026-08-01"), "27 Korrik – 2 Gusht 2026");
+// Emrat e muajve i kalohen nga jashtë. Provohen të DYJA gjuhët: një listë e
+// ngurtë brenda modulit e linte titullin shqip edhe kur paneli ishte anglisht.
+const SQ = ["Janar","Shkurt","Mars","Prill","Maj","Qershor",
+            "Korrik","Gusht","Shtator","Tetor","Nëntor","Dhjetor"];
+const EN = ["January","February","March","April","May","June",
+            "July","August","September","October","November","December"];
+
+eq("month heading", c.headingForView("month", "2026-08-15", SQ), "Gusht 2026");
+eq("day heading",   c.headingForView("day",   "2026-08-08", SQ), "8 Gusht 2026");
+eq("week same month",  c.headingForView("week", "2026-08-08", SQ), "3 – 9 Gusht 2026");
+eq("week across months", c.headingForView("week", "2026-08-01", SQ), "27 Korrik – 2 Gusht 2026");
+
+eq("month heading (en)", c.headingForView("month", "2026-08-15", EN), "August 2026");
+eq("day heading (en)",   c.headingForView("day",   "2026-08-08", EN), "8 August 2026");
+eq("week same month (en)", c.headingForView("week", "2026-08-08", EN), "3 – 9 August 2026");
+eq("week across months (en)", c.headingForView("week", "2026-08-01", EN), "27 July – 2 August 2026");
 
 console.log("\n--- Tirane-local time extraction ---");
 // 08:00Z in August = 10:00 in Tirane (UTC+2)

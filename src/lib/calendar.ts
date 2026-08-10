@@ -1,17 +1,12 @@
 import { formatInTimeZone } from "date-fns-tz";
 
-import { addDaysToDate, MONTHS_SQ, TIMEZONE } from "./availability";
+import { addDaysToDate, TIMEZONE } from "./availability";
 import { DAY_KEYS, type BookingWithService, type DayKey, type WorkingHours } from "./types";
 
 export type CalendarView = "day" | "week" | "month";
 
 export const CALENDAR_VIEWS: CalendarView[] = ["month", "week", "day"];
 
-export const VIEW_LABELS_SQ: Record<CalendarView, string> = {
-  month: "Muaj",
-  week: "Javë",
-  day: "Ditë",
-};
 
 export function isCalendarView(value: unknown): value is CalendarView {
   return value === "day" || value === "week" || value === "month";
@@ -101,14 +96,22 @@ export function stepDate(view: CalendarView, date: string, delta: number): strin
 //  Etiketa
 // ---------------------------------------------------------------------------
 
-export function formatMonthYear(date: string): string {
-  const d = utcNoon(date);
-  return `${MONTHS_SQ[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
-
-/** Titulli mbi kalendar, sipas pamjes. */
-export function headingForView(view: CalendarView, date: string): string {
-  if (view === "month") return formatMonthYear(date);
+/**
+ * Titulli mbi kalendar, sipas pamjes.
+ *
+ * Emrat e muajve vijnë nga jashtë e nuk lexohen nga një listë e ngurtë brenda:
+ * ky modul nuk di gjuhë, dhe një listë e vetme shqipe këtu e linte titullin
+ * "10 – 16 Gusht 2026" edhe kur i gjithë paneli ishte anglisht.
+ */
+export function headingForView(
+  view: CalendarView,
+  date: string,
+  months: readonly string[],
+): string {
+  if (view === "month") {
+    const d = utcNoon(date);
+    return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  }
 
   if (view === "week") {
     const days = weekDates(date);
@@ -117,12 +120,12 @@ export function headingForView(view: CalendarView, date: string): string {
     const sameMonth = days[0].slice(0, 7) === days[6].slice(0, 7);
 
     return sameMonth
-      ? `${first.getUTCDate()} – ${last.getUTCDate()} ${MONTHS_SQ[last.getUTCMonth()]} ${last.getUTCFullYear()}`
-      : `${first.getUTCDate()} ${MONTHS_SQ[first.getUTCMonth()]} – ${last.getUTCDate()} ${MONTHS_SQ[last.getUTCMonth()]} ${last.getUTCFullYear()}`;
+      ? `${first.getUTCDate()} – ${last.getUTCDate()} ${months[last.getUTCMonth()]} ${last.getUTCFullYear()}`
+      : `${first.getUTCDate()} ${months[first.getUTCMonth()]} – ${last.getUTCDate()} ${months[last.getUTCMonth()]} ${last.getUTCFullYear()}`;
   }
 
   const d = utcNoon(date);
-  return `${d.getUTCDate()} ${MONTHS_SQ[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 // ---------------------------------------------------------------------------

@@ -18,6 +18,7 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `e2e/realtime.js` | 11 | njoftimet live mbërrijnë vërtet, dhe vetëm te pronari i duhur |
 | `e2e/security.js` | 50 | sulme: IDOR, eskalim privilegjesh, rrjedhje të dhënash, koka HTTP |
 | `e2e/suspension.js` | 32 | biznesi i pezulluar: lexon gjithçka, nuk shkruan asgjë |
+| `e2e/locale.js` | 15 | asnjë faqe nuk lë shqip kur gjuha është anglisht |
 
 ---
 
@@ -149,6 +150,11 @@ pas disa drejtimesh dhe testet do të dështonin pa asnjë defekt në aplikacion
 Aplikacioni flet shqip dhe anglisht; gjuha mbahet te cookie-ja `rezervo-locale`
 dhe shqipja është e parazgjedhura. Testet drejtohen pa e vendosur atë, ndaj presin
 tekst shqip.
+
+`e2e/locale.js` rendit çdo faqe me `rezervo-locale=en` dhe kërkon fjalë që janë
+vetëm shqipe te teksti i DUKSHËM. Ekziston sepse tipi i fjalorit kap çelësin që
+mungon, por nuk kap dot tekstin e fiksuar që nuk kaloi kurrë nga fjalori — titulli
+i kalendarit mbeti "10 – 16 Gusht 2026" në gjithë panelin anglisht pikërisht kështu.
 
 Fjalorët ngarkohen te bundle-i i klientit, JO si prop nga serveri. Po t'i kalosh
 si prop, çdo varg i tyre futet në ngarkesën RSC të çdo faqeje — dhe atëherë çdo

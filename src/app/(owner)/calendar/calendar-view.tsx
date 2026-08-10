@@ -126,7 +126,7 @@ export function CalendarView({
           </div>
 
           <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-            {headingForView(view, date)}
+            {headingForView(view, date, fmt.months)}
             {pending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </h1>
         </div>

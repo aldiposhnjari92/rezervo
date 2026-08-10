@@ -218,7 +218,7 @@ export function BookingRules({
         <CardHeader>
           <CardTitle className="text-base">{t("rules.closuresTitle")}</CardTitle>
           <CardDescription>
-            Festa ose pushime. Ato ditë zhduken nga faqia publike.
+            {t("rules.closuresHint")}
           </CardDescription>
         </CardHeader>
 
