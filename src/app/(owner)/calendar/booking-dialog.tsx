@@ -13,11 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatDayMonthFromInstant, formatPrice, formatTime } from "@/lib/availability";
 import { formatAlbanianPhone } from "@/lib/phone";
-import { STATUS_LABELS_SQ, type BookingStatus, type BookingWithService } from "@/lib/types";
+import type { BookingStatus, BookingWithService } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updateBookingStatus } from "@/lib/actions";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { useReadOnly } from "../read-only";
 
 const STATUS_VARIANT: Record<
@@ -39,6 +39,8 @@ export function BookingDialog({
 }) {
   const [pending, startTransition] = useTransition();
   const readOnly = useReadOnly();
+  const t = useT();
+  const fmt = useFormat();
 
   function changeStatus(status: BookingStatus) {
     if (!booking) return;
@@ -53,8 +55,8 @@ export function BookingDialog({
 
       toast.success(
         status === "cancelled"
-          ? `Rezervimi i ${booking.customer_name} u anulua.`
-          : `U shënua si "${STATUS_LABELS_SQ[status]}".`,
+          ? t("booking.cancelled", { name: booking.customer_name })
+          : t("booking.marked", { status: fmt.status(status) }),
       );
       onClose();
     });
@@ -76,29 +78,32 @@ export function BookingDialog({
                 <div className="min-w-0">
                   <DialogTitle className="truncate">{booking.customer_name}</DialogTitle>
                   <DialogDescription className="mt-1">
-                    {formatDayMonthFromInstant(booking.start_time)} ·{" "}
-                    {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
+                    {fmt.dayMonthFromInstant(booking.start_time)} ·{" "}
+                    {fmt.time(booking.start_time)} – {fmt.time(booking.end_time)}
                   </DialogDescription>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <Badge variant={STATUS_VARIANT[booking.status]}>
-                    {STATUS_LABELS_SQ[booking.status]}
+                    {fmt.status(booking.status)}
                   </Badge>
                   {booking.created_by === "owner" && (
-                    <Badge variant="secondary">Shtuar nga ti</Badge>
+                    <Badge variant="secondary">{t("booking.addedByOwner")}</Badge>
                   )}
                 </div>
               </div>
             </DialogHeader>
 
             <div className="rounded-lg border border-border">
-              <Row label="Shërbimi" value={booking.services?.name ?? "Shërbim i fshirë"} />
               <Row
-                label="Çmimi"
-                value={booking.services ? formatPrice(booking.services.price) : "—"}
+                label={t("booking.service")}
+                value={booking.services?.name ?? t("booking.deletedService")}
               />
               <Row
-                label="Telefoni"
+                label={t("booking.price")}
+                value={booking.services ? fmt.price(booking.services.price) : "—"}
+              />
+              <Row
+                label={t("booking.phone")}
                 value={
                   booking.customer_phone ? (
                     <a
@@ -111,17 +116,17 @@ export function BookingDialog({
                       </span>
                     </a>
                   ) : (
-                    <span className="text-muted-foreground">Pa numër</span>
+                    <span className="text-muted-foreground">{t("common.noPhone")}</span>
                   )
                 }
                 last={!booking.note}
               />
-              {booking.note && <Row label="Shënim" value={booking.note} last />}
+              {booking.note && <Row label={t("booking.note")} value={booking.note} last />}
             </div>
 
             {readOnly ? (
               <p className="rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted-foreground">
-                Llogaria është e pezulluar — rezervimet shihen, por nuk ndryshohen.
+                {t("suspended.bookings")}
               </p>
             ) : isOpen ? (
               <div className="grid grid-cols-3 gap-2">
@@ -135,12 +140,12 @@ export function BookingDialog({
                   ) : (
                     <Check className="h-4 w-4" />
                   )}
-                  <span className="truncate">Erdhi</span>
+                  <span className="truncate">{t("booking.markCame")}</span>
                 </Button>
 
                 <Button variant="outline" disabled={pending} onClick={() => changeStatus("no_show")}>
                   <UserX className="h-4 w-4" />
-                  <span className="truncate">Nuk erdhi</span>
+                  <span className="truncate">{t("booking.markNoShow")}</span>
                 </Button>
 
                 <Button
@@ -150,12 +155,12 @@ export function BookingDialog({
                   className="text-destructive hover:bg-destructive/5 hover:text-destructive"
                 >
                   <X className="h-4 w-4" />
-                  <span className="truncate">Anulo</span>
+                  <span className="truncate">{t("booking.cancel")}</span>
                 </Button>
               </div>
             ) : hasPassed ? (
               <p className="rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted-foreground">
-                Ky rezervim ka kaluar. Historiku nuk kthehet mbrapsht.
+                {t("booking.pastNotice")}
               </p>
             ) : (
               <Button
@@ -169,7 +174,7 @@ export function BookingDialog({
                 ) : (
                   <RotateCcw className="h-4 w-4" />
                 )}
-                Rikthe si të konfirmuar
+                {t("booking.restore")}
               </Button>
             )}
           </>

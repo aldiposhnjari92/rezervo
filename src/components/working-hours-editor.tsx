@@ -4,7 +4,9 @@ import { Copy } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
 import { TimeSelect, timeOptions } from "@/components/time-select";
-import { DAY_KEYS, DAY_LABELS_SQ, type DayKey, type WorkingHours } from "@/lib/types";
+import { DAY_KEYS, type DayKey, type WorkingHours } from "@/lib/types";
+import { useFormat, useT } from "@/lib/i18n/provider";
+import type { DictKey } from "@/lib/i18n/sq";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_OPEN = { start: "09:00", end: "18:00" };
@@ -12,17 +14,17 @@ const DEFAULT_OPEN = { start: "09:00", end: "18:00" };
 const TIME_OPTIONS = timeOptions(30);
 
 /** Skemat më të zakonshme, që të mos preken 12 fusha një nga një. */
-const PRESETS: { label: string; hours: WorkingHours }[] = [
+const PRESETS: { label: DictKey; hours: WorkingHours }[] = [
   {
-    label: "Hën–Pre, 09:00–18:00",
+    label: "hours.presetWeekdays",
     hours: buildHours({ weekdays: ["09:00", "18:00"], saturday: null, sunday: null }),
   },
   {
-    label: "Hën–Sht, 09:00–19:00",
+    label: "hours.presetSix",
     hours: buildHours({ weekdays: ["09:00", "19:00"], saturday: ["09:00", "19:00"], sunday: null }),
   },
   {
-    label: "Çdo ditë, 10:00–20:00",
+    label: "hours.presetEveryDay",
     hours: buildHours({
       weekdays: ["10:00", "20:00"],
       saturday: ["10:00", "20:00"],
@@ -56,6 +58,8 @@ export function WorkingHoursEditor({
   onChange: (next: WorkingHours) => void;
   disabled?: boolean;
 }) {
+  const t = useT();
+  const fmt = useFormat();
   const firstOpen = DAY_KEYS.find((day) => value[day]);
   const template = firstOpen ? value[firstOpen] : null;
   const openCount = DAY_KEYS.filter((day) => value[day]).length;
@@ -90,7 +94,7 @@ export function WorkingHoursEditor({
     <div className="space-y-4">
       {/* ------------------------------------------------------------ shpejt */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Nis nga:</span>
+        <span className="text-xs font-medium text-muted-foreground">{t("hours.startFrom")}</span>
         {PRESETS.map((preset) => (
           <button
             key={preset.label}
@@ -99,7 +103,7 @@ export function WorkingHoursEditor({
             onClick={() => onChange(preset.hours)}
             className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-foreground/25 hover:bg-muted disabled:opacity-50"
           >
-            {preset.label}
+            {t(preset.label)}
           </button>
         ))}
       </div>
@@ -109,8 +113,8 @@ export function WorkingHoursEditor({
         <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
           <span className="text-xs text-muted-foreground">
             {openCount === 0
-              ? "Asnjë ditë pune"
-              : `${openCount} ditë pune në javë`}
+              ? t("hours.noWorkDays")
+              : t("hours.daysPerWeek", { count: openCount })}
           </span>
 
           {template && openCount > 1 && (
@@ -121,7 +125,7 @@ export function WorkingHoursEditor({
               className="inline-flex items-center gap-1.5 text-xs font-medium text-primary transition-opacity hover:underline disabled:opacity-50"
             >
               <Copy className="h-3.5 w-3.5" />
-              Vendos {template.start}–{template.end} te të gjitha
+              {t("hours.applyToAll", { start: template.start, end: template.end })}
             </button>
           )}
         </div>
@@ -153,14 +157,14 @@ export function WorkingHoursEditor({
                     !isOpen && "text-muted-foreground",
                   )}
                 >
-                  {DAY_LABELS_SQ[day]}
+                  {fmt.day(day)}
                 </label>
 
                 {isOpen && hours ? (
                   <div className="flex flex-1 items-center gap-2">
                     <div className="w-[6.5rem]">
                       <TimeSelect
-                        label={`Hapja, ${DAY_LABELS_SQ[day]}`}
+                        label={t("hours.openLabel", { day: fmt.day(day) })}
                         value={hours.start}
                         disabled={disabled}
                         options={TIME_OPTIONS}
@@ -172,7 +176,7 @@ export function WorkingHoursEditor({
 
                     <div className="w-[6.5rem]">
                       <TimeSelect
-                        label={`Mbyllja, ${DAY_LABELS_SQ[day]}`}
+                        label={t("hours.closeLabel", { day: fmt.day(day) })}
                         value={hours.end}
                         disabled={disabled}
                         // Vetëm orët pas hapjes: një orar i pavlefshëm nuk zgjidhet dot.
@@ -193,17 +197,25 @@ export function WorkingHoursEditor({
   );
 }
 
-/** Kontroll në klient që pasqyron atë të serverit — për të shmangur një round-trip. */
-export function validateWorkingHours(value: WorkingHours): string | null {
+/**
+ * Kontroll në klient që pasqyron atë të serverit — për të shmangur një round-trip.
+ *
+ * `t` dhe `fmt` merren si argumente e nuk thirren si hook brenda: kjo nuk është
+ * komponent, dhe thirret nga dy vende që i kanë tashmë të dyja.
+ */
+export function validateWorkingHours(
+  value: WorkingHours,
+  t: (key: DictKey, vars?: Record<string, string | number>) => string,
+  fmt: { day: (key: DayKey) => string },
+): string | null {
   const anyOpen = DAY_KEYS.some((day) => value[day]);
-  if (!anyOpen) return "Zgjidh të paktën një ditë pune.";
+  if (!anyOpen) return t("hours.pickOneDay");
 
   for (const day of DAY_KEYS) {
     const hours = value[day];
     if (!hours) continue;
-    if (!hours.start || !hours.end) return `Plotëso orarin për ditën "${DAY_LABELS_SQ[day]}".`;
-    if (hours.end <= hours.start)
-      return `Te "${DAY_LABELS_SQ[day]}" ora e mbylljes duhet të jetë pas asaj të hapjes.`;
+    if (!hours.start || !hours.end) return t("hours.fillDay", { day: fmt.day(day) });
+    if (hours.end <= hours.start) return t("hours.orderDay", { day: fmt.day(day) });
   }
 
   return null;

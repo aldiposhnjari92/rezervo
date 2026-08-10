@@ -217,6 +217,10 @@ export const sq = {
   "hours.presetWeekdays": "Hën–Pre, 09:00–18:00",
   "hours.presetSix": "Hën–Sht, 09:00–19:00",
   "hours.presetEveryDay": "Çdo ditë, 10:00–20:00",
+  "hours.openLabel": "Hapja, {day}",
+  "hours.closeLabel": "Mbyllja, {day}",
+  "hours.fillDay": "Plotëso orarin për ditën \"{day}\".",
+  "hours.orderDay": "Te \"{day}\" mbyllja duhet të jetë pas hapjes.",
   "hours.startFrom": "Nis nga:",
   "hours.applyToAll": "Vendos {start}–{end} te të gjitha",
   "hours.daysPerWeek": "{count} ditë pune në javë",
@@ -246,6 +250,13 @@ export const sq = {
     "Klientët mund të rezervojnë vetëm brenda këtyre orareve. Ndryshimet prekin rezervimet e reja, jo ato ekzistuese.",
   "settings.saveHours": "Ruaj orarin",
   "settings.hoursSaved": "Orari u ruajt.",
+  "theme.light": "E çelët",
+  "theme.dark": "E errët",
+  "theme.system": "Sistemi",
+  "theme.toLight": "Kalo në temën e çelët",
+  "theme.toDark": "Kalo në temën e errët",
+  "settings.languageCard": "Gjuha",
+  "settings.languageHint": "Prek gjithë panelin dhe faqen tënde publike.",
   "settings.appearance": "Pamja",
   "settings.appearanceHint": "\"Sistemi\" ndjek rregullimin e telefonit ose kompjuterit.",
   "settings.accountCard": "Llogaria ime",
@@ -276,6 +287,8 @@ export const sq = {
   "rules.lunchEnd": "Fundi i pushimit",
   "rules.save": "Ruaj rregullat",
   "rules.saved": "Rregullat u ruajtën.",
+  "rules.closureAdded": "{date} u shënua si e mbyllur.",
+  "rules.minutes": "{count} min",
   "rules.closuresTitle": "Ditë të mbyllura",
   "rules.closuresHint": "Festa ose pushime. Ato ditë zhduken nga faqja publike.",
   "rules.closureReason": "Arsyeja (opsionale)",
@@ -326,6 +339,19 @@ export const sq = {
   "public.newBooking": "Bëj një rezervim tjetër",
 
   // ------------------------------------------------------------------ hyrja
+  "login.badEmail": "Adresa e email-it nuk është e vlefshme.",
+  "login.shortPassword": "Fjalëkalimi është shumë i shkurtër.",
+  "login.fillBoth": "Plotëso email-in dhe fjalëkalimin.",
+  "login.wrongCredentials": "Email-i ose fjalëkalimi është gabim.",
+  "login.emailRegistered": "Ky email është i regjistruar. Provo të hysh.",
+  "login.confirmFirst": "Konfirmo email-in tënd përpara se të hysh. Kontrollo inbox-in.",
+  "login.pwned": "Ky fjalëkalim është parë në rrjedhje të dhënash. Zgjidh një tjetër.",
+  "login.rateLimited": "Shumë përpjekje. Prit pak minuta dhe provo sërish.",
+  "login.offline": "Nuk u lidhëm dot me serverin. Kontrollo internetin.",
+  "login.noSession": "Nuk u krijua dot sesioni. Provo sërish.",
+  "login.googleFailed": "Nuk u lidhëm dot me Google. Provo sërish.",
+  "login.googleCancelled": "Hyrja me Google u ndërpre. Provo sërish.",
+  "login.googleBadCode": "Google nuk ktheu një kod të vlefshëm. Provo sërish.",
   "auth.signIn": "Hyr",
   "auth.signUp": "Regjistrohu falas",
   "auth.welcomeBack": "Mirë se u ktheve",
@@ -391,6 +417,7 @@ export const sq = {
   "admin.colNoShows": "Pa ardhur",
   "admin.colValue": "Vlera",
   "admin.suspendedBadge": "Pezulluar",
+  "admin.mobileSummary": "{bookings} rezervime · {services} shërbime ·",
   "admin.orphans": "Llogari pa dyqan",
   "admin.orphansHint": "U regjistruan por nuk e mbaruan konfigurimin — {count} gjithsej.",
   "admin.allBusinesses": "Të gjitha bizneset",
@@ -452,4 +479,5 @@ export const sq = {
   "err.generic": "Diçka shkoi keq. Provo sërish.",
 } as const;
 
-export type Dict = Record<keyof typeof sq, string>;
+export type DictKey = keyof typeof sq;
+export type Dict = Record<DictKey, string>;

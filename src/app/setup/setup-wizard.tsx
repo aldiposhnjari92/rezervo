@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WorkingHoursEditor, validateWorkingHours } from "@/components/working-hours-editor";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { createClient } from "@/lib/supabase/client";
 import { isReservedSlug, isValidSlug, slugify, withSuffix } from "@/lib/slug";
 import { isValidAlbanianPhone } from "@/lib/phone";
@@ -18,7 +19,8 @@ import { createBusiness } from "@/lib/actions";
 type SlugState = "idle" | "checking" | "free" | "taken" | "invalid" | "reserved";
 
 export function SetupWizard() {
-
+  const t = useT();
+  const fmt = useFormat();
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -79,35 +81,35 @@ export function SetupWizard() {
         return;
       }
     }
-    toast.error("Provo një emër tjetër për linkun.");
+    toast.error(t("setup.tryAnotherName"));
   }
 
   function goToStepTwo() {
     if (name.trim().length < 2) {
-      toast.error("Shkruaj emrin e biznesit.");
+      toast.error(t("setup.nameRequired"));
       return;
     }
     if (!isValidSlug(slug)) {
-      toast.error("Linku lejon vetëm shkronja të vogla, numra dhe vizë (të paktën 3 karaktere).");
+      toast.error(t("setup.linkInvalid"));
       return;
     }
     if (slugState === "taken") {
-      toast.error("Ky link është i zënë. Zgjidh një tjetër.");
+      toast.error(t("setup.linkTaken"));
       return;
     }
     if (isReservedSlug(slug)) {
-      toast.error("Ky link është i rezervuar nga sistemi. Zgjidh një tjetër.");
+      toast.error(t("setup.linkReserved"));
       return;
     }
     if (phone.trim() && !isValidAlbanianPhone(phone)) {
-      toast.error("Numri i telefonit nuk është i saktë. Shembull: 069 123 4567");
+      toast.error(t("err.phone"));
       return;
     }
     setStep(2);
   }
 
   async function handleFinish() {
-    const hoursError = validateWorkingHours(hours);
+    const hoursError = validateWorkingHours(hours, t, fmt);
     if (hoursError) {
       toast.error(hoursError);
       return;
@@ -131,8 +133,8 @@ export function SetupWizard() {
       {/* --------------------------------------------------------- progresi */}
       <div className="grid grid-cols-2">
         {[
-          { n: 1, label: "Biznesi" },
-          { n: 2, label: "Orari" },
+          { n: 1, label: t("setup.stepBusiness") },
+          { n: 2, label: t("setup.stepHours") },
         ].map(({ n, label }) => (
           <div
             key={n}
@@ -164,7 +166,7 @@ export function SetupWizard() {
       {step === 1 ? (
         <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-8">
-            <h1 className="text-balance text-2xl font-bold tracking-tight">Të dhënat e biznesit</h1>
+            <h1 className="text-balance text-2xl font-bold tracking-tight">{t("setup.businessTitle")}</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
               Kjo është ajo që shohin klientët kur hapin linkun tënd.
             </p>
@@ -172,19 +174,19 @@ export function SetupWizard() {
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Emri i biznesit</Label>
+              <Label htmlFor="name">{t("setup.businessName")}</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="p.sh. Berberi Ilir"
+                placeholder={t("setup.businessNamePlaceholder")}
                 autoFocus
                 maxLength={80}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slug">Linku yt</Label>
+              <Label htmlFor="slug">{t("setup.yourLink")}</Label>
               <div className="flex items-center rounded-lg border border-border focus-within:ring-2 focus-within:ring-ring">
                 <span className="shrink-0 pl-3 text-sm text-muted-foreground">rezervo.al/</span>
                 <input
@@ -254,14 +256,14 @@ export function SetupWizard() {
               className="w-full rounded-full shadow-lg shadow-primary/25"
               onClick={goToStepTwo}
             >
-              Vazhdo
+              {t("setup.next")}
             </Button>
           </div>
         </section>
       ) : (
         <section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <div className="mb-8">
-            <h1 className="text-balance text-2xl font-bold tracking-tight">Orari i punës</h1>
+            <h1 className="text-balance text-2xl font-bold tracking-tight">{t("setup.hoursTitle")}</h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
               Klientët do të mund të rezervojnë vetëm brenda këtyre orareve.
             </p>
@@ -288,7 +290,7 @@ export function SetupWizard() {
                 disabled={saving}
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                Krijo dyqanin
+                {t("setup.finish")}
               </Button>
             </div>
           </div>

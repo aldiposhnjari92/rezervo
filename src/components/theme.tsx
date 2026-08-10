@@ -5,6 +5,8 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { Toaster } from "sonner";
 
 import { Segmented, SegmentedButton } from "@/components/segmented";
+import { useT } from "@/lib/i18n/provider";
+import type { DictKey } from "@/lib/i18n/sq";
 import { cn } from "@/lib/utils";
 
 export type Theme = "light" | "dark" | "system";
@@ -73,11 +75,11 @@ export function useTheme() {
   return ctx;
 }
 
-const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
-  { value: "light", label: "E çelët", icon: Sun },
-  { value: "dark", label: "E errët", icon: Moon },
-  { value: "system", label: "Sistemi", icon: Monitor },
-];
+const OPTIONS = [
+  { value: "light", label: "theme.light", icon: Sun },
+  { value: "dark", label: "theme.dark", icon: Moon },
+  { value: "system", label: "theme.system", icon: Monitor },
+] as const satisfies readonly { value: Theme; label: DictKey; icon: typeof Sun }[];
 
 /**
  * Zgjedhës me tri pozicione — pa menu, pa surpriza.
@@ -88,6 +90,7 @@ const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
  */
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
+  const t = useT();
 
   return (
     <Segmented className={className}>
@@ -98,7 +101,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           icon={icon}
           onClick={() => setTheme(value)}
         >
-          {label}
+          {t(label)}
         </SegmentedButton>
       ))}
     </Segmented>
@@ -108,12 +111,13 @@ export function ThemeToggle({ className }: { className?: string }) {
 /** Buton i vetëm që kalon mes çelët/errët — për kokën në telefon. */
 export function ThemeButton({ className }: { className?: string }) {
   const { resolved, setTheme } = useTheme();
+  const t = useT();
 
   return (
     <button
       type="button"
       onClick={() => setTheme(resolved === "dark" ? "light" : "dark")}
-      aria-label={resolved === "dark" ? "Kalo në temën e çelët" : "Kalo në temën e errët"}
+      aria-label={resolved === "dark" ? t("theme.toLight") : t("theme.toDark")}
       className={cn(
         "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
         className,

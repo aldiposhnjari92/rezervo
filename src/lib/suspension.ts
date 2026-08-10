@@ -1,15 +1,7 @@
 import "server-only";
 
+import { getT } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
-
-/**
- * Mesazhi i vetëm për çdo veprim të bllokuar nga pezullimi.
- *
- * I njëjti tekst kudo: pronari nuk duhet të hamendësojë nëse "nuk u ruajt dot"
- * do të thotë defekt apo ndalim.
- */
-export const SUSPENDED_ERROR =
-  "Llogaria jote është e pezulluar. Mund t'i shohësh të dhënat, por jo t'i ndryshosh.";
 
 /**
  * Kthen gabimin kur biznesi i përdoruesit është i pezulluar, ose `null` kur
@@ -26,7 +18,8 @@ export async function suspensionError(): Promise<{ ok: false; error: string } | 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesioni skadoi. Hyr sërish." };
+  const t = getT();
+  if (!user) return { ok: false, error: t("err.session") };
 
   const { data } = await supabase
     .from("businesses")
@@ -34,6 +27,6 @@ export async function suspensionError(): Promise<{ ok: false; error: string } | 
     .eq("owner_id", user.id)
     .maybeSingle();
 
-  if (data?.suspended_at) return { ok: false, error: SUSPENDED_ERROR };
+  if (data?.suspended_at) return { ok: false, error: t("err.suspended") };
   return null;
 }

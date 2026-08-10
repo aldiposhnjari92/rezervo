@@ -6,8 +6,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isReservedSlug, isValidSlug } from "@/lib/slug";
 import { normalizeAlbanianPhone } from "@/lib/phone";
+import { getT } from "@/lib/i18n";
+import type { DictKey } from "@/lib/i18n/sq";
 import { suspensionError } from "@/lib/suspension";
 import { DAY_KEYS, type BookingStatus, type WorkingHours } from "@/lib/types";
+
+/**
+ * Mesazhet e gabimeve në gjuhën e përdoruesit.
+ *
+ * `getT()` thirret në çastin e përdorimit, jo në ngarkim të modulit: cookie-t
+ * ekzistojnë vetëm brenda një kërkese.
+ */
+const t = (key: DictKey) => getT()(key);
 
 type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string };
 
@@ -63,26 +73,26 @@ export async function createBusiness(input: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesioni skadoi. Hyr sërish." };
+  if (!user) return { ok: false, error: t("err.session") };
 
   const name = input.name.trim();
   const slug = input.slug.trim().toLowerCase();
 
-  if (name.length < 2) return { ok: false, error: "Emri i biznesit është shumë i shkurtër." };
+  if (name.length < 2) return { ok: false, error: t("err.nameShort") };
   if (!isValidSlug(slug))
     return {
       ok: false,
-      error: "Linku lejon vetëm shkronja të vogla, numra dhe vizë (3–40 karaktere).",
+      error: t("err.slugInvalid"),
     };
   if (isReservedSlug(slug))
-    return { ok: false, error: "Ky link është i rezervuar nga sistemi. Zgjidh një tjetër." };
+    return { ok: false, error: t("err.slugReserved") };
 
   const phone = input.phone.trim() ? normalizeAlbanianPhone(input.phone) : null;
   if (input.phone.trim() && !phone)
-    return { ok: false, error: "Numri i telefonit nuk është i saktë. Shembull: 069 123 4567" };
+    return { ok: false, error: t("err.phone") };
 
   const workingHours = sanitizeWorkingHours(input.workingHours);
-  if (!workingHours) return { ok: false, error: "Orari i punës nuk është i vlefshëm." };
+  if (!workingHours) return { ok: false, error: t("err.hours") };
 
   const { error } = await supabase.from("businesses").insert({
     owner_id: user.id,
@@ -97,10 +107,10 @@ export async function createBusiness(input: {
     if (error.code === "23505") {
       // owner_id unik -> biznesi ekziston; slug unik -> linku është i zënë
       return error.message.includes("owner_id")
-        ? { ok: false, error: "Ke tashmë një biznes të krijuar." }
-        : { ok: false, error: "Ky link është i zënë. Provo një tjetër." };
+        ? { ok: false, error: t("err.businessExists") }
+        : { ok: false, error: t("err.slugTaken") };
     }
-    return { ok: false, error: "Nuk u ruajt dot biznesi. Provo sërish." };
+    return { ok: false, error: t("err.businessSave") };
   }
 
   // Layout-i i panelit lexon biznesin, ndaj duhet rifreskuar i gjithë pema.
@@ -127,24 +137,24 @@ export async function updateBusiness(input: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesioni skadoi. Hyr sërish." };
+  if (!user) return { ok: false, error: t("err.session") };
 
   const name = input.name.trim();
-  if (name.length < 2) return { ok: false, error: "Emri i biznesit është shumë i shkurtër." };
+  if (name.length < 2) return { ok: false, error: t("err.nameShort") };
 
   const phone = input.phone.trim() ? normalizeAlbanianPhone(input.phone) : null;
   if (input.phone.trim() && !phone)
-    return { ok: false, error: "Numri i telefonit nuk është i saktë. Shembull: 069 123 4567" };
+    return { ok: false, error: t("err.phone") };
 
   const workingHours = sanitizeWorkingHours(input.workingHours);
-  if (!workingHours) return { ok: false, error: "Orari i punës nuk është i vlefshëm." };
+  if (!workingHours) return { ok: false, error: t("err.hours") };
 
   const { error } = await supabase
     .from("businesses")
     .update({ name, phone, working_hours: workingHours })
     .eq("owner_id", user.id);
 
-  if (error) return { ok: false, error: "Nuk u ruajtën dot ndryshimet. Provo sërish." };
+  if (error) return { ok: false, error: t("err.saveFailed") };
 
   revalidatePath("/calendar", "layout");
   return { ok: true };
@@ -161,15 +171,15 @@ function validateService(input: {
 }): { ok: true; name: string } | { ok: false; error: string } {
   const name = input.name.trim();
 
-  if (name.length < 2) return { ok: false, error: "Shkruaj emrin e shërbimit." };
+  if (name.length < 2) return { ok: false, error: t("err.serviceName") };
   if (
     !Number.isInteger(input.durationMinutes) ||
     input.durationMinutes < 5 ||
     input.durationMinutes > 480
   )
-    return { ok: false, error: "Kohëzgjatja duhet të jetë mes 5 dhe 480 minutash." };
+    return { ok: false, error: t("err.duration") };
   if (!Number.isInteger(input.price) || input.price < 0)
-    return { ok: false, error: "Çmimi nuk është i vlefshëm." };
+    return { ok: false, error: t("err.price") };
 
   return { ok: true, name };
 }
@@ -186,7 +196,7 @@ export async function createService(input: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesioni skadoi. Hyr sërish." };
+  if (!user) return { ok: false, error: t("err.session") };
 
   const validation = validateService(input);
   if (!validation.ok) return validation;
@@ -196,7 +206,7 @@ export async function createService(input: {
     .select("id")
     .eq("owner_id", user.id)
     .maybeSingle();
-  if (!business) return { ok: false, error: "Krijo fillimisht biznesin." };
+  if (!business) return { ok: false, error: t("err.businessFirst") };
 
   const { error } = await supabase.from("services").insert({
     business_id: business.id,
@@ -205,7 +215,7 @@ export async function createService(input: {
     price: input.price,
   });
 
-  if (error) return { ok: false, error: "Nuk u shtua dot shërbimi. Provo sërish." };
+  if (error) return { ok: false, error: t("err.serviceAdd") };
 
   revalidatePath("/services");
   revalidatePath("/calendar");
@@ -236,7 +246,7 @@ export async function updateService(input: {
     })
     .eq("id", input.id);
 
-  if (error) return { ok: false, error: "Nuk u ruajt dot shërbimi. Provo sërish." };
+  if (error) return { ok: false, error: t("err.serviceSave") };
 
   revalidatePath("/services");
   revalidatePath("/calendar");
@@ -250,7 +260,7 @@ export async function setServiceActive(id: string, isActive: boolean): Promise<R
   const supabase = createClient();
   const { error } = await supabase.from("services").update({ is_active: isActive }).eq("id", id);
 
-  if (error) return { ok: false, error: "Nuk u ndryshua dot statusi i shërbimit." };
+  if (error) return { ok: false, error: t("err.serviceToggle") };
 
   revalidatePath("/services");
   return { ok: true };
@@ -268,9 +278,9 @@ export async function deleteService(id: string): Promise<Result> {
     if (error.code === "23503")
       return {
         ok: false,
-        error: "Ky shërbim ka rezervime të vjetra, ndaj nuk fshihet. Çaktivizoje në vend të kësaj.",
+        error: t("err.serviceInUse"),
       };
-    return { ok: false, error: "Nuk u fshi dot shërbimi." };
+    return { ok: false, error: t("err.serviceDelete") };
   }
 
   revalidatePath("/services");
@@ -285,7 +295,7 @@ export async function updateBookingStatus(
   bookingId: string,
   status: BookingStatus,
 ): Promise<Result> {
-  if (!VALID_STATUSES.includes(status)) return { ok: false, error: "Status i pavlefshëm." };
+  if (!VALID_STATUSES.includes(status)) return { ok: false, error: t("err.status") };
 
   const blocked = await suspensionError();
   if (blocked) return blocked;
@@ -297,14 +307,14 @@ export async function updateBookingStatus(
     // 23P01 = exclusion_violation: rikthimi i një rezervimi të anuluar në një orë
     // që ndërkohë e ka zënë dikush tjetër.
     if (error.code === "23P01")
-      return { ok: false, error: "Kjo orë është zënë ndërkohë nga një rezervim tjetër." };
+      return { ok: false, error: t("err.slotTaken") };
     // RZ001 = trigger-i i historisë: e kaluara nuk rikthehet dhe nuk zhvendoset.
     if (error.code === "RZ001")
       return {
         ok: false,
-        error: "Ky rezervim ka kaluar. Mund ta shënosh se çfarë ndodhi, por jo ta rikthesh në pritje.",
+        error: t("err.bookingPast"),
       };
-    return { ok: false, error: "Nuk u ndryshua dot rezervimi. Provo sërish." };
+    return { ok: false, error: t("err.bookingUpdate") };
   }
 
   revalidatePath("/calendar");

@@ -149,7 +149,9 @@
       "Bash(grep -ohE '\"[^\"]{3,}\"' src/lib/actions.ts src/lib/owner-actions.ts src/lib/admin-actions.ts \"src/app/[slug]/actions.ts\")",
       "Bash(grep -oE '>[^<>{}]{4,}<|\"[A-ZÇ][^\"]{6,}\"' \"src/app/[slug]/booking-flow.tsx\")",
       "Bash(grep -oE '\"[^\"]{6,}\"|`[^`]{6,}`' src/lib/email-templates.ts)",
-      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=en_services.png --window-size=1600,900 --user-data-dir=./cprofile file://__TRACKED_VAR__/en/_services.static.html)"
+      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=en_services.png --window-size=1600,900 --user-data-dir=./cprofile file://__TRACKED_VAR__/en/_services.static.html)",
+      "Bash(grep -oE '>[^<>{}]{3,}<|\"[A-ZÇ][^\"]{3,}\"' \"src/app/\\(owner\\)/calendar/booking-dialog.tsx\")",
+      "Bash(grep -n \"Hap$\\\\|>Hap<\\\\|Hap\\\\b\" src/app/admin/page.tsx)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

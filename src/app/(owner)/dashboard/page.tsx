@@ -11,9 +11,9 @@ import { DistributionBars, EarningsChart, StatusBreakdown } from "@/components/c
 import { StatTile } from "@/components/stat-tile";
 import { requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatMoney } from "@/lib/availability";
+import { getFormat, getT } from "@/lib/i18n";
 import type { OwnerDashboard } from "@/lib/admin-types";
-import { DAY_KEYS, DAY_LABELS_SHORT_SQ } from "@/lib/types";
+import { DAY_KEYS } from "@/lib/types";
 import { GettingStarted } from "./getting-started";
 
 export const metadata: Metadata = { title: "Paneli" };
@@ -28,6 +28,8 @@ export default async function OwnerDashboardPage({
 }) {
   const { business } = await requireBusiness();
   const supabase = createClient();
+  const t = getT();
+  const fmt = getFormat();
 
   const days = RANGES.includes(Number(searchParams.days) as (typeof RANGES)[number])
     ? Number(searchParams.days)
@@ -48,8 +50,8 @@ export default async function OwnerDashboardPage({
     return (
       <EmptyState
         icon={LineChart}
-        title="Të dhënat nuk u ngarkuan"
-        description={error?.message ?? "Provo të rifreskosh faqen."}
+        title={t("dashboard.loadFailed")}
+        description={error?.message ?? t("dashboard.loadFailedBody")}
       />
     );
   }
@@ -65,7 +67,7 @@ export default async function OwnerDashboardPage({
     d.customers_total > 0 ? Math.round((d.customers_repeat / d.customers_total) * 100) : 0;
 
   const weekday = DAY_KEYS.map((key, i) => ({
-    label: DAY_LABELS_SHORT_SQ[key],
+    label: fmt.dayShort(key),
     value: d.by_weekday.find((w) => w.dow === i + 1)?.bookings ?? 0,
   }));
 
@@ -92,9 +94,7 @@ export default async function OwnerDashboardPage({
         <PageHeader
           title={business.name}
           description={
-            servicesCount
-              ? "Gjithçka gati. Mbetet vetëm të ndash linkun."
-              : "Le ta bëjmë gati dyqanin për rezervime."
+            servicesCount ? t("dashboard.readyToShare") : t("dashboard.setupPrompt")
           }
         />
 
@@ -111,17 +111,17 @@ export default async function OwnerDashboardPage({
           title={business.name}
           description={
             d.today > 0
-              ? `${d.today} rezervime sot · ${d.upcoming} në ditët në vijim.`
+              ? t("dashboard.today", { count: d.today, upcoming: d.upcoming })
               : d.upcoming > 0
-                ? `Asnjë rezervim sot · ${d.upcoming} në pritje.`
-                : "Asnjë rezervim në pritje."
+                ? t("dashboard.noneToday", { upcoming: d.upcoming })
+                : t("dashboard.noneAtAll")
           }
         />
 
         <Segmented className="shrink-0">
           {RANGES.map((r) => (
             <SegmentedLink key={r} href={`/dashboard?days=${r}`} active={days === r}>
-              {`${r} ditë`}
+              {t("dashboard.range", { days: r })}
             </SegmentedLink>
           ))}
         </Segmented>
@@ -130,13 +130,13 @@ export default async function OwnerDashboardPage({
       {!servicesCount && (
         <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-medium">Faqja jote ende s&apos;pranon rezervime</p>
-            <p className="text-sm text-muted-foreground">Shto të paktën një shërbim.</p>
+            <p className="font-medium">{t("dashboard.noServicesTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.noServicesBody")}</p>
           </div>
           <Button asChild className="shrink-0">
             <Link href="/services">
               <PlusCircle className="h-4 w-4" />
-              Shto shërbim
+              {t("calendar.addService")}
             </Link>
           </Button>
         </div>
@@ -145,21 +145,25 @@ export default async function OwnerDashboardPage({
       {/* ----------------------------------------------------- numrat kryesorë */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
-          label={`Të ardhurat (${days} ditë)`}
-          value={formatMoney(d.earnings_period)}
-          trend={delta !== null ? { percent: delta, label: "vs periudha e kaluar" } : undefined}
+          label={t("dashboard.earnings", { days })}
+          value={fmt.money(d.earnings_period)}
+          trend={delta !== null ? { percent: delta, label: t("dashboard.vsPrevious") } : undefined}
         />
 
         <StatTile
-          label={`Rezervime (${days} ditë)`}
+          label={t("dashboard.bookings", { days })}
           value={d.bookings_period}
-          hint={`${d.bookings_total} gjithsej`}
+          hint={t("dashboard.bookingsHint", { total: d.bookings_total })}
         />
-        <StatTile label="Në pritje" value={d.upcoming} hint={`${d.today} sot`} />
         <StatTile
-          label="Humbur nga mosardhjet"
-          value={formatMoney(d.lost_no_show)}
-          hint={attendance > 0 ? `${noShowRate.toFixed(0)}% e klientëve` : undefined}
+          label={t("dashboard.upcoming")}
+          value={d.upcoming}
+          hint={t("dashboard.upcomingHint", { count: d.today })}
+        />
+        <StatTile
+          label={t("dashboard.lostToNoShows")}
+          value={fmt.money(d.lost_no_show)}
+          hint={attendance > 0 ? t("dashboard.lostHint", { percent: noShowRate.toFixed(0) }) : undefined}
           tone={d.lost_no_show > 0 ? "warning" : "default"}
         />
       </div>
@@ -181,15 +185,15 @@ export default async function OwnerDashboardPage({
           <Card className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="font-semibold">Klientët</h2>
+                <h2 className="font-semibold">{t("dashboard.customers")}</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {d.customers_repeat} nga {d.customers_total} kthehen sërish
+                  {t("dashboard.customersReturn", { repeat: d.customers_repeat, total: d.customers_total })}
                 </p>
               </div>
               <Button variant="outline" size="sm" asChild className="shrink-0">
                 <Link href="/customers">
                   <Users className="h-4 w-4" />
-                  Shiko
+                  {t("dashboard.view")}
                 </Link>
               </Button>
             </div>
@@ -198,7 +202,7 @@ export default async function OwnerDashboardPage({
               <span className="text-3xl font-semibold tracking-tight tabular-nums">
                 {repeatRate}%
               </span>
-              <span className="text-sm text-muted-foreground">klientë të përsëritur</span>
+              <span className="text-sm text-muted-foreground">{t("dashboard.repeatRate")}</span>
             </div>
             <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
               <div
@@ -209,10 +213,10 @@ export default async function OwnerDashboardPage({
           </Card>
 
           <Card className="p-5">
-            <h2 className="font-semibold">Shërbimet më të kërkuara</h2>
+            <h2 className="font-semibold">{t("dashboard.topServices")}</h2>
             {d.top_services.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                Ende pa të dhëna
+                {t("dashboard.noData")}
               </p>
             ) : (
               <ul className="mt-4 space-y-2.5">
@@ -223,7 +227,7 @@ export default async function OwnerDashboardPage({
                       {s.bookings}×
                     </span>
                     <span className="w-20 shrink-0 text-right tabular-nums font-medium">
-                      {formatMoney(s.earnings)}
+                      {fmt.money(s.earnings)}
                     </span>
                   </li>
                 ))}
@@ -235,13 +239,13 @@ export default async function OwnerDashboardPage({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <DistributionBars
-          title="Ditët më të ngarkuara"
-          subtitle="Të gjitha rezervimet, sipas ditës së javës"
+          title={t("dashboard.busiestDays")}
+          subtitle={t("dashboard.busiestDaysHint")}
           data={weekday}
         />
         <DistributionBars
-          title="Oraret më të kërkuara"
-          subtitle="Kur rezervojnë më shumë klientët"
+          title={t("dashboard.busiestHours")}
+          subtitle={t("dashboard.busiestHoursHint")}
           data={hours}
         />
       </div>
@@ -249,7 +253,7 @@ export default async function OwnerDashboardPage({
       <Button variant="outline" className="w-full" asChild>
         <Link href="/calendar">
           <CalendarDays className="h-4 w-4" />
-          Hap kalendarin
+          {t("dashboard.openCalendar")}
         </Link>
       </Button>
     </div>

@@ -9,16 +9,10 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { StatTile } from "@/components/stat-tile";
 import { createClient } from "@/lib/supabase/server";
-import {
-  formatDayMonthFromInstant,
-  formatDuration,
-  formatMoney,
-  formatPrice,
-  formatTime,
-} from "@/lib/availability";
+import { getFormat, getT } from "@/lib/i18n";
 import { formatAlbanianPhone } from "@/lib/phone";
 import type { AdminAccount } from "@/lib/admin-types";
-import { DAY_KEYS, STATUS_LABELS_SQ } from "@/lib/types";
+import { DAY_KEYS } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SuspendControl } from "./suspend-control";
 
@@ -37,6 +31,8 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
   if (!account) notFound();
 
   const { user, business, stats } = account;
+  const t = getT();
+  const fmt = getFormat();
 
   return (
     <div className="space-y-6">
@@ -45,12 +41,12 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Të gjitha bizneset
+        {t("admin.allBusinesses")}
       </Link>
 
       {/* ---------------------------------------------------------------- koka */}
       <PageHeader
-        title={business?.name ?? "Llogari pa dyqan"}
+        title={business?.name ?? t("admin.noBusinessTitle")}
         description={user.email}
         badges={
           <>
@@ -63,7 +59,7 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
             {business?.suspended_at && (
               <Badge variant="warning" className="gap-1">
                 <Ban className="h-3 w-3" />
-                Pezulluar
+                {t("admin.suspendedBadge")}
               </Badge>
             )}
           </>
@@ -86,21 +82,21 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
       {/* --------------------------------------------------------- të dhënat */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="border-b border-border px-5 py-3 font-semibold">Llogaria</h2>
+          <h2 className="border-b border-border px-5 py-3 font-semibold">{t("admin.accountCard")}</h2>
           <dl className="divide-y divide-border">
-            <Row label="Email" value={user.email} />
+            <Row label={t("auth.email")} value={user.email} />
             <Row
-              label="Email i konfirmuar"
-              value={user.email_confirmed ? "Po" : "Jo"}
+              label={t("admin.emailConfirmed")}
+              value={user.email_confirmed ? t("admin.yes") : t("admin.no")}
               tone={user.email_confirmed ? "default" : "warning"}
             />
-            <Row label="Regjistruar" value={formatDayMonthFromInstant(user.created_at)} />
+            <Row label={t("admin.registered")} value={fmt.dayMonthFromInstant(user.created_at)} />
             <Row
-              label="Hyrja e fundit"
+              label={t("admin.lastSignIn")}
               value={
                 user.last_sign_in_at
-                  ? `${formatDayMonthFromInstant(user.last_sign_in_at)} · ${formatTime(user.last_sign_in_at)}`
-                  : "Kurrë"
+                  ? `${fmt.dayMonthFromInstant(user.last_sign_in_at)} · ${fmt.time(user.last_sign_in_at)}`
+                  : t("admin.never")
               }
             />
             <Row label="ID" value={<span className="font-mono text-xs">{user.id}</span>} />
@@ -109,20 +105,20 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
 
         {business ? (
           <Card>
-            <h2 className="border-b border-border px-5 py-3 font-semibold">Biznesi</h2>
+            <h2 className="border-b border-border px-5 py-3 font-semibold">{t("admin.businessCard")}</h2>
             <dl className="divide-y divide-border">
-              <Row label="Emri" value={business.name} />
-              <Row label="Linku" value={`/${business.slug}`} />
+              <Row label={t("public.name")} value={business.name} />
+              <Row label={t("setup.yourLink")} value={`/${business.slug}`} />
               <Row
-                label="Telefoni"
+                label={t("settings.phone")}
                 value={business.phone ? formatAlbanianPhone(business.phone) : "—"}
               />
-              <Row label="Krijuar" value={formatDayMonthFromInstant(business.created_at)} />
+              <Row label={t("admin.registered")} value={fmt.dayMonthFromInstant(business.created_at)} />
               <Row
-                label="Orari"
+                label={t("settings.tabHours")}
                 value={
                   <span className="text-right">
-                    {DAY_KEYS.filter((d) => business.working_hours?.[d]).length} ditë në javë
+                    {t("hours.daysPerWeek", { count: DAY_KEYS.filter((d) => business.working_hours?.[d]).length })}
                   </span>
                 }
               />
@@ -131,8 +127,8 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
         ) : (
           <EmptyState
             icon={Store}
-            title="Kjo llogari nuk ka krijuar dyqan"
-            description={`U regjistrua më ${formatDayMonthFromInstant(user.created_at)} por nuk e mbaroi konfigurimin.`}
+            title={t("admin.noBusinessTitle")}
+            description={t("admin.noBusinessBody", { date: fmt.dayMonthFromInstant(user.created_at) })}
           />
         )}
       </div>
@@ -140,14 +136,14 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
       {/* ------------------------------------------------------------ numrat */}
       {stats && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatTile label="Rezervime" value={stats.bookings} />
-          <StatTile label="Përfunduar" value={stats.completed} />
+          <StatTile label={t("admin.bookings")} value={stats.bookings} />
+          <StatTile label={fmt.status("completed")} value={stats.completed} />
           <StatTile
-            label="Nuk erdhën"
+            label={t("calendar.statNoShows")}
             value={stats.no_shows}
             tone={stats.no_shows > 0 ? "warning" : "default"}
           />
-          <StatTile label="Vlera" value={formatMoney(stats.gmv)} />
+          <StatTile label={t("admin.colValue")} value={fmt.money(stats.gmv)} />
         </div>
       )}
 
@@ -155,7 +151,7 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
       {account.services.length > 0 && (
         <Card className="overflow-hidden">
           <h2 className="border-b border-border px-5 py-3 font-semibold">
-            Shërbimet ({account.services.length})
+            {t("services.title")} ({account.services.length})
           </h2>
           <ul className="divide-y divide-border">
             {account.services.map((s) => (
@@ -165,10 +161,10 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
                     {s.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDuration(s.duration_minutes)} · {formatPrice(s.price)}
+                    {fmt.duration(s.duration_minutes)} · {fmt.price(s.price)}
                   </p>
                 </div>
-                {!s.is_active && <Badge variant="secondary">Joaktiv</Badge>}
+                {!s.is_active && <Badge variant="secondary">{t("services.inactive")}</Badge>}
               </li>
             ))}
           </ul>
@@ -179,26 +175,26 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
       {account.recent_bookings.length > 0 && (
         <Card className="overflow-hidden">
           <div className="border-b border-border px-5 py-3">
-            <h2 className="font-semibold">Rezervimet e fundit</h2>
+            <h2 className="font-semibold">{t("admin.recentBookings")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Numrat e telefonit të klientëve nuk shfaqen këtu.
+              {t("admin.phonesHidden")}
             </p>
           </div>
           <ul className="divide-y divide-border">
             {account.recent_bookings.map((b) => (
               <li key={b.id} className="flex items-center gap-3 px-5 py-3 text-sm">
                 <span className="w-24 shrink-0 tabular-nums text-muted-foreground">
-                  {formatDayMonthFromInstant(b.start_time)}
+                  {fmt.dayMonthFromInstant(b.start_time)}
                 </span>
                 <span className="w-12 shrink-0 tabular-nums text-muted-foreground">
-                  {formatTime(b.start_time)}
+                  {fmt.time(b.start_time)}
                 </span>
                 <span className="min-w-0 flex-1 truncate">{b.customer_name}</span>
                 <span className="hidden min-w-0 flex-1 truncate text-muted-foreground sm:block">
                   {b.service_name}
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {STATUS_LABELS_SQ[b.status]}
+                  {fmt.status(b.status)}
                 </span>
               </li>
             ))}

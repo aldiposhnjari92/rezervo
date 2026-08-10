@@ -5,6 +5,8 @@ import { CalendarOff, Check, Clock, Loader2, MessageCircle, Phone } from "lucide
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { LanguageToggle } from "@/components/language-switcher";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
@@ -13,16 +15,11 @@ import {
   BOOKING_WINDOW_DAYS,
   buildAvailability,
   dayOfMonth,
-  formatDayMonth,
-  formatDayMonthFromInstant,
   formatDuration,
-  formatPrice,
-  formatTime,
   todayInTirane,
   upcomingDates,
 } from "@/lib/availability";
 import {
-  DAY_LABELS_SHORT_SQ,
   type PublicBusiness,
   type PublicService,
   type TakenSlot,
@@ -31,6 +28,8 @@ import { cn } from "@/lib/utils";
 import { submitBooking, type CreatedBooking } from "./actions";
 
 export function BookingFlow({ business }: { business: PublicBusiness }) {
+  const t = useT();
+  const fmt = useFormat();
   // `now` vendoset vetëm pas montimit: kështu shmangim mospërputhjen server/klient
   // (serveri dhe telefoni nuk e kanë kurrë të njëjtin sekond).
   const [now, setNow] = useState<Date | null>(null);
@@ -156,7 +155,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
     if (!service || !slotIso || submitting) return;
 
     const nextErrors: { name?: string; phone?: string } = {};
-    if (name.trim().length < 2) nextErrors.name = "Shkruani emrin tuaj.";
+    if (name.trim().length < 2) nextErrors.name = t("public.nameRequired");
     if (!isValidAlbanianPhone(phone)) nextErrors.phone = "Shembull: 069 123 4567";
 
     setErrors(nextErrors);
@@ -198,11 +197,12 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
     <div className="min-h-screen bg-muted/30 pb-32">
       {/* ------------------------------------------------------------ header */}
       <header className="border-b border-border bg-card">
-        <div className="container max-w-lg py-6">
-          <h1 className="text-2xl font-semibold tracking-tight">{business.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Zgjidh shërbimin dhe orën. Pagesa bëhet në dyqan.
-          </p>
+        <div className="container flex max-w-lg items-start justify-between gap-3 py-6">
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-semibold tracking-tight">{business.name}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("public.tagline")}</p>
+          </div>
+          <LanguageToggle className="-mr-2 shrink-0" />
         </div>
       </header>
 
@@ -210,14 +210,14 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
         {!hasServices ? (
           <EmptyState
             icon={CalendarOff}
-            title="Ende nuk pranohen rezervime"
-            description="Ky biznes nuk ka shtuar shërbime. Provo sërish më vonë ose kontaktoje me telefon."
+            title={t("public.notAcceptingTitle")}
+            description={t("public.notAcceptingBody")}
           />
         ) : (
           <>
             {/* ------------------------------------------------- 1. shërbimi */}
             <section>
-              <SectionTitle step={1} title="Zgjidh shërbimin" />
+              <SectionTitle step={1} title={t("public.step1")} />
 
               <div className="space-y-2">
                 {business.services.map((item) => {
@@ -245,7 +245,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
 
                       <div className="flex shrink-0 items-center gap-3">
                         <span className="font-medium tabular-nums">
-                          {formatPrice(item.price)}
+                          {fmt.price(item.price)}
                         </span>
                         <span
                           className={cn(
@@ -265,15 +265,15 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
             {/* ------------------------------------------------------ 2. ora */}
             {service && (
               <section ref={timeRef} className="scroll-mt-4">
-                <SectionTitle step={2} title="Zgjidh orën" />
+                <SectionTitle step={2} title={t("public.step2")} />
 
                 {loadError ? (
                   <div className="rounded-2xl border border-border bg-card p-4 text-center">
                     <p className="text-sm text-muted-foreground">
-                      Nuk u ngarkuan dot oraret e lira.
+                      {t("public.slotsFailed")}
                     </p>
                     <Button variant="outline" size="sm" className="mt-3" onClick={loadTakenSlots}>
-                      Provo sërish
+                      {t("common.retry")}
                     </Button>
                   </div>
                 ) : !availability ? (
@@ -305,7 +305,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
                             )}
                           >
                             <span className="text-[11px] uppercase tracking-wide">
-                              {info ? DAY_LABELS_SHORT_SQ[info.dayKey] : ""}
+                              {info ? fmt.dayShort(info.dayKey) : ""}
                             </span>
                             <span className="text-lg font-semibold tabular-nums leading-tight">
                               {dayOfMonth(day)}
@@ -317,9 +317,9 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
 
                     {/* orët */}
                     {!selectedDay || selectedDay.isClosed ? (
-                      <ClosedNotice text="Mbyllur këtë ditë. Zgjidh një ditë tjetër." />
+                      <ClosedNotice text={t("public.closedDay")} />
                     ) : selectedDay.availableCount === 0 ? (
-                      <ClosedNotice text="Nuk ka orë të lira këtë ditë. Provo një ditë tjetër." />
+                      <ClosedNotice text={t("public.noSlots")} />
                     ) : (
                       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                         {selectedDay.slots.map((slot) => {
@@ -353,11 +353,11 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
             {/* --------------------------------------------------- 3. kontakti */}
             {service && slotIso && (
               <section ref={formRef} className="scroll-mt-4">
-                <SectionTitle step={3} title="Të dhënat e tua" />
+                <SectionTitle step={3} title={t("public.step3")} />
 
                 <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
                   <div className="space-y-2">
-                    <Label htmlFor="customer-name">Emri dhe mbiemri</Label>
+                    <Label htmlFor="customer-name">{t("public.fullName")}</Label>
                     <Input
                       id="customer-name"
                       value={name}
@@ -365,7 +365,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
                         setName(e.target.value);
                         setErrors((prev) => ({ ...prev, name: undefined }));
                       }}
-                      placeholder="p.sh. Ana Hoxha"
+                      placeholder={t("public.namePlaceholder")}
                       autoComplete="name"
                       maxLength={80}
                       aria-invalid={Boolean(errors.name)}
@@ -374,7 +374,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="customer-phone">Numri i telefonit</Label>
+                    <Label htmlFor="customer-phone">{t("public.phone")}</Label>
                     <Input
                       id="customer-phone"
                       type="tel"
@@ -415,10 +415,10 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
 
             <div className="mb-3 flex items-center justify-between gap-3 text-sm">
               <span className="min-w-0 truncate text-muted-foreground">
-                {service.name} · {formatDayMonth(date ?? "")} në {formatTime(slotIso)}
+                {service.name} · {fmt.dayMonth(date ?? "")} · {fmt.time(slotIso)}
               </span>
               <span className="shrink-0 font-medium tabular-nums">
-                {formatPrice(service.price)}
+                {fmt.price(service.price)}
               </span>
             </div>
 
@@ -429,7 +429,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
               disabled={!canSubmit || submitting}
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Konfirmo Rezervimin
+              {t("public.confirm")}
             </Button>
           </div>
         </div>
@@ -485,7 +485,9 @@ function SuccessScreen({
   booking: CreatedBooking;
   businessPhone: string | null;
 }) {
-  const day = formatDayMonthFromInstant(booking.start_time);
+  const t = useT();
+  const fmt = useFormat();
+  const day = fmt.dayMonthFromInstant(booking.start_time);
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">
@@ -495,30 +497,30 @@ function SuccessScreen({
         </div>
 
         <h1 className="text-center text-2xl font-semibold tracking-tight">
-          Rezervimi u konfirmua!
+          {t("public.confirmedTitle")}
         </h1>
         <p className="mt-2 flex items-center gap-2 text-center text-sm text-muted-foreground">
           <MessageCircle className="h-4 w-4 shrink-0" />
-          Do të merrni një kujtesë në WhatsApp.
+          {t("public.reminderNote")}
         </p>
 
         <div className="mt-7 w-full rounded-2xl border border-border bg-card p-5">
-          <Row label="Biznesi" value={booking.business_name} />
-          <Row label="Shërbimi" value={booking.service_name} />
-          <Row label="Data" value={day} />
+          <Row label={t("public.business")} value={booking.business_name} />
+          <Row label={t("public.service")} value={booking.service_name} />
+          <Row label={t("public.date")} value={day} />
           <Row
-            label="Ora"
-            value={`${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`}
+            label={t("public.time")}
+            value={`${fmt.time(booking.start_time)} – ${fmt.time(booking.end_time)}`}
           />
-          <Row label="Emri" value={booking.customer_name} />
-          <Row label="Për të paguar" value={`${formatPrice(booking.price)} (në dyqan)`} last />
+          <Row label={t("public.name")} value={booking.customer_name} />
+          <Row label={t("public.toPay")} value={fmt.price(booking.price)} last />
         </div>
 
         {businessPhone && (
           <Button variant="outline" className="mt-4 w-full" asChild>
             <a href={`tel:${businessPhone}`}>
               <Phone className="h-4 w-4" />
-              Telefono biznesin
+              {t("public.callBusiness")}
             </a>
           </Button>
         )}

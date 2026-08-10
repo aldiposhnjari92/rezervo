@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/lib/i18n/provider";
+import type { DictKey } from "@/lib/i18n/sq";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "signin" | "signup";
@@ -19,27 +21,27 @@ type Mode = "signin" | "signup";
  */
 const MIN_PASSWORD = 8;
 
-/** Mesazhet e Supabase janë në anglisht — i përkthejmë ato që hasen realisht. */
-function translateAuthError(message: string): string {
+/**
+ * Supabase i kthen gabimet vetëm në anglisht. Këtu kthehen në ÇELËSA, jo në
+ * tekst: përkthimi bëhet te komponenti, ku gjuha aktuale dihet.
+ */
+function authErrorKey(message: string): DictKey {
   const m = message.toLowerCase();
-  if (m.includes("invalid login credentials")) return "Email-i ose fjalëkalimi është gabim.";
-  if (m.includes("user already registered")) return "Ky email është i regjistruar. Provo të hysh.";
-  if (m.includes("password should be at least"))
-    return "Fjalëkalimi është shumë i shkurtër.";
-  if (m.includes("email not confirmed"))
-    return "Konfirmo email-in tënd përpara se të hysh. Kontrollo inbox-in.";
-  if (m.includes("unable to validate email")) return "Adresa e email-it nuk është e vlefshme.";
+  if (m.includes("invalid login credentials")) return "login.wrongCredentials";
+  if (m.includes("user already registered")) return "login.emailRegistered";
+  if (m.includes("password should be at least")) return "login.shortPassword";
+  if (m.includes("email not confirmed")) return "login.confirmFirst";
+  if (m.includes("unable to validate email")) return "login.badEmail";
   if (m.includes("pwned") || m.includes("compromised") || m.includes("breach"))
-    return "Ky fjalëkalim është parë në rrjedhje të dhënash. Zgjidh një tjetër.";
-  if (m.includes("rate limit") || m.includes("too many"))
-    return "Shumë përpjekje. Prit pak minuta dhe provo sërish.";
-  return "Diçka shkoi keq. Provo sërish.";
+    return "login.pwned";
+  if (m.includes("rate limit") || m.includes("too many")) return "login.rateLimited";
+  return "err.generic";
 }
 
-const OAUTH_ERRORS: Record<string, string> = {
-  oauth: "Hyrja me Google u ndërpre. Provo sërish.",
-  missing_code: "Google nuk ktheu një kod të vlefshëm. Provo sërish.",
-  exchange: "Nuk u krijua dot sesioni. Provo sërish.",
+const OAUTH_ERRORS: Record<string, DictKey> = {
+  oauth: "login.googleCancelled",
+  missing_code: "login.googleBadCode",
+  exchange: "login.noSession",
 };
 
 export function LoginForm({
@@ -54,6 +56,7 @@ export function LoginForm({
   oauthError?: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,8 +66,11 @@ export function LoginForm({
   const isSignup = mode === "signup";
 
   // Gabimi vjen si parametër URL-je pasi Google na kthen te /auth/callback.
+  // Varet vetëm nga `oauthError`: një ndryshim gjuhe nuk duhet ta rishfaqë
+  // njoftimin për një gabim që përdoruesi e ka parë tashmë.
   useEffect(() => {
-    if (oauthError) toast.error(OAUTH_ERRORS[oauthError] ?? "Hyrja me Google dështoi.");
+    if (oauthError) toast.error(t(OAUTH_ERRORS[oauthError] ?? "login.googleFailed"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [oauthError]);
 
   async function signInWithGoogle() {
@@ -79,7 +85,7 @@ export function LoginForm({
     });
 
     if (error) {
-      toast.error("Nuk u lidhëm dot me Google. Provo sërish.");
+      toast.error(t("login.googleFailed"));
       setGoogleLoading(false);
     }
     // Në sukses shfletuesi largohet drejt Google — mos e hiq gjendjen e ngarkimit.
@@ -91,7 +97,7 @@ export function LoginForm({
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !password) {
-      toast.error("Plotëso email-in dhe fjalëkalimin.");
+      toast.error(t("login.fillBoth"));
       return;
     }
     if (isSignup && password.length < MIN_PASSWORD) {
@@ -110,18 +116,18 @@ export function LoginForm({
         });
 
         if (error) {
-          toast.error(translateAuthError(error.message));
+          toast.error(t(authErrorKey(error.message)));
           return;
         }
 
         // Nëse konfirmimi me email është aktiv, s'ka sesion ende.
         if (!data.session) {
-          toast.success("Të dërguam një email konfirmimi. Hape atë për të vazhduar.");
+          toast.success(t("auth.confirmSent"));
           setMode("signin");
           return;
         }
 
-        toast.success("Llogaria u krijua!");
+        toast.success(t("auth.accountCreated"));
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
@@ -129,7 +135,7 @@ export function LoginForm({
         });
 
         if (error) {
-          toast.error(translateAuthError(error.message));
+          toast.error(t(authErrorKey(error.message)));
           return;
         }
       }
@@ -137,7 +143,7 @@ export function LoginForm({
       router.replace(next && next.startsWith("/") ? next : "/dashboard");
       router.refresh();
     } catch {
-      toast.error("Nuk u lidhëm dot me serverin. Kontrollo internetin.");
+      toast.error(t("login.offline"));
     } finally {
       setLoading(false);
     }
@@ -147,12 +153,12 @@ export function LoginForm({
     <div className="w-full max-w-sm">
       <div className="mb-9">
         <h1 className="text-balance text-3xl font-bold tracking-tight">
-          {isSignup ? "Krijo dyqanin tënd" : "Mirë se u ktheve"}
+          {isSignup ? t("auth.createTitle") : t("auth.welcomeBack")}
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
           {isSignup
-            ? "Një llogari falas, dhe rezervimi i parë mund të vijë sot."
-            : "Hyr për të parë rezervimet e ditës."}
+            ? t("auth.createBody")
+            : t("auth.welcomeBackBody")}
         </p>
       </div>
 
@@ -168,12 +174,12 @@ export function LoginForm({
               disabled={googleLoading || loading}
             >
               {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleMark />}
-              Vazhdo me Google
+              {t("auth.withGoogle")}
             </Button>
 
             <div className="my-6 flex items-center gap-4">
               <span className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">ose me email</span>
+              <span className="text-xs text-muted-foreground">{t("auth.orEmail")}</span>
               <span className="h-px flex-1 bg-border" />
             </div>
           </>
@@ -181,7 +187,7 @@ export function LoginForm({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-<Label htmlFor="email">Email</Label>
+<Label htmlFor="email">{t("auth.email")}</Label>
             <Input
               id="email"
               type="email"
@@ -196,7 +202,7 @@ export function LoginForm({
           </div>
 
           <div className="space-y-2">
-<Label htmlFor="password">Fjalëkalimi</Label>
+<Label htmlFor="password">{t("auth.password")}</Label>
             <Input
               id="password"
               type="password"
@@ -217,19 +223,19 @@ export function LoginForm({
             disabled={loading}
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isSignup ? "Krijo llogarinë" : "Hyr"}
+            {isSignup ? t("auth.createAccount") : t("auth.signIn")}
           </Button>
         </form>
 
         <div className="mt-7 border-t border-border pt-5 text-sm text-muted-foreground">
-          {isSignup ? "Ke tashmë një llogari?" : "Nuk ke llogari?"}{" "}
+          {isSignup ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
           <button
             type="button"
             className="font-medium text-primary hover:underline"
             onClick={() => setMode(isSignup ? "signin" : "signup")}
             disabled={loading}
           >
-            {isSignup ? "Hyr këtu" : "Regjistrohu falas"}
+            {isSignup ? t("auth.signInHere") : t("auth.signUp")}
           </button>
         </div>
       </div>

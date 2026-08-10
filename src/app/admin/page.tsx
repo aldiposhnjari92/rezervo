@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { BookingsChart, StatusBreakdown } from "@/components/charts";
 import { StatTile } from "@/components/stat-tile";
 import { createClient } from "@/lib/supabase/server";
-import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
+import { getFormat, getT } from "@/lib/i18n";
 import type {
   AdminBusinessRow,
   AdminOverview,
@@ -23,6 +23,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const supabase = createClient();
+  const t = getT();
+  const fmt = getFormat();
 
   const [overviewRes, dailyRes, businessesRes, orphansRes] = await Promise.all([
     supabase.rpc("admin_overview"),
@@ -40,8 +42,8 @@ export default async function AdminPage() {
     return (
       <EmptyState
         icon={LayoutDashboard}
-        title="Analitika nuk u ngarkua"
-        description={overviewRes.error?.message ?? "Provo të rifreskosh faqen."}
+        title={t("admin.loadFailed")}
+        description={overviewRes.error?.message ?? t("dashboard.loadFailedBody")}
       />
     );
   }
@@ -54,44 +56,44 @@ export default async function AdminPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Pamja e platformës"
-        description="Të gjitha bizneset, llogaritë dhe rezervimet në Rezervo.al."
+        title={t("admin.title")}
+        description={t("admin.subtitle")}
       />
 
       {/* ------------------------------------------------------- numrat kryesorë */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
-          label="Biznese"
+          label={t("admin.businesses")}
           value={overview.businesses_total}
-          hint={`+${overview.businesses_new_30d} këtë muaj`}
+          hint={t("admin.newThisMonth", { count: overview.businesses_new_30d })}
         />
         <StatTile
-          label="Llogari"
+          label={t("admin.accounts")}
           value={overview.users_total}
-          hint={`${activationRate}% krijuan dyqan`}
+          hint={t("admin.activationRate", { percent: activationRate })}
         />
         <StatTile
-          label="Rezervime"
+          label={t("admin.bookings")}
           value={overview.bookings_total}
-          hint={`${overview.bookings_30d.toLocaleString("de-DE")} 30 ditët e fundit`}
+          hint={t("admin.last30", { count: fmt.number(overview.bookings_30d) })}
         />
         <StatTile
-          label="Vlera e shërbimeve"
-          value={formatMoney(overview.gmv_total)}
-          hint={`${formatMoney(overview.gmv_30d)} 30 ditët e fundit`}
+          label={t("admin.gmv")}
+          value={fmt.money(overview.gmv_total)}
+          hint={t("admin.last30", { count: fmt.money(overview.gmv_30d) })}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
-          label="Aktive (30 ditë)"
+          label={t("admin.active30")}
           value={overview.businesses_active_30d}
-          hint="me të paktën 1 rezervim"
+          hint={t("admin.active30Hint")}
         />
-        <StatTile label="Rezervime në pritje" value={overview.bookings_upcoming} />
-        <StatTile label="Shërbime aktive" value={overview.services_total} />
+        <StatTile label={t("admin.upcoming")} value={overview.bookings_upcoming} />
+        <StatTile label={t("admin.services")} value={overview.services_total} />
         <StatTile
-          label="Të pezulluara"
+          label={t("admin.suspended")}
           value={overview.businesses_suspended}
           tone={overview.businesses_suspended > 0 ? "warning" : "default"}
         />
@@ -113,13 +115,13 @@ export default async function AdminPage() {
       {/* ---------------------------------------------------------------- bizneset */}
       <Card className="overflow-hidden">
         <div className="flex items-baseline justify-between gap-3 border-b border-border px-5 py-4">
-          <h2 className="font-semibold">Bizneset</h2>
+          <h2 className="font-semibold">{t("admin.businessList")}</h2>
           <span className="text-sm text-muted-foreground">{businesses.length}</span>
         </div>
 
         {businesses.length === 0 ? (
           <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            Ende asnjë biznes i regjistruar.
+            {t("admin.noBusinesses")}
           </p>
         ) : (
           <>
@@ -128,13 +130,13 @@ export default async function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="px-5 py-2.5 font-medium">Biznesi</th>
-                    <th className="px-3 py-2.5 font-medium">Pronari</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Shërbime</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Rezervime</th>
-                    <th className="px-3 py-2.5 text-right font-medium">30 ditë</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Pa ardhur</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Vlera</th>
+                    <th className="px-5 py-2.5 font-medium">{t("admin.colBusiness")}</th>
+                    <th className="px-3 py-2.5 font-medium">{t("admin.colOwner")}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t("admin.colServices")}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t("admin.colBookings")}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t("admin.col30d")}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t("admin.colNoShows")}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t("admin.colValue")}</th>
                     <th className="px-5 py-2.5" />
                   </tr>
                 </thead>
@@ -153,7 +155,7 @@ export default async function AdminPage() {
                           {b.suspended_at && (
                             <Badge variant="warning" className="gap-1">
                               <Ban className="h-3 w-3" />
-                              Pezulluar
+                              {t("admin.suspendedBadge")}
                             </Badge>
                           )}
                         </div>
@@ -172,13 +174,13 @@ export default async function AdminPage() {
                           <span className="text-muted-foreground">0</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-right tabular-nums">{formatMoney(b.gmv)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{fmt.money(b.gmv)}</td>
                       <td className="px-5 py-3 text-right">
                         <Link
                           href={`/admin/${b.owner_id}`}
                           className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                         >
-                          Hap
+                          {t("common.open")}
                           <ChevronRight className="h-3.5 w-3.5" />
                         </Link>
                       </td>
@@ -201,14 +203,14 @@ export default async function AdminPage() {
                       <p className="truncate font-medium">{b.name}</p>
                       {b.suspended_at && (
                         <Badge variant="warning" className="shrink-0">
-                          Pezulluar
+                          {t("admin.suspendedBadge")}
                         </Badge>
                       )}
                     </div>
                     <p className="truncate text-xs text-muted-foreground">{b.owner_email}</p>
                     <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-                      {b.bookings_total} rezervime · {b.services_count} shërbime ·{" "}
-                      {formatMoney(b.gmv)}
+                      {t("admin.mobileSummary", { bookings: b.bookings_total, services: b.services_count })}{" "}
+                      {fmt.money(b.gmv)}
                     </p>
                   </div>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -223,9 +225,9 @@ export default async function AdminPage() {
       {orphans.length > 0 && (
         <Card className="overflow-hidden">
           <div className="border-b border-border px-5 py-4">
-            <h2 className="font-semibold">Llogari pa dyqan</h2>
+            <h2 className="font-semibold">{t("admin.orphans")}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              U regjistruan por nuk e mbaruan konfigurimin — {orphans.length} gjithsej.
+              {t("admin.orphansHint", { count: orphans.length })}
             </p>
           </div>
           <div className="divide-y divide-border">
@@ -237,7 +239,7 @@ export default async function AdminPage() {
               >
                 <span className="truncate">{o.email}</span>
                 <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                  {formatDayMonthFromInstant(o.created_at)}
+                  {fmt.dayMonthFromInstant(o.created_at)}
                   <ChevronRight className="h-3.5 w-3.5" />
                 </span>
               </Link>

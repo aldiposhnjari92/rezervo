@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useFormat, useT } from "@/lib/i18n/provider";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TimeSelect, timeOptions } from "@/components/time-select";
-import { formatDuration, formatPrice, tiraneInstant, todayInTirane } from "@/lib/availability";
+import { tiraneInstant, todayInTirane } from "@/lib/availability";
 import { createManualBooking } from "@/lib/owner-actions";
 import type { Service } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -39,6 +41,8 @@ export function ManualBookingDialog({
   defaultTime?: string;
 }) {
   const router = useRouter();
+  const t = useT();
+  const fmt = useFormat();
 
   const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
   const [name, setName] = useState("");
@@ -58,15 +62,15 @@ export function ManualBookingDialog({
 
   async function submit() {
     if (!serviceId) {
-      toast.error("Shto fillimisht një shërbim.");
+      toast.error(t("manual.noServices"));
       return;
     }
     if (name.trim().length < 2) {
-      toast.error("Shkruaj emrin e klientit.");
+      toast.error(t("err.customerName"));
       return;
     }
     if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) {
-      toast.error("Ora nuk është e vlefshme.");
+      toast.error(t("err.time"));
       return;
     }
 
@@ -95,7 +99,7 @@ export function ManualBookingDialog({
     <Dialog open={open} onOpenChange={(next) => !saving && onOpenChange(next)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rezervim i ri</DialogTitle>
+          <DialogTitle>{t("manual.title")}</DialogTitle>
           <DialogDescription>
             Për klientët që telefonojnë ose vijnë direkt. Orari i punës nuk zbatohet këtu —
             ti vendos.
@@ -104,7 +108,7 @@ export function ManualBookingDialog({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Shërbimi</Label>
+            <Label>{t("manual.service")}</Label>
             {services.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
                 Ende asnjë shërbim aktiv.
@@ -125,7 +129,7 @@ export function ManualBookingDialog({
                   >
                     <span className="block truncate text-sm font-medium">{s.name}</span>
                     <span className="block text-xs text-muted-foreground">
-                      {formatDuration(s.duration_minutes)} · {formatPrice(s.price)}
+                      {fmt.duration(s.duration_minutes)} · {fmt.price(s.price)}
                     </span>
                   </button>
                 ))}
@@ -135,7 +139,7 @@ export function ManualBookingDialog({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="mb-date">Data</Label>
+              <Label htmlFor="mb-date">{t("manual.date")}</Label>
               <input
                 id="mb-date"
                 type="date"
@@ -147,9 +151,9 @@ export function ManualBookingDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="mb-time">Ora</Label>
+              <Label htmlFor="mb-time">{t("manual.time")}</Label>
               <TimeSelect
-                label="Ora e rezervimit"
+                label={t("manual.time")}
                 value={time}
                 disabled={saving}
                 options={SLOT_TIMES}
@@ -159,12 +163,12 @@ export function ManualBookingDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mb-name">Emri i klientit</Label>
+            <Label htmlFor="mb-name">{t("manual.customerName")}</Label>
             <Input
               id="mb-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="p.sh. Ana Hoxha"
+              placeholder={t("manual.customerNamePlaceholder")}
               maxLength={80}
               disabled={saving}
             />
@@ -172,7 +176,8 @@ export function ManualBookingDialog({
 
           <div className="space-y-2">
             <Label htmlFor="mb-phone">
-              Telefoni <span className="font-normal text-muted-foreground">(opsional)</span>
+              {t("manual.phone")}{" "}
+              <span className="font-normal text-muted-foreground">{t("common.optional")}</span>
             </Label>
             <Input
               id="mb-phone"
@@ -190,7 +195,8 @@ export function ManualBookingDialog({
 
           <div className="space-y-2">
             <Label htmlFor="mb-note">
-              Shënim <span className="font-normal text-muted-foreground">(opsional)</span>
+              {t("manual.note")}{" "}
+              <span className="font-normal text-muted-foreground">{t("common.optional")}</span>
             </Label>
             <Input
               id="mb-note"
@@ -205,11 +211,11 @@ export function ManualBookingDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Anulo
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={saving || services.length === 0}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            Shto rezervimin
+            {t("manual.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

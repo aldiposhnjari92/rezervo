@@ -6,8 +6,8 @@ import { CalendarX2, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-rea
 
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedButton } from "@/components/segmented";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { useReadOnly } from "../read-only";
-import { formatMoney, formatTime } from "@/lib/availability";
 import {
   CALENDAR_VIEWS,
   groupByDate,
@@ -18,13 +18,11 @@ import {
   monthGrid,
   startOfMonth,
   stepDate,
-  VIEW_LABELS_SQ,
   visibleHourRange,
   weekDates,
   type CalendarView as View,
 } from "@/lib/calendar";
 import {
-  DAY_LABELS_SHORT_SQ,
   DAY_KEYS,
   type BookingStatus,
   type BookingWithService,
@@ -37,6 +35,13 @@ import { ManualBookingDialog } from "./manual-booking-dialog";
 
 /** Lartësia e një ore në piksel, sipas pamjes. */
 const HOUR_PX: Record<"day" | "week", number> = { day: 64, week: 48 };
+
+/** Etiketat e pamjeve janë çelësa fjalori, jo tekst i fiksuar. */
+const VIEW_KEYS = {
+  month: "calendar.month",
+  week: "calendar.week",
+  day: "calendar.day",
+} as const;
 
 const STATUS_BLOCK: Record<BookingStatus, string> = {
   confirmed: "border-l-primary bg-primary/10 text-foreground",
@@ -72,6 +77,8 @@ export function CalendarView({
   const [selected, setSelected] = useState<BookingWithService | null>(null);
   const [adding, setAdding] = useState(false);
   const readOnly = useReadOnly();
+  const t = useT();
+  const fmt = useFormat();
 
   function go(nextView: View, nextDate: string) {
     startTransition(() => {
@@ -97,7 +104,7 @@ export function CalendarView({
               type="button"
               onClick={() => go(view, stepDate(view, date, -1))}
               className="flex h-9 w-9 items-center justify-center rounded-l-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Para"
+              aria-label={t("calendar.prev")}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -106,13 +113,13 @@ export function CalendarView({
               onClick={() => go(view, today)}
               className="h-9 border-x border-border px-3 text-sm font-medium transition-colors hover:bg-muted"
             >
-              Sot
+              {t("calendar.today")}
             </button>
             <button
               type="button"
               onClick={() => go(view, stepDate(view, date, 1))}
               className="flex h-9 w-9 items-center justify-center rounded-r-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Pas"
+              aria-label={t("calendar.next")}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -129,7 +136,7 @@ export function CalendarView({
         <Segmented className="flex-1 sm:flex-none">
           {CALENDAR_VIEWS.map((item) => (
             <SegmentedButton key={item} active={view === item} onClick={() => go(item, date)}>
-              {VIEW_LABELS_SQ[item]}
+              {t(VIEW_KEYS[item])}
             </SegmentedButton>
           ))}
         </Segmented>
@@ -137,7 +144,7 @@ export function CalendarView({
         {!readOnly && (
           <Button size="sm" className="shrink-0" onClick={() => setAdding(true)}>
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Rezervim</span>
+            <span className="hidden sm:inline">{t("calendar.newBooking")}</span>
           </Button>
         )}
         </div>
@@ -145,9 +152,9 @@ export function CalendarView({
 
       {/* --------------------------------------------------------- statistika */}
       <div className="grid shrink-0 grid-cols-3 gap-3">
-        <Stat label="Rezervime" value={active.length} />
-        <Stat label="Të ardhura" value={formatMoney(revenue)} />
-        <Stat label="Nuk erdhën" value={noShows} tone={noShows ? "warning" : "default"} />
+        <Stat label={t("calendar.statBookings")} value={active.length} />
+        <Stat label={t("calendar.statRevenue")} value={fmt.money(revenue)} />
+        <Stat label={t("calendar.statNoShows")} value={noShows} tone={noShows ? "warning" : "default"} />
       </div>
 
       {/* --------------------------------------------------------------- pamja */}
@@ -233,6 +240,8 @@ function MonthView({
 }) {
   const grid = monthGrid(date);
   const month = startOfMonth(date);
+  const t = useT();
+  const fmt = useFormat();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
@@ -243,7 +252,7 @@ function MonthView({
             key={key}
             className="py-2 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
           >
-            {DAY_LABELS_SHORT_SQ[key]}
+            {fmt.dayShort(key)}
           </div>
         ))}
       </div>
@@ -297,7 +306,7 @@ function MonthView({
                     )}
                   >
                     <span className="shrink-0 font-medium tabular-nums">
-                      {formatTime(booking.start_time)}
+                      {fmt.time(booking.start_time)}
                     </span>
                     <span className="truncate">{booking.customer_name}</span>
                   </button>
@@ -309,7 +318,7 @@ function MonthView({
                     onClick={() => onPickDay(day)}
                     className="w-full px-1 text-left text-[11px] font-medium text-muted-foreground hover:text-foreground"
                   >
-                    +{overflow} më shumë
+                    {t("calendar.more", { count: overflow })}
                   </button>
                 )}
               </div>
@@ -347,6 +356,8 @@ function TimeGrid({
 }) {
   const [mounted, setMounted] = useState(false);
   const [nowMin, setNowMin] = useState(0);
+  const t = useT();
+  const fmt = useFormat();
 
   // Vija e orës aktuale varet nga koha reale — vetëm pas montimit,
   // që serveri dhe klienti të nxjerrin të njëjtin HTML fillestar.
@@ -393,7 +404,7 @@ function TimeGrid({
                   className="flex flex-col items-center gap-0.5 py-2 transition-colors hover:bg-muted/60"
                 >
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                    {DAY_LABELS_SHORT_SQ[DAY_KEYS[(new Date(`${day}T12:00:00Z`).getUTCDay() + 6) % 7]]}
+                    {fmt.dayShort(DAY_KEYS[(new Date(`${day}T12:00:00Z`).getUTCDay() + 6) % 7])}
                   </span>
                   <span
                     className={cn(
@@ -416,9 +427,9 @@ function TimeGrid({
       {isEmpty && variant === "day" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
           <CalendarX2 className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Asnjë rezervim këtë ditë</p>
+          <p className="font-medium">{t("calendar.emptyDayTitle")}</p>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            Sapo një klient të rezervojë përmes linkut tënd, do të shfaqet këtu.
+            {t("calendar.emptyDayBody")}
           </p>
         </div>
       ) : (
@@ -505,11 +516,11 @@ function TimeGrid({
                               compact && "text-[10px]",
                             )}
                           >
-                            {formatTime(booking.start_time)} {booking.customer_name}
+                            {fmt.time(booking.start_time)} {booking.customer_name}
                           </span>
                           {!compact && (
                             <span className="block truncate text-[11px] leading-tight opacity-70">
-                              {booking.services?.name ?? "Shërbim i fshirë"}
+                              {booking.services?.name ?? t("booking.deletedService")}
                             </span>
                           )}
                         </button>
@@ -527,15 +538,15 @@ function TimeGrid({
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5">
         {(
           [
-            ["confirmed", "Konfirmuar"],
-            ["completed", "Përfunduar"],
-            ["no_show", "Nuk erdhi"],
-            ["cancelled", "Anuluar"],
+            "confirmed",
+            "completed",
+            "no_show",
+            "cancelled",
           ] as const
-        ).map(([status, label]) => (
+        ).map((status) => (
           <span key={status} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <span className={cn("h-2 w-2 rounded-full", STATUS_DOT[status])} />
-            {label}
+            {fmt.status(status)}
           </span>
         ))}
       </div>

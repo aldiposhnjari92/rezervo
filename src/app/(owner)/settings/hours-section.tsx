@@ -11,7 +11,7 @@ import { WorkingHoursEditor, validateWorkingHours } from "@/components/working-h
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
 import { useReadOnly } from "../read-only";
-import { useT } from "@/lib/i18n/provider";
+import { useFormat, useT } from "@/lib/i18n/provider";
 
 export function HoursSection({
   name,
@@ -27,11 +27,12 @@ export function HoursSection({
   const [saving, setSaving] = useState(false);
   const readOnly = useReadOnly();
   const t = useT();
+  const fmt = useFormat();
 
   const dirty = JSON.stringify(hours) !== JSON.stringify(initialHours);
 
   async function save() {
-    const error = validateWorkingHours(hours);
+    const error = validateWorkingHours(hours, t, fmt);
     if (error) {
       toast.error(error);
       return;
