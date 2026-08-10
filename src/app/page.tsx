@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { getT } from "@/lib/i18n";
 import {
   BrowserFrame,
   CalendarSpread,
@@ -22,36 +23,28 @@ import {
 } from "./landing-visual";
 
 const HIGHLIGHTS = [
-  { icon: CalendarCheck, title: "Rezervime 24/7", body: "Edhe kur dyqani është mbyllur." },
-  { icon: MessageCircle, title: "Kujtesa automatike", body: "Klienti nuk harron më takimin." },
-  { icon: BarChart3, title: "Të ardhurat, të qarta", body: "Sa bëri dita, java, muaji." },
-  { icon: Shield, title: "Pa komision", body: "Pagesa bëhet në dyqan, te ti." },
-];
+  { icon: CalendarCheck, title: "landing.f1Title", body: "landing.f1Body" },
+  { icon: MessageCircle, title: "landing.f2Title", body: "landing.f2Body" },
+  { icon: BarChart3, title: "landing.f3Title", body: "landing.f3Body" },
+  { icon: Shield, title: "landing.f4Title", body: "landing.f4Body" },
+] as const;
 
 const SECTIONS = [
   {
-    tag: "Për klientët",
+    tag: "landing.s1Tag",
     tagIcon: Users,
-    title: "Rezervojnë vetë, në 20 sekonda",
-    body: "Një link në bio të Instagram-it. Klienti zgjedh shërbimin, sheh vetëm orët e lira dhe konfirmon. Pa aplikacion, pa llogari, pa telefonata në mes të punës.",
-    points: [
-      "Oraret e zëna zhduken automatikisht",
-      "Dy klientë në të njëjtën orë janë të pamundur",
-      "Punon njësoj në çdo telefon",
-    ],
+    title: "landing.s1Title",
+    body: "landing.s1Body",
+    points: ["landing.s1p1", "landing.s1p2", "landing.s1p3"],
   },
   {
-    tag: "Për ty",
+    tag: "landing.s2Tag",
     tagIcon: BarChart3,
-    title: "E di saktësisht si po shkon dyqani",
-    body: "Të ardhurat e ditës dhe të muajit, shërbimet që sjellin më shumë, oraret që mbushen të parat dhe sa po të kushtojnë klientët që nuk shfaqen.",
-    points: [
-      "Krahasim automatik me periudhën e kaluar",
-      "Shërbimet dhe oraret më të kërkuara",
-      "Sa humbet nga mosardhjet",
-    ],
+    title: "landing.s2Title",
+    body: "landing.s2Body",
+    points: ["landing.s2p1", "landing.s2p2", "landing.s2p3"],
   },
-];
+] as const;
 
 /*
  * PLACEHOLDER — këto nuk janë dëshmi të vërteta.
@@ -59,61 +52,27 @@ const SECTIONS = [
  * ose hiqe fare seksionin. Mos publiko dëshmi të sajuara.
  */
 const TESTIMONIALS = [
-  {
-    quote:
-      "Më parë humbisja dy-tre klientë në javë sepse nuk përgjigjesha në telefon. Tani rezervojnë vetë ndërsa unë punoj.",
-    name: "Emri Mbiemri",
-    role: "Berber, Tiranë",
-  },
-  {
-    quote:
-      "Gjëja që më pëlqen më shumë është që në fund të ditës e di saktësisht sa bëra, pa e llogaritur me dorë.",
-    name: "Emri Mbiemri",
-    role: "Sallon thonjsh, Durrës",
-  },
-  {
-    quote:
-      "Kujtesa në WhatsApp e ka ulur ndjeshëm numrin e klientëve që nuk shfaqen. Vetëm kjo ia vlen.",
-    name: "Emri Mbiemri",
-    role: "Sallon bukurie, Vlorë",
-  },
-];
+  { quote: "landing.t1", name: "landing.placeholderName", role: "landing.t1Role" },
+  { quote: "landing.t2", name: "landing.placeholderName", role: "landing.t2Role" },
+  { quote: "landing.t3", name: "landing.placeholderName", role: "landing.t3Role" },
+] as const;
 
 const INCLUDED = [
-  "Rezervime dhe shërbime të pakufizuara",
-  "Kalendar ditor, javor dhe mujor",
-  "Panel me të ardhurat dhe statistikat",
-  "Listë klientësh me historikun e plotë",
-  "Kujtesa në WhatsApp për klientët",
-  "Rezervime me dorë për telefonatat",
-  "Ditë pushimi, festa dhe orar dreke",
-  "Mbështetje në shqip",
-];
+  "landing.inc1", "landing.inc2", "landing.inc3", "landing.inc4",
+  "landing.inc5", "landing.inc6", "landing.inc7", "landing.inc8",
+] as const;
 
 const FAQ = [
-  [
-    "A duhet të shkarkojnë diçka klientët?",
-    "Jo. Hapin linkun, zgjedhin orën, shkruajnë emrin dhe numrin. Mbaron aty — pa aplikacion, pa llogari, pa fjalëkalim.",
-  ],
-  [
-    "Po klienti që telefonon ose vjen direkt?",
-    "E shton vetë në kalendar me dy prekje. Orari i punës nuk të pengon dhe numri i telefonit nuk është i detyrueshëm.",
-  ],
-  [
-    "A merrni komision nga çmimet e mia?",
-    "Asnjë. Pagesa bëhet në dyqan, mes teje dhe klientit. Ne marrim vetëm abonimin mujor prej 1.000 Lek.",
-  ],
-  [
-    "Po kur mbyll për pushime ose festa?",
-    "I shënon datat një herë te rregullimet dhe ato ditë zhduken automatikisht nga faqja jote publike.",
-  ],
-  [
-    "A mund ta anuloj kur të dua?",
-    "Në çdo moment, pa kontratë dhe pa penalitet. Muaji i parë është falas dhe nuk kërkohet kartë krediti.",
-  ],
-];
+  ["landing.q1", "landing.a1"],
+  ["landing.q2", "landing.a2"],
+  ["landing.q3", "landing.a3"],
+  ["landing.q4", "landing.a4"],
+  ["landing.q5", "landing.a5"],
+] as const;
 
 export default function LandingPage() {
+  const t = getT();
+
   return (
     <div className="min-h-screen bg-background">
       {/* ------------------------------------------------------------------ nav */}
@@ -127,13 +86,13 @@ export default function LandingPage() {
               href="/login"
               className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Hyr
+              {t("landing.signIn")}
             </Link>
             <Link
               href="/login?mode=signup"
               className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
             >
-              Fillo falas
+              {t("landing.startFree")}
             </Link>
           </nav>
         </div>
@@ -152,19 +111,18 @@ export default function LandingPage() {
             <div className="mx-auto max-w-3xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-1.5 text-xs font-medium shadow-sm backdrop-blur">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                Ndërtuar për bizneset e vogla shqiptare
+                {t("landing.badge")}
               </div>
 
               <h1 className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-                Rezervo online,{" "}
+                {t("landing.heroA")}{" "}
                 <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
-                  pa telefonata
+                  {t("landing.heroB")}
                 </span>
               </h1>
 
               <p className="mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Berber, sallon, dentist apo lavazh — merr rezervime 24 orë në ditë përmes një
-                linku të vetëm, dhe humb shumë më pak klientë se sa humbisje dje.
+                {t("landing.heroBody")}
               </p>
 
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -172,29 +130,29 @@ export default function LandingPage() {
                   href="/login?mode=signup"
                   className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/40 sm:w-auto"
                 >
-                  Krijo dyqanin tënd falas
+                  {t("landing.ctaPrimary")}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link
                   href="#si-funksionon"
                   className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border bg-card px-7 text-sm font-semibold shadow-sm transition-colors hover:bg-muted sm:w-auto"
                 >
-                  Shiko si funksionon
+                  {t("landing.ctaSecondary")}
                 </Link>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Muaji i parë falas
+                  {t("landing.perkFree")}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Pa kartë krediti
+                  {t("landing.perkNoCard")}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Gati për 2 minuta
+                  {t("landing.perkFast")}
                 </span>
               </div>
             </div>
@@ -222,8 +180,8 @@ export default function LandingPage() {
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
                   <Icon className="h-5 w-5 text-primary" />
                 </span>
-                <h3 className="mt-4 font-semibold tracking-tight">{title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{body}</p>
+                <h3 className="mt-4 font-semibold tracking-tight">{t(title)}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t(body)}</p>
               </div>
             ))}
           </div>
@@ -240,12 +198,12 @@ export default function LandingPage() {
                 <div className={i % 2 === 1 ? "lg:order-2" : ""}>
                   <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                     <TagIcon className="h-3.5 w-3.5" />
-                    {tag}
+                    {t(tag)}
                   </span>
                   <h2 className="mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-                    {title}
+                    {t(title)}
                   </h2>
-                  <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{body}</p>
+                  <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{t(body)}</p>
 
                   <ul className="mt-7 space-y-3">
                     {points.map((point) => (
@@ -253,7 +211,7 @@ export default function LandingPage() {
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15">
                           <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                         </span>
-                        <span className="text-sm">{point}</span>
+                        <span className="text-sm">{t(point)}</span>
                       </li>
                     ))}
                   </ul>
@@ -276,10 +234,10 @@ export default function LandingPage() {
               ))}
             </div>
             <h2 className="mt-5 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-              Bërë për njerëz që punojnë me duar
+              {t("landing.testimonialsTitle")}
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Jo për zyra. Për dyqane ku telefoni bie ndërsa ke gërshërët në dorë.
+              {t("landing.testimonialsBody")}
             </p>
           </div>
 
@@ -291,15 +249,15 @@ export default function LandingPage() {
               >
                 <Quote className="h-6 w-6 text-primary/30" />
                 <blockquote className="mt-4 flex-1 text-pretty leading-relaxed">
-                  {quote}
+                  {t(quote)}
                 </blockquote>
                 <figcaption className="mt-6 flex items-center gap-3 border-t border-border pt-5">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/20 text-sm font-semibold">
                     {name.charAt(0)}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">{name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{role}</span>
+                    <span className="block truncate text-sm font-semibold">{t(name)}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{t(role)}</span>
                   </span>
                 </figcaption>
               </figure>
@@ -311,10 +269,10 @@ export default function LandingPage() {
         <section className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-6 sm:pb-28">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
-              Një çmim. Asgjë e fshehur.
+              {t("landing.pricingTitle")}
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Sa kushton një klient që nuk erdhi? Ndoshta më shumë se një muaj Rezervo.
+              {t("landing.pricingBody")}
             </p>
           </div>
 
@@ -323,23 +281,23 @@ export default function LandingPage() {
             <div className="relative rounded-3xl border border-border bg-card p-8 shadow-2xl shadow-primary/10">
               <div className="flex items-center justify-between">
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  Gjithçka e përfshirë
+                  {t("landing.included")}
                 </span>
                 <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  Muaji i parë falas
+                  {t("landing.perkFree")}
                 </span>
               </div>
 
               <div className="mt-7 flex items-baseline gap-2">
                 <span className="text-5xl font-bold tracking-tight tabular-nums">1.000</span>
-                <span className="text-lg text-muted-foreground">Lek / muaj</span>
+                <span className="text-lg text-muted-foreground">{t("landing.perMonth")}</span>
               </div>
 
               <ul className="mt-8 grid gap-3 sm:grid-cols-2">
                 {INCLUDED.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>{item}</span>
+                    <span>{t(item)}</span>
                   </li>
                 ))}
               </ul>
@@ -348,12 +306,12 @@ export default function LandingPage() {
                 href="/login?mode=signup"
                 className="group mt-8 flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/40"
               >
-                Krijo dyqanin tënd falas
+                {t("landing.ctaPrimary")}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
 
               <p className="mt-4 text-center text-xs text-muted-foreground">
-                Pa kontratë · Anulo kur të duash · Pa kartë krediti
+                {t("landing.noContract")}
               </p>
             </div>
           </div>
@@ -362,7 +320,7 @@ export default function LandingPage() {
         {/* -------------------------------------------------------------- faq */}
         <section className="mx-auto w-full max-w-3xl px-5 pb-20 sm:px-6 sm:pb-28">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-            Pyetje të shpeshta
+            {t("landing.faqTitle")}
           </h2>
 
           <div className="mt-12 space-y-3">
@@ -372,12 +330,12 @@ export default function LandingPage() {
                 className="group rounded-2xl border border-border bg-card px-6 py-5 shadow-sm"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold tracking-tight">
-                  {q}
+                  {t(q)}
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-transform duration-200 group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{a}</p>
+                <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{t(a)}</p>
               </details>
             ))}
           </div>
@@ -393,16 +351,16 @@ export default function LandingPage() {
 
             <div className="relative">
               <h2 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Dyqani yt mund të pranojë rezervime sonte
+                {t("landing.finalTitle")}
               </h2>
               <p className="mx-auto mt-4 max-w-md text-pretty text-white/80">
-                Krijo llogarinë, shto shërbimet, ndaj linkun. Nuk ka hap të katërt.
+                {t("landing.finalBody")}
               </p>
               <Link
                 href="/login?mode=signup"
                 className="group mt-9 inline-flex h-12 items-center gap-2 rounded-full bg-white px-8 text-sm font-semibold text-primary shadow-xl transition-transform hover:scale-[1.02]"
               >
-                Fillo falas
+                {t("landing.startFree")}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
@@ -417,14 +375,14 @@ export default function LandingPage() {
               Rezervo<span className="text-primary">.al</span>
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              © {new Date().getFullYear()} · Bërë në Shqipëri
+              © {new Date().getFullYear()} · {t("landing.madeIn")}
             </p>
           </div>
           <Link
             href="/login"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Hyr në llogari
+            {t("landing.signInFooter")}
           </Link>
         </div>
       </footer>

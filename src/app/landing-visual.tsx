@@ -1,5 +1,7 @@
 import { Bell, Check, TrendingUp } from "lucide-react";
 
+import { getT } from "@/lib/i18n";
+
 /**
  * Pamjet e produktit për faqen e prezantimit.
  *
@@ -63,6 +65,7 @@ export function BrowserFrame({
 
 /** Pamja ditore e kalendarit. */
 export function CalendarSpread() {
+  const t = getT();
   const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
   const gridHeight = (END_HOUR - START_HOUR) * HOUR_PX;
   const breakTop = (minutesFromStart("13:00") / 60) * HOUR_PX;
@@ -71,13 +74,13 @@ export function CalendarSpread() {
     <div className="bg-card">
       <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
         <div>
-          <p className="text-[15px] font-semibold tracking-tight">E hënë, 10 Gusht</p>
-          <p className="text-xs text-muted-foreground">5 rezervime · 3.200 Lek</p>
+          <p className="text-[15px] font-semibold tracking-tight">{t("mock.day")}</p>
+          <p className="text-xs text-muted-foreground">{t("mock.daySummary")}</p>
         </div>
         <div className="hidden items-center rounded-lg bg-muted p-0.5 text-xs font-medium sm:flex">
-          <span className="rounded-md px-2.5 py-1 text-muted-foreground">Muaj</span>
-          <span className="rounded-md px-2.5 py-1 text-muted-foreground">Javë</span>
-          <span className="rounded-md bg-background px-2.5 py-1 shadow-sm">Ditë</span>
+          <span className="rounded-md px-2.5 py-1 text-muted-foreground">{t("calendar.month")}</span>
+          <span className="rounded-md px-2.5 py-1 text-muted-foreground">{t("calendar.week")}</span>
+          <span className="rounded-md bg-background px-2.5 py-1 shadow-sm">{t("calendar.day")}</span>
         </div>
       </div>
 
@@ -150,6 +153,7 @@ export function CalendarSpread() {
 
 /** Kartelë e vogël që noton mbi pamjen kryesore. */
 export function FloatingNotification({ className = "" }: { className?: string }) {
+  const t = getT();
   return (
     <div
       className={`w-[15rem] rounded-2xl border border-border bg-card p-4 shadow-xl shadow-primary/10 ${className}`}
@@ -159,7 +163,7 @@ export function FloatingNotification({ className = "" }: { className?: string })
           <Bell className="h-4 w-4 text-primary" />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold tracking-tight">Rezervim i ri</p>
+          <p className="truncate text-sm font-semibold tracking-tight">{t("mock.newBooking")}</p>
           <p className="truncate text-xs text-muted-foreground">Ana Hoxha · 09:30</p>
         </div>
       </div>
@@ -168,6 +172,7 @@ export function FloatingNotification({ className = "" }: { className?: string })
 }
 
 export function FloatingEarnings({ className = "" }: { className?: string }) {
+  const t = getT();
   return (
     <div
       className={`w-[13rem] rounded-2xl border border-border bg-card p-4 shadow-xl shadow-emerald-500/10 ${className}`}
@@ -176,7 +181,7 @@ export function FloatingEarnings({ className = "" }: { className?: string }) {
         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
           <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         </span>
-        <p className="text-xs text-muted-foreground">Këtë javë</p>
+        <p className="text-xs text-muted-foreground">{t("mock.thisWeek")}</p>
       </div>
       <p className="mt-3 text-2xl font-bold tracking-tight tabular-nums">18.400 L</p>
       <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
@@ -188,6 +193,7 @@ export function FloatingEarnings({ className = "" }: { className?: string }) {
 
 /** Paneli i të ardhurave — për seksionin e analitikës. */
 export function EarningsPanel() {
+  const t = getT();
   const bars = [40, 62, 48, 78, 55, 92, 70];
   const days = ["H", "M", "M", "E", "P", "S", "D"];
 
@@ -195,7 +201,7 @@ export function EarningsPanel() {
     <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-primary/5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Të ardhurat, 30 ditë</p>
+          <p className="text-sm text-muted-foreground">{t("mock.revenue30")}</p>
           <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">64.800 L</p>
         </div>
         <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
@@ -218,8 +224,8 @@ export function EarningsPanel() {
       <div className="mt-6 grid grid-cols-3 gap-3 border-t border-border pt-5">
         {[
           ["Rezervime", "128"],
-          ["Klientë", "94"],
-          ["Nuk erdhën", "6"],
+          [t("mock.customers"), "94"],
+          [t("mock.noShows"), "6"],
         ].map(([label, value]) => (
           <div key={label}>
             <p className="text-xs text-muted-foreground">{label}</p>

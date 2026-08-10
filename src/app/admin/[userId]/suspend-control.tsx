@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { Ban, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatDayMonthFromInstant } from "@/lib/availability";
 import { setBusinessSuspended } from "@/lib/admin-actions";
 
 export function SuspendControl({
@@ -23,6 +24,8 @@ export function SuspendControl({
   suspendedReason: string | null;
 }) {
   const router = useRouter();
+  const t = useT();
+  const fmt = useFormat();
   const [pending, startTransition] = useTransition();
   const [reason, setReason] = useState("");
 
@@ -67,7 +70,7 @@ export function SuspendControl({
       {isSuspended ? (
         <>
           <p className="mt-1 text-sm text-muted-foreground">
-            I pezulluar më {formatDayMonthFromInstant(suspendedAt!)}. Faqja publike kthen 404 dhe
+            I pezulluar më {fmt.dayMonthFromInstant(suspendedAt!)}. Faqja publike kthen 404 dhe
             nuk pranohen rezervime të reja. Të dhënat nuk janë prekur.
           </p>
           {suspendedReason && (
@@ -105,15 +108,15 @@ export function SuspendControl({
               id="suspend-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="p.sh. spam, kërkesë e pronarit"
+              placeholder={t("admin.suspendReasonPlaceholder")}
               maxLength={200}
               disabled={pending}
               className="bg-background"
             />
             <p className="text-xs text-muted-foreground">
               {reason.trim()
-                ? "Kjo arsye i dërgohet pronarit me email, fjalë për fjalë."
-                : "Pa arsye, pronari merr një njoftim të përgjithshëm pezullimi."}
+                ? t("admin.reasonSent")
+                : t("admin.reasonGeneric")}
             </p>
           </div>
 

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import { formatDayMonth } from "@/lib/availability";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { STATUS_COLORS, STATUS_ORDER, type DailyBookings } from "@/lib/admin-types";
-import { STATUS_LABELS_SQ, type BookingStatus } from "@/lib/types";
+import type { BookingStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /** Rrumbullakos lart te një numër i pastër, që etiketat e boshtit të lexohen. */
@@ -23,6 +23,8 @@ function niceMax(value: number): number {
 // ---------------------------------------------------------------------------
 
 export function BookingsChart({ data }: { data: DailyBookings[] }) {
+  const t = useT();
+  const fmt = useFormat();
   const [hover, setHover] = useState<number | null>(null);
 
   const max = niceMax(Math.max(1, ...data.map((d) => d.bookings)));
@@ -32,11 +34,11 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
-        <h2 className="font-semibold">Rezervime për ditë</h2>
-        <span className="text-sm text-muted-foreground">{data.length} ditët e fundit</span>
+        <h2 className="font-semibold">{t("charts.bookingsPerDay")}</h2>
+        <span className="text-sm text-muted-foreground">{t("charts.lastDays", { count: data.length })}</span>
       </div>
       <p className="mb-5 text-sm text-muted-foreground">
-        {total.toLocaleString("de-DE")} rezervime gjithsej në këtë periudhë
+        {t("charts.totalInPeriod", { count: fmt.number(total) })}
       </p>
 
       <div className="flex gap-2">
@@ -44,7 +46,7 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
         <div className="flex h-40 w-8 shrink-0 flex-col justify-between text-right">
           {ticks.map((t) => (
             <span key={t} className="text-[11px] tabular-nums leading-none text-muted-foreground">
-              {t.toLocaleString("de-DE")}
+              {fmt.number(t)}
             </span>
           ))}
         </div>
@@ -75,7 +77,7 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
                   onMouseLeave={() => setHover(null)}
                   onFocus={() => setHover(i)}
                   onBlur={() => setHover(null)}
-                  aria-label={`${formatDayMonth(day.day)}: ${day.bookings} rezervime`}
+                  aria-label={t("charts.bookingsOn", { date: fmt.dayMonth(day.day), count: day.bookings })}
                   className="group relative flex h-full flex-1 items-end justify-center"
                 >
                   {/* zona e kapjes është e gjithë kolona; vizualja është vetëm shiriti */}
@@ -109,7 +111,7 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
               }}
             >
               <p className="whitespace-nowrap text-xs font-medium">
-                {formatDayMonth(data[hover].day)}
+                {fmt.dayMonth(data[hover].day)}
               </p>
               <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                 {data[hover].bookings} rezervime · {data[hover].no_shows} pa ardhur
@@ -119,11 +121,11 @@ export function BookingsChart({ data }: { data: DailyBookings[] }) {
 
           {/* etiketat e datave: vetëm skajet dhe mesi */}
           <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-            <span>{formatDayMonth(data[0]?.day ?? "")}</span>
+            <span>{fmt.dayMonth(data[0]?.day ?? "")}</span>
             <span className="hidden sm:inline">
-              {formatDayMonth(data[Math.floor(data.length / 2)]?.day ?? "")}
+              {fmt.dayMonth(data[Math.floor(data.length / 2)]?.day ?? "")}
             </span>
-            <span>{formatDayMonth(data[data.length - 1]?.day ?? "")}</span>
+            <span>{fmt.dayMonth(data[data.length - 1]?.day ?? "")}</span>
           </div>
         </div>
       </div>
@@ -140,6 +142,8 @@ export function StatusBreakdown({
 }: {
   counts: Record<BookingStatus, number>;
 }) {
+  const t = useT();
+  const fmt = useFormat();
   const [hover, setHover] = useState<BookingStatus | null>(null);
 
   const total = STATUS_ORDER.reduce((sum, s) => sum + (counts[s] ?? 0), 0);
@@ -151,13 +155,13 @@ export function StatusBreakdown({
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
-        <h2 className="font-semibold">Statusi i rezervimeve</h2>
-        <span className="text-sm text-muted-foreground">{total.toLocaleString("de-DE")} gjithsej</span>
+        <h2 className="font-semibold">{t("charts.statusTitle")}</h2>
+        <span className="text-sm text-muted-foreground">{t("charts.totalShort", { count: fmt.number(total) })}</span>
       </div>
       <p className="mb-5 text-sm text-muted-foreground">
         {attendance > 0
           ? `${noShowRate.toFixed(1)}% e klientëve nuk erdhën`
-          : "Ende pa të dhëna për pjesëmarrjen"}
+          : t("charts.noAttendance")}
       </p>
 
       {total === 0 ? (
@@ -173,7 +177,7 @@ export function StatusBreakdown({
                 key={status}
                 onMouseEnter={() => setHover(status)}
                 onMouseLeave={() => setHover(null)}
-                title={`${STATUS_LABELS_SQ[status]}: ${counts[status]}`}
+                title={`${fmt.status(status)}: ${counts[status]}`}
                 className="h-full transition-opacity first:rounded-l-full last:rounded-r-full"
                 style={{
                   width: `${(counts[status] / total) * 100}%`,
@@ -201,8 +205,8 @@ export function StatusBreakdown({
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: STATUS_COLORS[status] }}
                   />
-                  <span className="flex-1 truncate">{STATUS_LABELS_SQ[status]}</span>
-                  <span className="tabular-nums font-medium">{value.toLocaleString("de-DE")}</span>
+                  <span className="flex-1 truncate">{fmt.status(status)}</span>
+                  <span className="tabular-nums font-medium">{fmt.number(value)}</span>
                   <span className="w-12 text-right tabular-nums text-muted-foreground">
                     {pct.toFixed(0)}%
                   </span>
@@ -227,6 +231,8 @@ export function EarningsChart({
   data: { day: string; earnings: number; bookings: number }[];
   days: number;
 }) {
+  const t = useT();
+  const fmt = useFormat();
   const [hover, setHover] = useState<number | null>(null);
 
   const max = niceMax(Math.max(1, ...data.map((d) => d.earnings)));
@@ -236,11 +242,11 @@ export function EarningsChart({
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-1 flex items-baseline justify-between gap-3">
-        <h2 className="font-semibold">Të ardhurat</h2>
-        <span className="text-sm text-muted-foreground">{days} ditët e fundit</span>
+        <h2 className="font-semibold">{t("charts.revenueTitle")}</h2>
+        <span className="text-sm text-muted-foreground">{t("charts.lastDays", { count: days })}</span>
       </div>
       <p className="mb-5 text-2xl font-semibold tracking-tight tabular-nums">
-        {total.toLocaleString("de-DE")}{" "}
+        {fmt.number(total)}{" "}
         <span className="text-base font-normal text-muted-foreground">Lek</span>
       </p>
 
@@ -248,7 +254,7 @@ export function EarningsChart({
         <div className="flex h-36 w-12 shrink-0 flex-col justify-between text-right">
           {[max, max / 2, 0].map((t) => (
             <span key={t} className="text-[11px] tabular-nums leading-none text-muted-foreground">
-              {Math.round(t).toLocaleString("de-DE")}
+              {fmt.number(Math.round(t))}
             </span>
           ))}
         </div>
@@ -276,7 +282,7 @@ export function EarningsChart({
                   onMouseLeave={() => setHover(null)}
                   onFocus={() => setHover(i)}
                   onBlur={() => setHover(null)}
-                  aria-label={`${formatDayMonth(day.day)}: ${day.earnings} Lek`}
+                  aria-label={t("charts.earningsOn", { date: fmt.dayMonth(day.day), amount: fmt.money(day.earnings) })}
                   className="relative flex h-full flex-1 items-end justify-center"
                 >
                   <span
@@ -308,28 +314,27 @@ export function EarningsChart({
               }}
             >
               <p className="whitespace-nowrap text-xs font-medium">
-                {formatDayMonth(data[hover].day)}
+                {fmt.dayMonth(data[hover].day)}
               </p>
               <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-                {data[hover].earnings.toLocaleString("de-DE")} Lek ·{" "}
+                {fmt.money(data[hover].earnings)} ·{" "}
                 {data[hover].bookings} rezervime
               </p>
             </div>
           )}
 
           <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-            <span>{formatDayMonth(data[0]?.day ?? "")}</span>
-            <span>{formatDayMonth(data[data.length - 1]?.day ?? "")}</span>
+            <span>{fmt.dayMonth(data[0]?.day ?? "")}</span>
+            <span>{fmt.dayMonth(data[data.length - 1]?.day ?? "")}</span>
           </div>
         </div>
       </div>
 
       {best && best.earnings > 0 && (
         <p className="mt-4 border-t border-border pt-3 text-sm text-muted-foreground">
-          Dita më e mirë: <span className="font-medium text-foreground">
-            {formatDayMonth(best.day)}
-          </span>{" "}
-          me {best.earnings.toLocaleString("de-DE")} Lek
+          {t("charts.bestDay")}{" "}
+          <span className="font-medium text-foreground">{fmt.dayMonth(best.day)}</span>{" "}
+          {t("charts.bestDayAmount", { amount: fmt.money(best.earnings) })}
         </p>
       )}
     </div>
@@ -344,13 +349,15 @@ export function DistributionBars({
   title,
   subtitle,
   data,
-  emptyLabel = "Ende pa të dhëna",
+  emptyLabel,
 }: {
   title: string;
   subtitle?: string;
   data: { label: string; value: number }[];
   emptyLabel?: string;
 }) {
+  const t = useT();
+  const fmt = useFormat();
   const max = Math.max(1, ...data.map((d) => d.value));
   const hasData = data.some((d) => d.value > 0);
 
@@ -360,7 +367,9 @@ export function DistributionBars({
       {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
 
       {!hasData ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{emptyLabel}</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {emptyLabel ?? t("charts.noData")}
+        </p>
       ) : (
         <ul className="mt-4 space-y-2">
           {data.map((row) => (

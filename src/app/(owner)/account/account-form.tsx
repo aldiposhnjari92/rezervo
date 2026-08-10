@@ -19,8 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { createClient } from "@/lib/supabase/client";
-import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
 import { deleteMyAccount } from "@/lib/admin-actions";
 
 /** I njëjti minimum si te regjistrimi. */
@@ -41,6 +41,8 @@ export function AccountForm({
   isAdmin: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
+  const fmt = useFormat();
 
   const [newEmail, setNewEmail] = useState(email);
   const [savingEmail, setSavingEmail] = useState(false);
@@ -57,11 +59,11 @@ export function AccountForm({
     const clean = newEmail.trim().toLowerCase();
 
     if (!clean || !clean.includes("@")) {
-      toast.error("Shkruaj një email të vlefshëm.");
+      toast.error(t("account.badEmail"));
       return;
     }
     if (clean === email.toLowerCase()) {
-      toast.error("Ky është email-i yt aktual.");
+      toast.error(t("account.currentEmail"));
       return;
     }
 
@@ -72,13 +74,13 @@ export function AccountForm({
     if (error) {
       toast.error(
         error.message.toLowerCase().includes("already")
-          ? "Ky email është i zënë nga një llogari tjetër."
-          : "Email-i nuk u ndryshua. Provo sërish.",
+          ? t("account.emailTaken")
+          : t("account.emailFailed"),
       );
       return;
     }
 
-    toast.success("Të dërguam një email konfirmimi te adresa e re. Hape për ta finalizuar.");
+    toast.success(t("account.emailConfirmSent"));
   }
 
   async function changePassword() {
@@ -87,7 +89,7 @@ export function AccountForm({
       return;
     }
     if (password !== passwordAgain) {
-      toast.error("Fjalëkalimet nuk përputhen.");
+      toast.error(t("account.passwordMismatch"));
       return;
     }
 
@@ -98,20 +100,20 @@ export function AccountForm({
     if (error) {
       toast.error(
         error.message.toLowerCase().includes("different")
-          ? "Zgjidh një fjalëkalim tjetër nga i mëparshmi."
-          : "Fjalëkalimi nuk u ndryshua. Provo sërish.",
+          ? t("account.samePassword")
+          : t("account.passwordFailed"),
       );
       return;
     }
 
     setPassword("");
     setPasswordAgain("");
-    toast.success("Fjalëkalimi u ndryshua.");
+    toast.success(t("account.passwordChanged"));
   }
 
   async function confirmDelete() {
     if (confirmText.trim().toUpperCase() !== CONFIRM_WORD) {
-      toast.error(`Shkruaj "${CONFIRM_WORD}" për të konfirmuar.`);
+      toast.error(t("account.typeWord", { word: t("account.deleteConfirm") }));
       return;
     }
 
@@ -132,15 +134,15 @@ export function AccountForm({
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <PageHeader
-        title="Llogaria ime"
-        description="Email-i, fjalëkalimi dhe fshirja e llogarisë."
+        title={t("account.title")}
+        description={t("account.subtitle")}
       />
 
       {isAdmin && (
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-card p-4">
           <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />
           <p className="text-sm">
-            Kjo llogari ka të drejta admini.{" "}
+            {t("account.isAdmin")}{" "}
             <a href="/admin" className="font-medium text-primary hover:underline">
               Hap panelin e platformës
             </a>
@@ -151,18 +153,18 @@ export function AccountForm({
       {/* --------------------------------------------------------------- info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Të dhënat e llogarisë</CardTitle>
+          <CardTitle className="text-base">{t("account.dataTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-muted-foreground">Regjistruar</span>
-            <span className="font-medium">{formatDayMonthFromInstant(createdAt)}</span>
+            <span className="text-muted-foreground">{t("admin.registered")}</span>
+            <span className="font-medium">{fmt.dayMonthFromInstant(createdAt)}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-muted-foreground">Hyrja e fundit</span>
+            <span className="text-muted-foreground">{t("admin.lastSignIn")}</span>
             <span className="font-medium">
               {lastSignInAt
-                ? `${formatDayMonthFromInstant(lastSignInAt)} · ${formatTime(lastSignInAt)}`
+                ? `${fmt.dayMonthFromInstant(lastSignInAt)} · ${fmt.time(lastSignInAt)}`
                 : "—"}
             </span>
           </div>
@@ -179,7 +181,7 @@ export function AccountForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="account-email">Adresa e email-it</Label>
+            <Label htmlFor="account-email">{t("account.emailAddress")}</Label>
             <Input
               id="account-email"
               type="email"
@@ -192,7 +194,7 @@ export function AccountForm({
           </div>
           <Button onClick={changeEmail} disabled={savingEmail}>
             {savingEmail && <Loader2 className="h-4 w-4 animate-spin" />}
-            Ndrysho email-in
+            {t("account.changeEmail")}
           </Button>
         </CardContent>
       </Card>
@@ -205,7 +207,7 @@ export function AccountForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="new-password">Fjalëkalimi i ri</Label>
+            <Label htmlFor="new-password">{t("account.newPassword")}</Label>
             <Input
               id="new-password"
               type="password"
@@ -216,7 +218,7 @@ export function AccountForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="new-password-again">Përsërite fjalëkalimin</Label>
+            <Label htmlFor="new-password-again">{t("account.repeatPassword")}</Label>
             <Input
               id="new-password-again"
               type="password"
@@ -228,7 +230,7 @@ export function AccountForm({
           </div>
           <Button onClick={changePassword} disabled={savingPassword || !password}>
             {savingPassword && <Loader2 className="h-4 w-4 animate-spin" />}
-            Ndrysho fjalëkalimin
+            {t("account.changePassword")}
           </Button>
         </CardContent>
       </Card>
@@ -238,20 +240,20 @@ export function AccountForm({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-destructive">
             <AlertTriangle className="h-4 w-4" />
-            Fshi llogarinë
+            {t("account.deleteTitle")}
           </CardTitle>
           <CardDescription>
-            Fshihen përgjithmonë biznesi, shërbimet dhe të gjitha rezervimet. Nuk kthehet mbrapsht.
+            {t("account.deleteHint")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isAdmin ? (
             <p className="text-sm text-muted-foreground">
-              Llogaritë me të drejta admini nuk fshihen nga paneli.
+              {t("account.adminCannotDelete")}
             </p>
           ) : (
             <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-              Fshi llogarinë time
+              {t("account.deleteMine")}
             </Button>
           )}
         </CardContent>
@@ -260,17 +262,15 @@ export function AccountForm({
       <Dialog open={deleteOpen} onOpenChange={(next) => !deleting && setDeleteOpen(next)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Je i sigurt?</DialogTitle>
+            <DialogTitle>{t("account.sure")}</DialogTitle>
             <DialogDescription>
-              Llogaria, biznesi, shërbimet dhe rezervimet fshihen përgjithmonë. Klientët që kanë
-              rezervime nuk do të njoftohen.
+              {t("account.deleteBody")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">
             <Label htmlFor="confirm-delete">
-              Shkruaj <span className="font-mono font-semibold">{CONFIRM_WORD}</span> për të
-              konfirmuar
+              {t("account.typeToConfirm", { word: CONFIRM_WORD })}
             </Label>
             <Input
               id="confirm-delete"

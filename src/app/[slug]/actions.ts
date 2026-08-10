@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getT } from "@/lib/i18n";
 import { createPublicClient } from "@/lib/supabase/public";
 import { normalizeAlbanianPhone } from "@/lib/phone";
 import { sendWhatsAppReminder } from "@/lib/notifications";
@@ -33,15 +34,15 @@ export async function submitBooking(input: {
   startTime: string;
 }): Promise<BookingResult> {
   const name = input.customerName.trim();
-  if (name.length < 2) return { ok: false, error: "Ju lutem shkruani emrin tuaj." };
+  if (name.length < 2) return { ok: false, error: getT()("public.nameRequired") };
 
   const phone = normalizeAlbanianPhone(input.customerPhone);
   if (!phone)
-    return { ok: false, error: "Numri i telefonit nuk është i saktë. Shembull: 069 123 4567" };
+    return { ok: false, error: getT()("err.phone") };
 
   const startTime = new Date(input.startTime);
   if (Number.isNaN(startTime.getTime()))
-    return { ok: false, error: "Ora e zgjedhur nuk është e vlefshme." };
+    return { ok: false, error: getT()("public.badTime") };
 
   const supabase = createPublicClient();
   const { data, error } = await supabase.rpc("create_booking", {
@@ -54,7 +55,7 @@ export async function submitBooking(input: {
 
   if (error) {
     console.error("[submitBooking]", error.message);
-    return { ok: false, error: "Nuk u krye dot rezervimi. Ju lutem provoni sërish." };
+    return { ok: false, error: getT()("public.bookingFailed") };
   }
 
   const result = data as { ok: boolean; error?: string; booking?: CreatedBooking };

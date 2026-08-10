@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import type { Metadata } from "next";
 
+import { getT } from "@/lib/i18n";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Hyr" };
@@ -28,17 +29,18 @@ async function isGoogleEnabled(): Promise<boolean> {
 }
 
 const PROOF = [
-  "Një link i vetëm për të gjithë klientët",
-  "Oraret e zëna zhduken automatikisht",
-  "Kujtesë në WhatsApp para takimit",
-  "Të ardhurat, të llogaritura vetë",
-];
+  "auth.sideOneLink",
+  "auth.sideSlots",
+  "auth.sideReminder",
+  "auth.sideEarnings",
+] as const;
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: { mode?: string; next?: string; error?: string };
 }) {
+  const t = getT();
   const initialMode = searchParams.mode === "signup" ? "signup" : "signin";
   const googleEnabled = await isGoogleEnabled();
 
@@ -57,7 +59,7 @@ export default async function LoginPage({
 
         <div className="relative">
           <h2 className="max-w-md text-balance text-4xl font-bold leading-tight tracking-tight text-white">
-            Merr rezervime edhe kur je duke punuar.
+            {t("auth.sideHeadline")}
           </h2>
 
           <ul className="mt-10 space-y-4">
@@ -66,7 +68,7 @@ export default async function LoginPage({
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
                   <Check className="h-3 w-3 text-white" />
                 </span>
-                <span className="text-white/90">{text}</span>
+                <span className="text-white/90">{t(text)}</span>
               </li>
             ))}
           </ul>

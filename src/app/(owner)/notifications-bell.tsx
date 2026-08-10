@@ -6,8 +6,7 @@ import { Ban, Bell, CalendarPlus, CheckCheck, RotateCcw, UserX, X } from "lucide
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
-import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
-import { useT } from "@/lib/i18n/provider";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 type NotificationKind =
@@ -48,6 +47,7 @@ const TONES: Record<NotificationKind, string> = {
 export function NotificationsBell({ businessId }: { businessId: string }) {
   const router = useRouter();
   const t = useT();
+  const fmt = useFormat();
   // Një klient i vetëm: leximi dhe abonimi duhet të ndajnë të njëjtin sesion,
   // përndryshe socket-i lidhet i paautentikuar.
   const [supabase] = useState(() => createClient());
@@ -270,7 +270,7 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
                           </p>
                         )}
                         <p className="mt-0.5 text-[11px] text-muted-foreground">
-                          {formatDayMonthFromInstant(n.created_at)} · {formatTime(n.created_at)}
+                          {fmt.dayMonthFromInstant(n.created_at)} · {fmt.time(n.created_at)}
                         </p>
                       </div>
 

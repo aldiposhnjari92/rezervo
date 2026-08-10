@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getT } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 import { restorationEmail, suspensionEmail } from "@/lib/email-templates";
@@ -34,8 +35,8 @@ export async function setBusinessSuspended(input: {
   });
 
   if (error) {
-    if (error.code === "42501") return { ok: false, error: "Nuk keni leje për këtë veprim." };
-    return { ok: false, error: "Veprimi nuk u krye. Provo sërish." };
+    if (error.code === "42501") return { ok: false, error: getT()("admin.noPermission") };
+    return { ok: false, error: getT()("err.generic") };
   }
 
   const result = data as {
@@ -45,7 +46,7 @@ export async function setBusinessSuspended(input: {
     owner_email?: string;
     suspended_reason?: string | null;
   };
-  if (!result?.ok) return { ok: false, error: result?.error ?? "Veprimi nuk u krye." };
+  if (!result?.ok) return { ok: false, error: result?.error ?? getT()("err.generic") };
 
   revalidatePath("/admin", "layout");
 
@@ -76,8 +77,8 @@ export async function deleteMyAccount(): Promise<Result> {
 
   if (error) {
     if (error.code === "42501")
-      return { ok: false, error: "Kjo llogari nuk mund të fshihet nga paneli." };
-    return { ok: false, error: "Llogaria nuk u fshi. Provo sërish." };
+      return { ok: false, error: getT()("account.adminCannotDelete") };
+    return { ok: false, error: getT()("account.deleteFailed") };
   }
 
   return { ok: true };

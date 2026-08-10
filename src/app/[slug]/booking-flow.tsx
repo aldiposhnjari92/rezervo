@@ -15,7 +15,6 @@ import {
   BOOKING_WINDOW_DAYS,
   buildAvailability,
   dayOfMonth,
-  formatDuration,
   todayInTirane,
   upcomingDates,
 } from "@/lib/availability";
@@ -239,7 +238,7 @@ export function BookingFlow({ business }: { business: PublicBusiness }) {
                         <p className="truncate font-medium">{item.name}</p>
                         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
                           <Clock className="h-3.5 w-3.5" />
-                          {formatDuration(item.duration_minutes)}
+                          {fmt.duration(item.duration_minutes)}
                         </p>
                       </div>
 
