@@ -17,3 +17,10 @@ language sql stable as $$
 $$;
 
 grant usage on schema public to anon, authenticated;
+
+-- Supabase u jep `anon` dhe `authenticated` të drejta të plota mbi çdo tabelë të
+-- re te `public`. Pa këtë, `security.sql` do të hiqte të drejta që nuk ekzistojnë
+-- dhe testet do të kalonin për arsyen e gabuar — jo se RLS-ja ndalon, por se
+-- roli s'ka pasur kurrë asgjë.
+alter default privileges in schema public grant all on tables to anon, authenticated;
+alter default privileges in schema public grant all on sequences to anon, authenticated;

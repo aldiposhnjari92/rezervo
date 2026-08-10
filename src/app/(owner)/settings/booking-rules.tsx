@@ -6,6 +6,7 @@ import { CalendarOff, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useReadOnly } from "../read-only";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +58,7 @@ export function BookingRules({
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const readOnly = useReadOnly();
 
   async function saveRules() {
     setSaving(true);
@@ -130,7 +132,7 @@ export function BookingRules({
             }))}
             value={buffer}
             onChange={setBuffer}
-            disabled={saving}
+            disabled={saving || readOnly}
           />
 
           <Choice
@@ -139,7 +141,7 @@ export function BookingRules({
             options={NOTICE_PRESETS.map((n) => ({ value: n.minutes, label: n.label }))}
             value={notice}
             onChange={setNotice}
-            disabled={saving}
+            disabled={saving || readOnly}
           />
 
           <Choice
@@ -148,7 +150,7 @@ export function BookingRules({
             options={WINDOW_PRESETS.map((d) => ({ value: d, label: `${d} ditë` }))}
             value={windowDays}
             onChange={setWindowDays}
-            disabled={saving}
+            disabled={saving || readOnly}
           />
 
           <div className="space-y-3 border-t border-border pt-5">
@@ -163,7 +165,7 @@ export function BookingRules({
                 id="break-toggle"
                 checked={hasBreak}
                 onCheckedChange={setHasBreak}
-                disabled={saving}
+                disabled={saving || readOnly}
               />
             </div>
 
@@ -172,7 +174,7 @@ export function BookingRules({
                 <TimeSelect
                   label="Fillimi i pushimit"
                   value={start}
-                  disabled={saving}
+                  disabled={saving || readOnly}
                   options={BREAK_TIMES}
                   onChange={(next) => {
                     setStart(next);
@@ -184,7 +186,7 @@ export function BookingRules({
                 <TimeSelect
                   label="Fundi i pushimit"
                   value={end}
-                  disabled={saving}
+                  disabled={saving || readOnly}
                   options={BREAK_TIMES.filter((t) => t > start)}
                   onChange={setEnd}
                   className="w-[6.5rem]"
@@ -193,10 +195,16 @@ export function BookingRules({
             )}
           </div>
 
-          <Button onClick={saveRules} disabled={saving}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            Ruaj rregullat
-          </Button>
+          {readOnly ? (
+            <p className="text-sm text-muted-foreground">
+              Llogaria është e pezulluar, ndaj rregullat nuk ndryshohen dot.
+            </p>
+          ) : (
+            <Button onClick={saveRules} disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Ruaj rregullat
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -210,6 +218,7 @@ export function BookingRules({
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {!readOnly && (
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="date"
@@ -232,6 +241,7 @@ export function BookingRules({
               Shto
             </Button>
           </div>
+          )}
 
           {closures.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border py-8 text-center">
@@ -248,20 +258,22 @@ export function BookingRules({
                       <p className="truncate text-sm text-muted-foreground">{c.reason}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => drop(c)}
-                    disabled={pending && busyId === c.id}
-                    aria-label="Hiq"
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    {pending && busyId === c.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => drop(c)}
+                      disabled={pending && busyId === c.id}
+                      aria-label="Hiq"
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      {pending && busyId === c.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -298,7 +310,7 @@ function Choice({
             type="button"
             disabled={disabled}
             onClick={() => onChange(o.value)}
-            className={`h-9 rounded-lg border px-3 text-sm font-medium transition-colors ${
+            className={`h-9 rounded-lg border px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               value === o.value
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-background hover:bg-muted"

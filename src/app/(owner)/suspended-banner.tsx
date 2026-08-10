@@ -28,11 +28,12 @@ export function SuspendedBanner({
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
 
       <p className="min-w-0 flex-1 text-sm leading-relaxed">
-        <span className="font-semibold">Faqja jote publike është offline</span>
+        <span className="font-semibold">Llogaria jote është e pezulluar</span>
         <span className="text-muted-foreground">
           {" "}
-          — pezulluar më {formatDayMonthFromInstant(suspendedAt)}. Klientët nuk mund të
-          rezervojnë, por të dhënat e tua janë të paprekura.
+          — që më {formatDayMonthFromInstant(suspendedAt)}. Faqja publike nuk pranon
+          rezervime dhe paneli është vetëm për lexim: i sheh të gjitha të dhënat, por
+          nuk mund t&apos;i ndryshosh derisa llogaria të rikthehet.
         </span>
         {reason && (
           <>

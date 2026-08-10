@@ -48,7 +48,7 @@ for _ in $(seq 1 40); do
 done
 
 FAILED=0
-for suite in main features admin shell realtime security; do
+for suite in main features admin shell realtime security suspension; do
   echo ""
   echo "==================== $suite ===================="
   BASE="$BASE" node "tests/e2e/${suite}.js" || FAILED=1
@@ -57,8 +57,8 @@ done
 echo ""
 if [ "$FAILED" -eq 0 ]; then
   echo "Të gjitha suitat kaluan."
-  echo "SHËNIM: 'admin' dhe 'shell' kanë edhe një fazë të dytë që kërkon një"
-  echo "përdorues admin — shih tests/README.md."
+  echo "SHËNIM: 'admin', 'shell' dhe 'suspension' kanë edhe një fazë të dytë që"
+  echo "kërkon një përdorues admin — shih tests/README.md."
 else
   echo "Dështoi të paktën një suitë."
 fi

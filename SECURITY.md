@@ -52,6 +52,19 @@ di ID-të (të cilat i merr lehtë nga faqja publike). E provuar për: ndryshim 
 anulim rezervimi, fshirje shërbimi, riemërtim biznesi, futje rezervimi në kalendarin
 e tjetrit — nëpërmjet PostgREST-it dhe nëpërmjet vetë server action-eve.
 
+### Biznesi i pezulluar
+
+Pezullimi nuk shuan vetëm faqen publike — e bën gjithë panelin **vetëm për lexim**.
+Pronari sheh çdo të dhënë të vetën dhe nuk ndryshon asnjë: as shërbime, as orar,
+as rregulla, as statuse rezervimesh, as ditë të mbyllura, as rezervime me dorë.
+
+Zbatohet te policy-t, jo te server action-et: çelësi `anon` është publik, ndaj një
+pronar i pezulluar mund t'i flasë PostgREST-it pa kaluar fare nga aplikacioni.
+`tests/e2e/suspension.js` e provon pikërisht atë rrugë.
+
+Mbeten të lejuara me qëllim: leximi i gjithçkaje dhe fshirja e llogarisë — pezullimi
+nuk e burgos njeriun brenda platformës.
+
 ### Rrugët e adminit
 
 Leja kontrollohet në bazë, jo në aplikacion: `is_platform_admin()` përdoret

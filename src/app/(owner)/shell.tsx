@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronsLeft, ChevronsRight, ExternalLink, ShieldCheck } from "lucide-react";
 
 import { ThemeButton } from "@/components/theme";
@@ -30,6 +31,8 @@ export function OwnerShell({
   // Nis i hapur dhe lexo preferencën pas montimit — serveri s'e di dot,
   // dhe një supozim i gabuar do të shkaktonte kërcim të layout-it.
   const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const fullHeight = pathname === "/calendar";
 
   useEffect(() => {
     setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
@@ -168,7 +171,21 @@ export function OwnerShell({
 
         {/* Kolonë fleksi me lartësi të plotë: faqet që duan gjithë ekranin (kalendari)
             marrin `flex-1`; të tjerat rrinë në lartësinë e tyre natyrale. */}
-        <main className="flex min-h-[calc(100dvh-3.5rem)] flex-col px-4 pb-28 pt-5 lg:min-h-[calc(100dvh-4rem)] lg:px-8 lg:pb-10 lg:pt-8">
+        {/*
+          Kalendari është i vetmi që kërkon lartësi të PRERË: mbush ekranin dhe
+          rrëshqet brenda vetes. Me `min-height` rrjeta e muajit thjesht e zgjaste
+          faqen. Vetëm ajo rrugë e merr, që faqet e tjera të vazhdojnë ta
+          rrëshqasin dokumentin si më parë — dhe që shiriti i pezullimit, që
+          vizatohet këtu brenda, të hyjë vetvetiu në llogari.
+        */}
+        <main
+          className={cn(
+            "flex flex-col px-4 pb-28 pt-5 lg:px-8 lg:pb-10 lg:pt-8",
+            fullHeight
+              ? "h-[calc(100dvh-3.5rem)] overflow-y-auto lg:h-[calc(100dvh-4rem)]"
+              : "min-h-[calc(100dvh-3.5rem)] lg:min-h-[calc(100dvh-4rem)]",
+          )}
+        >
           {children}
         </main>
       </div>

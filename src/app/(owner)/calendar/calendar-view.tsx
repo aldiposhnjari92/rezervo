@@ -6,6 +6,7 @@ import { CalendarX2, ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-rea
 
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedButton } from "@/components/segmented";
+import { useReadOnly } from "../read-only";
 import { formatMoney, formatTime } from "@/lib/availability";
 import {
   CALENDAR_VIEWS,
@@ -70,6 +71,7 @@ export function CalendarView({
   const [pending, startTransition] = useTransition();
   const [selected, setSelected] = useState<BookingWithService | null>(null);
   const [adding, setAdding] = useState(false);
+  const readOnly = useReadOnly();
 
   function go(nextView: View, nextDate: string) {
     startTransition(() => {
@@ -132,10 +134,12 @@ export function CalendarView({
           ))}
         </Segmented>
 
-        <Button size="sm" className="shrink-0" onClick={() => setAdding(true)}>
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Rezervim</span>
-        </Button>
+        {!readOnly && (
+          <Button size="sm" className="shrink-0" onClick={() => setAdding(true)}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Rezervim</span>
+          </Button>
+        )}
         </div>
       </div>
 

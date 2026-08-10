@@ -275,12 +275,14 @@ const PW = "TestPass123!";
   console.log("\n=== 11b. The owner is told, in their own dashboard ===");
   const suspendedHtml = norm(await (await get("/dashboard", cookieA)).text());
   check("banner shown to the suspended owner",
-    suspendedHtml.includes("Faqja jote publike është offline"), "no suspension banner");
+    suspendedHtml.includes("Llogaria jote është e pezulluar"), "no suspension banner");
   check("banner carries the admin's reason", suspendedHtml.includes("test suspension"));
-  check("banner reassures about data", suspendedHtml.includes("të paprekura"));
+  // Kopja u ndryshua bashkë me rregullin: pezullimi nuk shuan vetëm faqen
+  // publike, e bën gjithë panelin vetëm për lexim, dhe pronari duhet ta dijë.
+  check("banner says the panel is read-only", suspendedHtml.includes("vetëm për lexim"));
   const onCalendar = norm(await (await get("/calendar", cookieA)).text());
   check("banner appears on every page, not just one",
-    onCalendar.includes("Faqja jote publike është offline"));
+    onCalendar.includes("Llogaria jote është e pezulluar"));
 
   console.log("\n=== 12. Unsuspend restores everything ===");
   const unsusp = await callAction(`/admin/${state.ownerId}`, "setBusinessSuspended",

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isReservedSlug, isValidSlug } from "@/lib/slug";
 import { normalizeAlbanianPhone } from "@/lib/phone";
+import { suspensionError } from "@/lib/suspension";
 import { DAY_KEYS, type BookingStatus, type WorkingHours } from "@/lib/types";
 
 type Result<T = void> = { ok: true; data?: T } | { ok: false; error: string };
@@ -119,6 +120,9 @@ export async function updateBusiness(input: {
   phone: string;
   workingHours: unknown;
 }): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const {
     data: { user },
@@ -175,6 +179,9 @@ export async function createService(input: {
   durationMinutes: number;
   price: number;
 }): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const {
     data: { user },
@@ -211,6 +218,9 @@ export async function updateService(input: {
   durationMinutes: number;
   price: number;
 }): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
 
   const validation = validateService(input);
@@ -234,6 +244,9 @@ export async function updateService(input: {
 }
 
 export async function setServiceActive(id: string, isActive: boolean): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const { error } = await supabase.from("services").update({ is_active: isActive }).eq("id", id);
 
@@ -244,6 +257,9 @@ export async function setServiceActive(id: string, isActive: boolean): Promise<R
 }
 
 export async function deleteService(id: string): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const { error } = await supabase.from("services").delete().eq("id", id);
 
@@ -270,6 +286,9 @@ export async function updateBookingStatus(
   status: BookingStatus,
 ): Promise<Result> {
   if (!VALID_STATUSES.includes(status)) return { ok: false, error: "Status i pavlefshëm." };
+
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
 
   const supabase = createClient();
   const { error } = await supabase.from("bookings").update({ status }).eq("id", bookingId);

@@ -17,6 +17,7 @@ aplikacionin e ndërtuar ashtu si e drejton shfletuesi.
 | `e2e/shell.js` | 32 | njoftimet, tema, shtylla anësore, linku i adminit |
 | `e2e/realtime.js` | 11 | njoftimet live mbërrijnë vërtet, dhe vetëm te pronari i duhur |
 | `e2e/security.js` | 50 | sulme: IDOR, eskalim privilegjesh, rrjedhje të dhënash, koka HTTP |
+| `e2e/suspension.js` | 32 | biznesi i pezulluar: lexon gjithçka, nuk shkruan asgjë |
 
 ---
 
@@ -72,7 +73,12 @@ BASE=http://localhost:3100 PHASE=1 node tests/e2e/admin.js
 BASE=http://localhost:3100 PHASE=2 node tests/e2e/admin.js
 ```
 
-I njëjti model vlen për `shell.js`.
+I njëjti model vlen për `shell.js` dhe `suspension.js`.
+
+`suspension.js` provon të dyja rrugët: server action-et e aplikacionit DHE
+PostgREST-in direkt me JWT-në e pronarit. E dyta është ajo që ka rëndësi — çelësi
+`anon` është publik, ndaj një ndalim vetëm te Next-i anashkalohet duke mos kaluar
+fare nga Next-i.
 
 ---
 
@@ -91,6 +97,21 @@ docker rm -f rz-test
 
 Provon mbivendosjet, orarin e punës, RLS-në dhe normalizimin e telefonit —
 pikërisht ato gjëra që nuk duhen besuar pa i parë.
+
+`tests/sql/verify-suspension.sql` provon rregullin "vetëm lexim" drejtpërdrejt kundër
+policy-ve. I duhet i gjithë grumbulli:
+
+```bash
+cat tests/sql/prelude.sql supabase/schema.sql supabase/admin.sql \
+    supabase/features.sql supabase/shell.sql supabase/security.sql \
+    supabase/suspension.sql | docker exec -i rz-test psql -U postgres -q
+cat tests/sql/verify-suspension.sql | docker exec -i rz-test psql -U postgres -q
+```
+
+**Kujdes te `set local`:** psql punon në autocommit, ndaj `set local` jashtë një
+transaksioni nuk bën asgjë dhe testi kalon duke provuar gjendjen e gabuar. Përdor
+`select set_config(..., false)`. Kjo e mbante seksionin 22 të `verify.sql` duke
+pohuar se pronari sheh 0 rezervimet e VETA.
 
 ---
 

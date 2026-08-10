@@ -18,6 +18,7 @@ import { formatAlbanianPhone } from "@/lib/phone";
 import { STATUS_LABELS_SQ, type BookingStatus, type BookingWithService } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updateBookingStatus } from "@/lib/actions";
+import { useReadOnly } from "../read-only";
 
 const STATUS_VARIANT: Record<
   BookingStatus,
@@ -37,6 +38,7 @@ export function BookingDialog({
   onClose: () => void;
 }) {
   const [pending, startTransition] = useTransition();
+  const readOnly = useReadOnly();
 
   function changeStatus(status: BookingStatus) {
     if (!booking) return;
@@ -113,7 +115,11 @@ export function BookingDialog({
               {booking.note && <Row label="Shënim" value={booking.note} last />}
             </div>
 
-            {isOpen ? (
+            {readOnly ? (
+              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted-foreground">
+                Llogaria është e pezulluar — rezervimet shihen, por nuk ndryshohen.
+              </p>
+            ) : isOpen ? (
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant="outline"

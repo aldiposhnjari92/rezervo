@@ -48,9 +48,7 @@ export default async function DashboardPage({
   ]);
 
   return (
-    // Lartësi e PRERË, jo minimum: vetëm kështu `flex-1` brenda ka çfarë të
-    // ndajë, dhe kalendari futet në ekran në vend që ta zgjatë faqen.
-    <div className="flex flex-col gap-5" style={{ height: "var(--owner-content)" }}>
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       {!services?.length && (
         <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

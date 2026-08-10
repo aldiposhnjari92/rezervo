@@ -1,4 +1,5 @@
 import { isPlatformAdmin, requireBusiness } from "@/lib/auth";
+import { ReadOnlyProvider } from "./read-only";
 import { OwnerShell } from "./shell";
 import { SuspendedBanner } from "./suspended-banner";
 
@@ -26,7 +27,7 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
           reason={business.suspended_reason}
         />
       )}
-      {children}
+      <ReadOnlyProvider readOnly={Boolean(business.suspended_at)}>{children}</ReadOnlyProvider>
     </OwnerShell>
   );
 }

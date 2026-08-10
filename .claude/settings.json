@@ -136,7 +136,16 @@
       "Bash(timeout 60 google-chrome --headless=new --no-sandbox --disable-gpu --screenshot=probe.png --window-size=800,600 --user-data-dir=./cprofile http://localhost:3100/login)",
       "Bash(node -e 'const a=require\\(\"./tests/e2e/actions.json\"\\);console.log\\(Object.keys\\(a\\).sort\\(\\).join\\(\" \"\\)\\)')",
       "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=v7_month.png --window-size=1600,900 --user-data-dir=./cprofile file://__TRACKED_VAR__/snap7/_calendar_view_month_date_DAY.static.html)",
-      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=v7_month_short.png --window-size=1440,760 --user-data-dir=./cprofile file://__TRACKED_VAR__/snap7/_calendar_view_month_date_DAY.static.html)"
+      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=v7_month_short.png --window-size=1440,760 --user-data-dir=./cprofile file://__TRACKED_VAR__/snap7/_calendar_view_month_date_DAY.static.html)",
+      "Bash(grep -cE \"^\\\\s+t\\\\s*$|\\\\bt\\\\b\" /tmp/claude-1000/-home-aldi-Desktop-development-rezervo/0cc94d72-0d35-40dd-97e3-0166294b8050/scratchpad/verify.out)",
+      "Bash(grep -nE \"^\\\\s*f\\\\s*$|ERROR\" /tmp/claude-1000/-home-aldi-Desktop-development-rezervo/0cc94d72-0d35-40dd-97e3-0166294b8050/scratchpad/verify.out)",
+      "Bash(grep -E \"^ *\\(ok|f\\) *$|ERROR|===\")",
+      "Bash(python3 -c ' *)",
+      "Bash(BASE=http://localhost:3100 PHASE=2 node tests/e2e/suspension.js)",
+      "Bash(BASE=http://localhost:3100 PHASE=1 node tests/e2e/suspension.js)",
+      "Bash(BASE=http://localhost:3100 PHASE=1 node tests/e2e/admin.js)",
+      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=susp2_cal.png --window-size=1600,900 --user-data-dir=./cprofile file://__TRACKED_VAR__/susp2/_calendar_view_day.html)",
+      "Bash(timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --hide-scrollbars --screenshot=susp2_rules.png --window-size=1600,900 --user-data-dir=./cprofile file://__TRACKED_VAR__/susp2/_settings_tab_rregullat.html)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",

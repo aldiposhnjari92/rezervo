@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeAlbanianPhone } from "@/lib/phone";
 import { notifyOwnerNewBooking } from "@/lib/notifications";
+import { suspensionError } from "@/lib/suspension";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -26,6 +27,9 @@ export async function createManualBooking(input: {
   startTime: string;
   note?: string;
 }): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const name = input.customerName.trim();
   if (name.length < 2) return { ok: false, error: "Shkruaj emrin e klientit." };
 
@@ -77,6 +81,9 @@ export async function updateBookingRules(input: {
   breakStart: string | null;
   breakEnd: string | null;
 }): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const {
     data: { user },
@@ -130,6 +137,9 @@ export async function addClosure(input: { date: string; reason?: string }): Prom
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date))
     return { ok: false, error: "Data nuk është e vlefshme." };
 
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   const {
     data: { user },
@@ -159,6 +169,9 @@ export async function addClosure(input: { date: string; reason?: string }): Prom
 }
 
 export async function removeClosure(id: string): Promise<Result> {
+  const blocked = await suspensionError();
+  if (blocked) return blocked;
+
   const supabase = createClient();
   // RLS siguron që preket vetëm biznesi i vet.
   const { error } = await supabase.from("business_closures").delete().eq("id", id);

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { WorkingHoursEditor, validateWorkingHours } from "@/components/working-hours-editor";
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
+import { useReadOnly } from "../read-only";
 
 export function HoursSection({
   name,
@@ -23,6 +24,7 @@ export function HoursSection({
   const router = useRouter();
   const [hours, setHours] = useState<WorkingHours>(initialHours);
   const [saving, setSaving] = useState(false);
+  const readOnly = useReadOnly();
 
   const dirty = JSON.stringify(hours) !== JSON.stringify(initialHours);
 
@@ -58,12 +60,18 @@ export function HoursSection({
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <WorkingHoursEditor value={hours} onChange={setHours} disabled={saving} />
+        <WorkingHoursEditor value={hours} onChange={setHours} disabled={saving || readOnly} />
 
-        <Button onClick={save} disabled={saving || !dirty}>
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {dirty ? "Ruaj orarin" : "Asgjë për të ruajtur"}
-        </Button>
+        {readOnly ? (
+          <p className="text-sm text-muted-foreground">
+            Llogaria është e pezulluar, ndaj orari nuk ndryshohet dot.
+          </p>
+        ) : (
+          <Button onClick={save} disabled={saving || !dirty}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {dirty ? "Ruaj orarin" : "Asgjë për të ruajtur"}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

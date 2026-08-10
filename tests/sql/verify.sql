@@ -155,10 +155,13 @@ select count(*) as bookings_visible_to_anon from public.bookings;
 reset role;
 
 \echo '=== 22. RLS: pronari shikon vetem te vetat ==='
+-- `set local` jashte nje transaksioni nuk ben asgje: psql-ja punon ne autocommit.
+-- Me te, `test.uid` mbetej bosh, `auth.uid()` kthente null dhe pronari "shihte"
+-- 0 rezervimet e VETA — testi kalonte pa provuar fare anen pozitive.
 set role authenticated;
-set local test.uid = '11111111-1111-1111-1111-111111111111';
-select count(*) as own_bookings from public.bookings;
-set local test.uid = '22222222-2222-2222-2222-222222222222';
+select set_config('test.uid', '11111111-1111-1111-1111-111111111111', false);
+select count(*) > 0 as owner_sees_own_bookings from public.bookings;
+select set_config('test.uid', '22222222-2222-2222-2222-222222222222', false);
 select count(*) as other_user_bookings from public.bookings;
 reset role;
 

@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { useReadOnly } from "../read-only";
 import { formatDuration, formatPrice } from "@/lib/availability";
 import type { Service } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ export function ServicesManager({
   const [confirmDelete, setConfirmDelete] = useState<Service | null>(null);
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const readOnly = useReadOnly();
 
   function openCreate() {
     setDraft(EMPTY_DRAFT);
@@ -154,10 +156,12 @@ export function ServicesManager({
             : "Ende asnjë shërbim"
         }
         action={
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" />
-            Shto
-          </Button>
+          readOnly ? undefined : (
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Shto
+            </Button>
+          )
         }
       />
 
@@ -165,12 +169,18 @@ export function ServicesManager({
         <EmptyState
           icon={Scissors}
           title="Shto shërbimin tënd të parë"
-          description={'P.sh. "Prerje flokësh" — 30 minuta, 500 Lek.'}
+          description={
+            readOnly
+              ? "Llogaria është e pezulluar, ndaj shërbime të reja nuk shtohen dot."
+              : 'P.sh. "Prerje flokësh" — 30 minuta, 500 Lek.'
+          }
           action={
-            <Button onClick={openCreate}>
-              <Plus className="h-4 w-4" />
-              Shto shërbim
-            </Button>
+            readOnly ? undefined : (
+              <Button onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Shto shërbim
+              </Button>
+            )
           }
         />
       ) : (
@@ -218,16 +228,24 @@ export function ServicesManager({
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex justify-center">
-                          <Switch
-                            checked={service.is_active}
-                            disabled={isBusy}
-                            onCheckedChange={() => toggleActive(service)}
-                            aria-label={`Aktiv: ${service.name}`}
-                          />
+                          {readOnly ? (
+                            <Badge variant={service.is_active ? "success" : "secondary"}>
+                              {service.is_active ? "Aktiv" : "Joaktiv"}
+                            </Badge>
+                          ) : (
+                            <Switch
+                              checked={service.is_active}
+                              disabled={isBusy}
+                              onCheckedChange={() => toggleActive(service)}
+                              aria-label={`Aktiv: ${service.name}`}
+                            />
+                          )}
                         </div>
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end gap-1">
+                          {readOnly ? null : (
+                            <>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -245,6 +263,8 @@ export function ServicesManager({
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -280,31 +300,33 @@ export function ServicesManager({
                     </p>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Switch
-                      checked={service.is_active}
-                      disabled={isBusy}
-                      onCheckedChange={() => toggleActive(service)}
-                      aria-label={`Aktiv: ${service.name}`}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(service)}
-                      aria-label={`Ndrysho ${service.name}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setConfirmDelete(service)}
-                      aria-label={`Fshi ${service.name}`}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {!readOnly && (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Switch
+                        checked={service.is_active}
+                        disabled={isBusy}
+                        onCheckedChange={() => toggleActive(service)}
+                        aria-label={`Aktiv: ${service.name}`}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEdit(service)}
+                        aria-label={`Ndrysho ${service.name}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setConfirmDelete(service)}
+                        aria-label={`Fshi ${service.name}`}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </li>
               );
             })}

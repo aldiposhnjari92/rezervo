@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { isValidAlbanianPhone } from "@/lib/phone";
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
+import { useReadOnly } from "../read-only";
 
 /**
  * Emri, telefoni dhe linku publik.
@@ -37,6 +38,7 @@ export function BusinessSection({
   const [phone, setPhone] = useState(initialPhone);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const readOnly = useReadOnly();
 
   const dirty = name !== initialName || phone !== initialPhone;
 
@@ -117,7 +119,7 @@ export function BusinessSection({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={80}
-              disabled={saving}
+              disabled={saving || readOnly}
             />
           </div>
 
@@ -132,17 +134,23 @@ export function BusinessSection({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="069 123 4567"
-              disabled={saving}
+              disabled={saving || readOnly}
             />
             <p className="text-xs text-muted-foreground">
               Shfaqet te faqja e konfirmimit, që klienti të të gjejë nëse i duhet.
             </p>
           </div>
 
-          <Button onClick={save} disabled={saving || !dirty}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {dirty ? "Ruaj të dhënat" : "Asgjë për të ruajtur"}
-          </Button>
+          {readOnly ? (
+            <p className="text-sm text-muted-foreground">
+              Llogaria është e pezulluar, ndaj këto fusha nuk ndryshohen dot.
+            </p>
+          ) : (
+            <Button onClick={save} disabled={saving || !dirty}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {dirty ? "Ruaj të dhënat" : "Asgjë për të ruajtur"}
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
