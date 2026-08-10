@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
-import { formatDayMonthFromInstant } from "@/lib/availability";
+import { getFormat, getT } from "@/lib/i18n";
 
 /**
  * Njoftimi që sheh pronari kur biznesi i është pezulluar.
@@ -20,6 +20,9 @@ export function SuspendedBanner({
   suspendedAt: string;
   reason: string | null;
 }) {
+  const t = getT();
+  const fmt = getFormat();
+
   return (
     <div
       role="status"
@@ -28,17 +31,15 @@ export function SuspendedBanner({
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
 
       <p className="min-w-0 flex-1 text-sm leading-relaxed">
-        <span className="font-semibold">Llogaria jote është e pezulluar</span>
+        <span className="font-semibold">{t("suspended.title")}</span>
         <span className="text-muted-foreground">
           {" "}
-          — që më {formatDayMonthFromInstant(suspendedAt)}. Faqja publike nuk pranon
-          rezervime dhe paneli është vetëm për lexim: i sheh të gjitha të dhënat, por
-          nuk mund t&apos;i ndryshosh derisa llogaria të rikthehet.
+          {t("suspended.body", { date: fmt.dayMonthFromInstant(suspendedAt) })}
         </span>
         {reason && (
           <>
             {" "}
-            <span className="text-muted-foreground">Arsyeja:</span>{" "}
+            <span className="text-muted-foreground">{t("suspended.reason")}</span>{" "}
             <span className="font-medium">{reason}</span>
           </>
         )}

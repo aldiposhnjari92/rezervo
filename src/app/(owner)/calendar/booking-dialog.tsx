@@ -61,6 +61,10 @@ export function BookingDialog({
   }
 
   const isOpen = booking?.status === "confirmed";
+  // Ora e nisjes, jo dita: një takim që nisi 10 minuta më parë ka kaluar.
+  // Pas saj mbetet vetëm të shënohet çfarë ndodhi — rikthimi në pritje do të
+  // shfaqte "rezervime të ardhshme" për javën e shkuar.
+  const hasPassed = booking ? new Date(booking.start_time).getTime() < Date.now() : false;
 
   return (
     <Dialog open={Boolean(booking)} onOpenChange={(next) => !next && !pending && onClose()}>
@@ -149,6 +153,10 @@ export function BookingDialog({
                   <span className="truncate">Anulo</span>
                 </Button>
               </div>
+            ) : hasPassed ? (
+              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-center text-sm text-muted-foreground">
+                Ky rezervim ka kaluar. Historiku nuk kthehet mbrapsht.
+              </p>
             ) : (
               <Button
                 variant="outline"

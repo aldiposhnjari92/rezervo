@@ -20,8 +20,8 @@ import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { useReadOnly } from "../read-only";
-import { formatDuration, formatPrice } from "@/lib/availability";
 import type { Service } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { createService, deleteService, setServiceActive, updateService } from "@/lib/actions";
@@ -49,6 +49,8 @@ export function ServicesManager({
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
   const readOnly = useReadOnly();
+  const t = useT();
+  const fmt = useFormat();
 
   function openCreate() {
     setDraft(EMPTY_DRAFT);
@@ -69,11 +71,11 @@ export function ServicesManager({
     const price = Number(draft.price === "" ? 0 : draft.price);
 
     if (draft.name.trim().length < 2) {
-      toast.error("Shkruaj emrin e shërbimit.");
+      toast.error(t("err.serviceName"));
       return;
     }
     if (!Number.isFinite(price) || price < 0) {
-      toast.error("Çmimi nuk është i vlefshëm.");
+      toast.error(t("err.price"));
       return;
     }
 
@@ -95,7 +97,7 @@ export function ServicesManager({
       return;
     }
 
-    toast.success(draft.id ? "Shërbimi u ruajt." : "Shërbimi u shtua.");
+    toast.success(draft.id ? t("services.saved") : t("services.added"));
     setOpen(false);
   }
 
@@ -119,7 +121,7 @@ export function ServicesManager({
         toast.error(result.error);
         return;
       }
-      toast.success("Shërbimi u fshi.");
+      toast.success(t("services.deleted"));
     });
   }
 
@@ -127,7 +129,7 @@ export function ServicesManager({
     const url = `${window.location.origin}/${slug}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Linku u kopjua!");
+      toast.success(t("services.linkCopied"));
     } catch {
       toast.error(url);
     }
@@ -137,29 +139,32 @@ export function ServicesManager({
     <div className="space-y-5">
       {showWelcome && (
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-          <p className="font-medium">Dyqani u krijua 🎉</p>
+          <p className="font-medium">{t("services.welcomeTitle")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Shto shërbimet që ofron, pastaj ndaje linkun me klientët.
+            {t("services.welcomeBody")}
           </p>
           <Button variant="outline" size="sm" className="mt-3 bg-background" onClick={copyLink}>
             <Copy className="h-4 w-4" />
-            Kopjo linkun
+            {t("services.copyLink")}
           </Button>
         </div>
       )}
 
       <PageHeader
-        title="Shërbimet"
+        title={t("services.title")}
         description={
           services.length
-            ? `${services.length} shërbime · ${services.filter((s) => s.is_active).length} aktive`
-            : "Ende asnjë shërbim"
+            ? t("services.count", {
+                total: services.length,
+                active: services.filter((s) => s.is_active).length,
+              })
+            : t("services.none")
         }
         action={
           readOnly ? undefined : (
             <Button onClick={openCreate}>
               <Plus className="h-4 w-4" />
-              Shto
+              {t("common.add")}
             </Button>
           )
         }
@@ -168,17 +173,17 @@ export function ServicesManager({
       {services.length === 0 ? (
         <EmptyState
           icon={Scissors}
-          title="Shto shërbimin tënd të parë"
+          title={t("services.emptyTitle")}
           description={
             readOnly
-              ? "Llogaria është e pezulluar, ndaj shërbime të reja nuk shtohen dot."
-              : 'P.sh. "Prerje flokësh" — 30 minuta, 500 Lek.'
+              ? t("suspended.services")
+              : t("services.emptyBody")
           }
           action={
             readOnly ? undefined : (
               <Button onClick={openCreate}>
                 <Plus className="h-4 w-4" />
-                Shto shërbim
+                {t("services.emptyAction")}
               </Button>
             )
           }
@@ -192,10 +197,10 @@ export function ServicesManager({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Shërbimi</th>
-                  <th className="px-3 py-3 text-right font-medium">Kohëzgjatja</th>
-                  <th className="px-3 py-3 text-right font-medium">Çmimi</th>
-                  <th className="px-3 py-3 text-center font-medium">Aktiv</th>
+                  <th className="px-5 py-3 font-medium">{t("services.colName")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("services.colDuration")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("services.colPrice")}</th>
+                  <th className="px-3 py-3 text-center font-medium">{t("services.colActive")}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -217,27 +222,27 @@ export function ServicesManager({
                             active={service.is_active}
                           />
                           <span className="font-medium text-foreground">{service.name}</span>
-                          {!service.is_active && <Badge variant="secondary">Joaktiv</Badge>}
+                          {!service.is_active && <Badge variant="secondary">{t("services.inactive")}</Badge>}
                         </div>
                       </td>
                       <td className="px-3 py-3 text-right tabular-nums">
-                        {formatDuration(service.duration_minutes)}
+                        {fmt.duration(service.duration_minutes)}
                       </td>
                       <td className="px-3 py-3 text-right font-medium tabular-nums text-foreground">
-                        {formatPrice(service.price)}
+                        {fmt.price(service.price)}
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex justify-center">
                           {readOnly ? (
                             <Badge variant={service.is_active ? "success" : "secondary"}>
-                              {service.is_active ? "Aktiv" : "Joaktiv"}
+                              {service.is_active ? t("services.colActive") : t("services.inactive")}
                             </Badge>
                           ) : (
                             <Switch
                               checked={service.is_active}
                               disabled={isBusy}
                               onCheckedChange={() => toggleActive(service)}
-                              aria-label={`Aktiv: ${service.name}`}
+                              aria-label={t("services.toggleLabel", { name: service.name })}
                             />
                           )}
                         </div>
@@ -250,7 +255,7 @@ export function ServicesManager({
                             variant="ghost"
                             size="icon"
                             onClick={() => openEdit(service)}
-                            aria-label={`Ndrysho ${service.name}`}
+                            aria-label={t("services.editLabel", { name: service.name })}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -258,7 +263,7 @@ export function ServicesManager({
                             variant="ghost"
                             size="icon"
                             onClick={() => setConfirmDelete(service)}
-                            aria-label={`Fshi ${service.name}`}
+                            aria-label={t("services.deleteLabel", { name: service.name })}
                             className="text-muted-foreground hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -293,10 +298,10 @@ export function ServicesManager({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate font-medium">{service.name}</p>
-                      {!service.is_active && <Badge variant="secondary">Joaktiv</Badge>}
+                      {!service.is_active && <Badge variant="secondary">{t("services.inactive")}</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">
-                      {formatDuration(service.duration_minutes)} · {formatPrice(service.price)}
+                      {fmt.duration(service.duration_minutes)} · {fmt.price(service.price)}
                     </p>
                   </div>
 
@@ -306,13 +311,13 @@ export function ServicesManager({
                         checked={service.is_active}
                         disabled={isBusy}
                         onCheckedChange={() => toggleActive(service)}
-                        aria-label={`Aktiv: ${service.name}`}
+                        aria-label={t("services.toggleLabel", { name: service.name })}
                       />
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => openEdit(service)}
-                        aria-label={`Ndrysho ${service.name}`}
+                        aria-label={t("services.editLabel", { name: service.name })}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -320,7 +325,7 @@ export function ServicesManager({
                         variant="ghost"
                         size="icon"
                         onClick={() => setConfirmDelete(service)}
-                        aria-label={`Fshi ${service.name}`}
+                        aria-label={t("services.deleteLabel", { name: service.name })}
                         className="text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -338,27 +343,25 @@ export function ServicesManager({
       <Dialog open={open} onOpenChange={(next) => !saving && setOpen(next)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{draft.id ? "Ndrysho shërbimin" : "Shërbim i ri"}</DialogTitle>
-            <DialogDescription>
-              Kohëzgjatja përcakton sa orë zë ky shërbim në axhendën tënde.
-            </DialogDescription>
+            <DialogTitle>{draft.id ? t("services.editTitle") : t("services.newTitle")}</DialogTitle>
+            <DialogDescription>{t("services.dialogHint")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="service-name">Emri i shërbimit</Label>
+              <Label htmlFor="service-name">{t("services.name")}</Label>
               <Input
                 id="service-name"
                 value={draft.name}
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                placeholder="p.sh. Prerje flokësh"
+                placeholder={t("services.namePlaceholder")}
                 maxLength={80}
                 autoFocus
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Kohëzgjatja</Label>
+              <Label>{t("services.duration")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 {DURATION_PRESETS.map((minutes) => (
                   <button
@@ -372,14 +375,14 @@ export function ServicesManager({
                         : "border-border bg-background hover:bg-muted",
                     )}
                   >
-                    {formatDuration(minutes)}
+                    {fmt.duration(minutes)}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="service-price">Çmimi (Lek)</Label>
+              <Label htmlFor="service-price">{t("services.price")}</Label>
               <Input
                 id="service-price"
                 type="number"
@@ -391,18 +394,18 @@ export function ServicesManager({
                 placeholder="500"
               />
               <p className="text-xs text-muted-foreground">
-                Lëre bosh nëse shërbimi është falas. Pagesa bëhet në dyqan.
+                {t("services.priceHint")}
               </p>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-              Anulo
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Ruaj
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -412,16 +415,15 @@ export function ServicesManager({
       <Dialog open={Boolean(confirmDelete)} onOpenChange={() => setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Fshi shërbimin?</DialogTitle>
+            <DialogTitle>{t("services.deleteTitle")}</DialogTitle>
             <DialogDescription>
-              &quot;{confirmDelete?.name}&quot; do të hiqet nga faqja jote. Ky veprim nuk kthehet
-              mbrapsht.
+              {t("services.deleteBody", { name: confirmDelete?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDelete(null)}>
-              Anulo
+              {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -429,7 +431,7 @@ export function ServicesManager({
               onClick={() => confirmDelete && handleDelete(confirmDelete)}
             >
               {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Fshi
+              {t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

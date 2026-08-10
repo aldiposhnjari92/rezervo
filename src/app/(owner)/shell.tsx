@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsLeft, ChevronsRight, ExternalLink, ShieldCheck } from "lucide-react";
 
+import { LanguageToggle } from "@/components/language-switcher";
 import { ThemeButton } from "@/components/theme";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import { BottomNav, SidebarNav } from "./nav";
 import { NotificationsBell } from "./notifications-bell";
@@ -32,6 +34,7 @@ export function OwnerShell({
   // dhe një supozim i gabuar do të shkaktonte kërcim të layout-it.
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const t = useT();
   const fullHeight = pathname === "/calendar";
 
   useEffect(() => {
@@ -145,7 +148,7 @@ export function OwnerShell({
               target="_blank"
               className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground lg:flex"
             >
-              Shiko faqen publike
+              {t("nav.viewPublicPage")}
               <ExternalLink className="h-3.5 w-3.5" />
             </Link>
 
@@ -153,14 +156,15 @@ export function OwnerShell({
               {isAdmin && (
                 <Link
                   href="/admin"
-                  aria-label="Paneli i platformës"
-                  title="Paneli i platformës"
+                  aria-label={t("nav.adminPanel")}
+                  title={t("nav.adminPanel")}
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
                 >
                   <ShieldCheck className="h-4 w-4" />
                 </Link>
               )}
               <NotificationsBell businessId={businessId} />
+              <LanguageToggle />
               <ThemeButton />
               <div className="ml-1">
                 <UserMenu user={user} isAdmin={isAdmin} businessName={businessName} />

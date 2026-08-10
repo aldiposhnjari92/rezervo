@@ -13,6 +13,7 @@ import { isValidAlbanianPhone } from "@/lib/phone";
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
 import { useReadOnly } from "../read-only";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * Emri, telefoni dhe linku publik.
@@ -39,6 +40,7 @@ export function BusinessSection({
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const readOnly = useReadOnly();
+  const t = useT();
 
   const dirty = name !== initialName || phone !== initialPhone;
 
@@ -47,7 +49,7 @@ export function BusinessSection({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Linku u kopjua!");
+      toast.success(t("services.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error(url);
@@ -56,11 +58,11 @@ export function BusinessSection({
 
   async function save() {
     if (name.trim().length < 2) {
-      toast.error("Shkruaj emrin e biznesit.");
+      toast.error(t("setup.nameRequired"));
       return;
     }
     if (phone.trim() && !isValidAlbanianPhone(phone)) {
-      toast.error("Numri i telefonit nuk është i saktë. Shembull: 069 123 4567");
+      toast.error(t("err.phone"));
       return;
     }
 
@@ -73,7 +75,7 @@ export function BusinessSection({
       return;
     }
 
-    toast.success("Të dhënat u ruajtën.");
+    toast.success(t("settings.saved"));
     router.refresh();
   }
 
@@ -81,8 +83,8 @@ export function BusinessSection({
     <div className="space-y-5">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Linku yt publik</CardTitle>
-          <CardDescription>Ndaje në Instagram, WhatsApp ose Facebook.</CardDescription>
+          <CardTitle className="text-base">{t("settings.publicLink")}</CardTitle>
+          <CardDescription>{t("settings.publicLinkHint")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="break-all rounded-lg border border-border bg-muted/60 px-3 py-2.5 font-mono text-sm">
@@ -91,29 +93,29 @@ export function BusinessSection({
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={copyLink} className="flex-1">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "U kopjua" : "Kopjo"}
+              {copied ? t("common.copied") : t("common.copy")}
             </Button>
             <Button variant="outline" size="sm" asChild className="flex-1">
               <a href={`/${slug}`} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                Hape
+                {t("common.open")}
               </a>
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Linku nuk ndryshohet dot pasi krijohet dyqani.
+            {t("settings.linkFixed")}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Të dhënat e biznesit</CardTitle>
-          <CardDescription>Emri shfaqet te faqja publike e rezervimit.</CardDescription>
+          <CardTitle className="text-base">{t("settings.businessData")}</CardTitle>
+          <CardDescription>{t("settings.businessDataHint")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="settings-name">Emri i biznesit</Label>
+            <Label htmlFor="settings-name">{t("settings.businessName")}</Label>
             <Input
               id="settings-name"
               value={name}
@@ -125,7 +127,8 @@ export function BusinessSection({
 
           <div className="space-y-2">
             <Label htmlFor="settings-phone">
-              Telefoni <span className="font-normal text-muted-foreground">(opsional)</span>
+              {t("settings.phone")}{" "}
+              <span className="font-normal text-muted-foreground">{t("common.optional")}</span>
             </Label>
             <Input
               id="settings-phone"
@@ -137,18 +140,18 @@ export function BusinessSection({
               disabled={saving || readOnly}
             />
             <p className="text-xs text-muted-foreground">
-              Shfaqet te faqja e konfirmimit, që klienti të të gjejë nëse i duhet.
+              {t("settings.phoneHint")}
             </p>
           </div>
 
           {readOnly ? (
             <p className="text-sm text-muted-foreground">
-              Llogaria është e pezulluar, ndaj këto fusha nuk ndryshohen dot.
+              {t("suspended.fields")}
             </p>
           ) : (
             <Button onClick={save} disabled={saving || !dirty}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {dirty ? "Ruaj të dhënat" : "Asgjë për të ruajtur"}
+              {dirty ? t("settings.saveBusiness") : t("common.nothingToSave")}
             </Button>
           )}
         </CardContent>

@@ -6,22 +6,22 @@ import { AlertTriangle, Phone, Repeat, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { useFormat, useT } from "@/lib/i18n/provider";
 import { SearchInput } from "@/components/search-input";
 import { Segmented, SegmentedButton } from "@/components/segmented";
 import { StatTile } from "@/components/stat-tile";
-import { formatDayMonthFromInstant, formatMoney } from "@/lib/availability";
 import { formatAlbanianPhone } from "@/lib/phone";
 import type { CustomerRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type SortKey = "recent" | "visits" | "spent" | "noshows";
 
-const SORTS: { key: SortKey; label: string }[] = [
-  { key: "recent", label: "Të fundit" },
-  { key: "visits", label: "Më besnikët" },
-  { key: "spent", label: "Më fitimprurësit" },
-  { key: "noshows", label: "Problematikët" },
-];
+const SORTS = [
+  { key: "recent", label: "customers.sortRecent" },
+  { key: "visits", label: "customers.sortVisits" },
+  { key: "spent", label: "customers.sortSpent" },
+  { key: "noshows", label: "customers.sortNoShows" },
+] as const;
 
 /** "Ana Hoxha" -> "AH". Lista skanohet me sy, jo duke lexuar çdo rresht. */
 function initials(name: string): string {
@@ -40,6 +40,8 @@ function toneFor(c: CustomerRow) {
 export function CustomersList({ customers }: { customers: CustomerRow[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const t = useT();
+  const fmt = useFormat();
 
   const totals = useMemo(
     () => ({
@@ -73,11 +75,11 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
   if (customers.length === 0) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Klientët" description="Lista ndërtohet vetë nga rezervimet." />
+        <PageHeader title={t("customers.title")} description={t("customers.autoBuilt")} />
         <EmptyState
           icon={Users}
-          title="Ende asnjë klient"
-          description="Sapo dikush të rezervojë, do ta shohësh këtu bashkë me historikun e vizitave dhe sa ka shpenzuar."
+          title={t("customers.emptyTitle")}
+          description={t("customers.emptyBody")}
         />
       </div>
     );
@@ -86,19 +88,19 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Klientët"
-        description={`${totals.all} klientë · ${formatMoney(totals.spent)} gjithsej`}
+        title={t("customers.title")}
+        description={t("customers.subtitle", { count: totals.all, total: fmt.money(totals.spent) })}
       />
 
       <div className="grid grid-cols-3 gap-3">
-        <StatTile label="Klientë" value={totals.all} />
+        <StatTile label={t("customers.tileAll")} value={totals.all} />
         <StatTile
-          label="Kthehen sërish"
+          label={t("customers.tileRepeat")}
           value={totals.repeat}
-          hint={totals.all ? `${Math.round((totals.repeat / totals.all) * 100)}% e të gjithëve` : undefined}
+          hint={totals.all ? t("customers.tileRepeatHint", { percent: Math.round((totals.repeat / totals.all) * 100) }) : undefined}
         />
         <StatTile
-          label="Me mosardhje"
+          label={t("customers.tileRisky")}
           value={totals.risky}
           tone={totals.risky ? "warning" : "default"}
         />
@@ -108,7 +110,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
         <SearchInput
           value={query}
           onChange={setQuery}
-          placeholder="Kërko me emër ose numër"
+          placeholder={t("customers.searchPlaceholder")}
           className="lg:max-w-xs lg:flex-1"
         />
 
@@ -120,7 +122,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                 active={sort === s.key}
                 onClick={() => setSort(s.key)}
               >
-                {s.label}
+                {t(s.label)}
               </SegmentedButton>
             ))}
           </Segmented>
@@ -129,7 +131,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
 
       {visible.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-border bg-card py-12 text-center text-sm text-muted-foreground">
-          Asnjë klient nuk përputhet me &quot;{query}&quot;.
+          {t("customers.noMatch", { query })}
         </p>
       ) : (
         <>
@@ -137,12 +139,12 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Klienti</th>
-                  <th className="px-3 py-3 text-right font-medium">Vizita</th>
-                  <th className="px-3 py-3 text-right font-medium">Erdhi</th>
-                  <th className="px-3 py-3 text-right font-medium">Nuk erdhi</th>
-                  <th className="px-3 py-3 text-right font-medium">Shpenzuar</th>
-                  <th className="px-3 py-3 font-medium">Vizita e fundit</th>
+                  <th className="px-5 py-3 font-medium">{t("customers.colName")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("customers.colVisits")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("customers.colCame")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("customers.colMissed")}</th>
+                  <th className="px-3 py-3 text-right font-medium">{t("customers.colSpent")}</th>
+                  <th className="px-3 py-3 font-medium">{t("customers.colLast")}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -163,7 +165,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                           <div className="min-w-0">
                             <p className="truncate font-medium">{c.customer_name}</p>
                             <p className="truncate text-xs text-muted-foreground">
-                              Klient që nga {formatDayMonthFromInstant(c.first_visit)}
+                              {t("customers.since", { date: fmt.dayMonthFromInstant(c.first_visit) })}
                             </p>
                           </div>
                         </div>
@@ -182,10 +184,10 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                         )}
                       </td>
                       <td className="px-3 py-3 text-right font-medium tabular-nums">
-                        {formatMoney(c.total_spent)}
+                        {fmt.money(c.total_spent)}
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">
-                        {formatDayMonthFromInstant(c.last_visit)}
+                        {fmt.dayMonthFromInstant(c.last_visit)}
                       </td>
                       <td className="px-5 py-3 text-right">
                         {c.customer_phone ? (
@@ -199,7 +201,7 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                             </span>
                           </a>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Pa numër</span>
+                          <span className="text-xs text-muted-foreground">{t("common.noPhone")}</span>
                         )}
                       </td>
                     </tr>
@@ -227,26 +229,32 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                       <div className="flex items-start justify-between gap-3">
                         <p className="truncate font-medium">{c.customer_name}</p>
                         <p className="shrink-0 font-medium tabular-nums">
-                          {formatMoney(c.total_spent)}
+                          {fmt.money(c.total_spent)}
                         </p>
                       </div>
 
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {formatDayMonthFromInstant(c.last_visit)} · {c.visits}{" "}
-                        {c.visits === 1 ? "vizitë" : "vizita"} · {c.completed} erdhi
+                        {t("customers.visitSummary", {
+                          date: fmt.dayMonthFromInstant(c.last_visit),
+                          visits:
+                            c.visits === 1
+                              ? t("customers.visitOne")
+                              : t("customers.visitMany", { count: c.visits }),
+                          completed: c.completed,
+                        })}
                       </p>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {c.visits > 1 && (
                           <Badge variant="secondary" className="gap-1">
                             <Repeat className="h-3 w-3" />
-                            Klient i rregullt
+                            {t("customers.regular")}
                           </Badge>
                         )}
                         {c.no_shows >= 2 && (
                           <Badge variant="warning" className="gap-1">
                             <AlertTriangle className="h-3 w-3" />
-                            {c.no_shows} mosardhje
+                            {t("customers.noShowBadge", { count: c.no_shows })}
                           </Badge>
                         )}
                       </div>

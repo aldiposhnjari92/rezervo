@@ -98,14 +98,16 @@ docker rm -f rz-test
 Provon mbivendosjet, orarin e punës, RLS-në dhe normalizimin e telefonit —
 pikërisht ato gjëra që nuk duhen besuar pa i parë.
 
-`tests/sql/verify-suspension.sql` provon rregullin "vetëm lexim" drejtpërdrejt kundër
-policy-ve. I duhet i gjithë grumbulli:
+`tests/sql/verify-suspension.sql` provon rregullin "vetëm lexim" dhe
+`tests/sql/verify-history.sql` provon që një rezervim i kaluar nuk rikthehet e nuk
+zhvendoset. Të dyve u duhet i gjithë grumbulli:
 
 ```bash
 cat tests/sql/prelude.sql supabase/schema.sql supabase/admin.sql \
     supabase/features.sql supabase/shell.sql supabase/security.sql \
-    supabase/suspension.sql | docker exec -i rz-test psql -U postgres -q
+    supabase/suspension.sql supabase/history.sql | docker exec -i rz-test psql -U postgres -q
 cat tests/sql/verify-suspension.sql | docker exec -i rz-test psql -U postgres -q
+cat tests/sql/verify-history.sql    | docker exec -i rz-test psql -U postgres -q
 ```
 
 **Kujdes te `set local`:** psql punon në autocommit, ndaj `set local` jashtë një
@@ -139,3 +141,16 @@ Testet nuk përdorin numra fiksë për klientët. `create_booking()` ka kufi pre
 përpjekjesh/orë **për numër**, ndaj numra fiksë do ta ngopnin kuotën vetë suita
 pas disa drejtimesh dhe testet do të dështonin pa asnjë defekt në aplikacion.
 Çdo suitë ndërton numrat me `custPhone(n)` nga stampa e kohës së drejtimit.
+
+---
+
+## Gjuha
+
+Aplikacioni flet shqip dhe anglisht; gjuha mbahet te cookie-ja `rezervo-locale`
+dhe shqipja është e parazgjedhura. Testet drejtohen pa e vendosur atë, ndaj presin
+tekst shqip.
+
+Fjalorët ngarkohen te bundle-i i klientit, JO si prop nga serveri. Po t'i kalosh
+si prop, çdo varg i tyre futet në ngarkesën RSC të çdo faqeje — dhe atëherë çdo
+pohim `html.includes("ndonjë fjali")` përputhet me fjalorin e jo me atë që sheh
+përdoruesi. Kjo i bëri gjashtë teste të dështonin pa pasur asnjë defekt.

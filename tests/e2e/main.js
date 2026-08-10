@@ -237,8 +237,14 @@ const sb = (fnName, body) =>
   check("double booking blocked", dup.ok === false && dup.error.includes("sapo u zu"),
     JSON.stringify(dup).slice(0, 200));
 
+  // E diela PARA së hënës së zgjedhur, jo ajo pas saj.
+  //
+  // Me +6 ditë, sa herë "e hëna e ardhshme" ishte vetë e nesërmja, e diela binte
+  // jashtë dritares 7-ditore të rezervimit dhe refuzohej me arsyen e gabuar:
+  // "kaq larg në kohë" në vend të "mbyllur". Testi kalonte ose dështonte sipas
+  // ditës së javës kur drejtohej.
   const sunday = new Date(`${bookingDay}T08:00:00Z`);
-  sunday.setUTCDate(sunday.getUTCDate() + 6);
+  sunday.setUTCDate(sunday.getUTCDate() - 1);
   const closed = await sb("create_booking", {
     p_slug: slug, p_service_id: svc30.id, p_customer_name: "Test Diel",
     p_customer_phone: custPhone(3), p_start_time: sunday.toISOString(),

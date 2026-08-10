@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/page-header";
+import { getT } from "@/lib/i18n";
 import { isPlatformAdmin, requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { todayInTirane } from "@/lib/availability";
@@ -14,11 +15,11 @@ import { SettingsTabs, isSettingsTab, type SettingsTab } from "./tabs";
 export const metadata: Metadata = { title: "Rregullimet" };
 export const dynamic = "force-dynamic";
 
-const DESCRIPTIONS: Record<SettingsTab, string> = {
-  biznesi: "Emri, telefoni dhe linku që u jep klientëve.",
-  orari: "Kur pranon rezervime gjatë javës.",
-  rregullat: "Pushimet, njoftimi minimal dhe ditët e mbyllura.",
-  llogaria: "Pamja e panelit dhe llogaria jote.",
+const DESCRIPTIONS: Record<SettingsTab, "settings.descBusiness" | "settings.descHours" | "settings.descRules" | "settings.descAccount"> = {
+  biznesi: "settings.descBusiness",
+  orari: "settings.descHours",
+  rregullat: "settings.descRules",
+  llogaria: "settings.descAccount",
 };
 
 export default async function SettingsPage({
@@ -27,6 +28,7 @@ export default async function SettingsPage({
   searchParams: { tab?: string };
 }) {
   const { business } = await requireBusiness();
+  const t = getT();
   const tab: SettingsTab = isSettingsTab(searchParams.tab) ? searchParams.tab : "biznesi";
 
   // Vetëm skeda e rregullave i përdor mbylljet; të tjerat nuk e paguajnë pyetjen.
@@ -45,7 +47,7 @@ export default async function SettingsPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <PageHeader title="Rregullimet" description={DESCRIPTIONS[tab]} />
+      <PageHeader title={t("settings.title")} description={t(DESCRIPTIONS[tab])} />
 
       <SettingsTabs active={tab} />
 

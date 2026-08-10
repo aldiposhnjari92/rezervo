@@ -4,12 +4,13 @@
 import { Building2, CalendarClock, SlidersHorizontal, UserRound } from "lucide-react";
 
 import { Segmented, SegmentedLink } from "@/components/segmented";
+import { getT } from "@/lib/i18n";
 
 export const SETTINGS_TABS = [
-  { key: "biznesi", label: "Biznesi", icon: Building2 },
-  { key: "orari", label: "Orari", icon: CalendarClock },
-  { key: "rregullat", label: "Rregullat", icon: SlidersHorizontal },
-  { key: "llogaria", label: "Llogaria", icon: UserRound },
+  { key: "biznesi", label: "settings.tabBusiness", icon: Building2 },
+  { key: "orari", label: "settings.tabHours", icon: CalendarClock },
+  { key: "rregullat", label: "settings.tabRules", icon: SlidersHorizontal },
+  { key: "llogaria", label: "settings.tabAccount", icon: UserRound },
 ] as const;
 
 export type SettingsTab = (typeof SETTINGS_TABS)[number]["key"];
@@ -29,11 +30,13 @@ export function isSettingsTab(value: unknown): value is SettingsTab {
  * Gjendja mbahet te URL-ja, që skeda të mos humbasë pas ruajtjes.
  */
 export function SettingsTabs({ active }: { active: SettingsTab }) {
+  const t = getT();
+
   return (
     <Segmented scroll>
       {SETTINGS_TABS.map(({ key, label, icon }) => (
         <SegmentedLink key={key} href={`/settings?tab=${key}`} active={active === key} icon={icon}>
-          {label}
+          {t(label)}
         </SegmentedLink>
       ))}
     </Segmented>

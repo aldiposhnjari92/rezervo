@@ -5,14 +5,15 @@ import { usePathname } from "next/navigation";
 import { CalendarDays, LayoutDashboard, Scissors, Settings, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 const LINKS = [
-  { href: "/dashboard", label: "Paneli", icon: LayoutDashboard },
-  { href: "/calendar", label: "Kalendari", icon: CalendarDays },
-  { href: "/customers", label: "Klientët", icon: Users },
-  { href: "/services", label: "Shërbimet", icon: Scissors },
-  { href: "/settings", label: "Rregullimet", icon: Settings },
-];
+  { href: "/dashboard", key: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/calendar", key: "nav.calendar", icon: CalendarDays },
+  { href: "/customers", key: "nav.customers", icon: Users },
+  { href: "/services", key: "nav.services", icon: Scissors },
+  { href: "/settings", key: "nav.settings", icon: Settings },
+] as const;
 
 function useActive() {
   const pathname = usePathname();
@@ -23,10 +24,12 @@ function useActive() {
 /** Navigimi anësor — vetëm në ekrane të mëdha. */
 export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
   const isActive = useActive();
+  const t = useT();
 
   return (
     <nav className="space-y-1 px-3">
-      {LINKS.map(({ href, label, icon: Icon }) => {
+      {LINKS.map(({ href, key, icon: Icon }) => {
+        const label = t(key);
         const active = isActive(href);
         return (
           <Link
@@ -53,11 +56,13 @@ export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
 /** Shirit i poshtëm — vetëm në telefon. */
 export function BottomNav() {
   const isActive = useActive();
+  const t = useT();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-md">
-        {LINKS.map(({ href, label, icon: Icon }) => {
+        {LINKS.map(({ href, key, icon: Icon }) => {
+          const label = t(key);
           const active = isActive(href);
           return (
             <Link

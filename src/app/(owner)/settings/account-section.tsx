@@ -6,16 +6,17 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme";
+import { useT } from "@/lib/i18n/provider";
 
 export function AccountSection({ isAdmin }: { isAdmin: boolean }) {
+  const t = useT();
+
   return (
     <div className="space-y-5">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Pamja</CardTitle>
-          <CardDescription>
-            &quot;Sistemi&quot; ndjek rregullimin e telefonit ose kompjuterit.
-          </CardDescription>
+          <CardTitle className="text-base">{t("settings.appearance")}</CardTitle>
+          <CardDescription>{t("settings.appearanceHint")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ThemeToggle className="max-w-xs" />
@@ -24,15 +25,13 @@ export function AccountSection({ isAdmin }: { isAdmin: boolean }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Llogaria ime</CardTitle>
-          <CardDescription>
-            Email, fjalëkalim dhe fshirje e llogarisë.
-          </CardDescription>
+          <CardTitle className="text-base">{t("settings.accountCard")}</CardTitle>
+          <CardDescription>{t("settings.accountCardHint")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" asChild>
             <Link href="/account">
-              Hap llogarinë
+              {t("settings.openAccount")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -44,16 +43,14 @@ export function AccountSection({ isAdmin }: { isAdmin: boolean }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              Paneli i platformës
+              {t("settings.adminCard")}
             </CardTitle>
-            <CardDescription>
-              Kjo llogari ka të drejta admini mbi të gjitha bizneset.
-            </CardDescription>
+            <CardDescription>{t("settings.adminCardHint")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" asChild>
               <Link href="/admin">
-                Hap panelin
+                {t("settings.openAdmin")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

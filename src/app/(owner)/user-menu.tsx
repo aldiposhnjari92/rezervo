@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, Settings, ShieldCheck, UserRound } from "lucide-react";
 
+import { useT } from "@/lib/i18n/provider";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ export function UserMenu({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export function UserMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Menuja e llogarisë"
+        aria-label={t("nav.accountMenu")}
         aria-expanded={open}
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-shadow",
@@ -119,14 +121,14 @@ export function UserMenu({
 
           <div className="p-1">
             <MenuLink href="/account" icon={UserRound} onNavigate={() => setOpen(false)}>
-              Llogaria ime
+              {t("nav.account")}
             </MenuLink>
             <MenuLink href="/settings" icon={Settings} onNavigate={() => setOpen(false)}>
-              Rregullimet
+              {t("nav.settings")}
             </MenuLink>
             {isAdmin && (
               <MenuLink href="/admin" icon={ShieldCheck} onNavigate={() => setOpen(false)}>
-                Paneli i platformës
+                {t("nav.adminPanel")}
               </MenuLink>
             )}
           </div>
@@ -139,7 +141,7 @@ export function UserMenu({
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
             >
               <LogOut className="h-4 w-4 shrink-0" />
-              Dil
+              {t("nav.signOut")}
             </button>
           </div>
         </div>

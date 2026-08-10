@@ -298,6 +298,12 @@ export async function updateBookingStatus(
     // që ndërkohë e ka zënë dikush tjetër.
     if (error.code === "23P01")
       return { ok: false, error: "Kjo orë është zënë ndërkohë nga një rezervim tjetër." };
+    // RZ001 = trigger-i i historisë: e kaluara nuk rikthehet dhe nuk zhvendoset.
+    if (error.code === "RZ001")
+      return {
+        ok: false,
+        error: "Ky rezervim ka kaluar. Mund ta shënosh se çfarë ndodhi, por jo ta rikthesh në pritje.",
+      };
     return { ok: false, error: "Nuk u ndryshua dot rezervimi. Provo sërish." };
   }
 

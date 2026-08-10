@@ -11,6 +11,7 @@ import { WorkingHoursEditor, validateWorkingHours } from "@/components/working-h
 import type { WorkingHours } from "@/lib/types";
 import { updateBusiness } from "@/lib/actions";
 import { useReadOnly } from "../read-only";
+import { useT } from "@/lib/i18n/provider";
 
 export function HoursSection({
   name,
@@ -25,6 +26,7 @@ export function HoursSection({
   const [hours, setHours] = useState<WorkingHours>(initialHours);
   const [saving, setSaving] = useState(false);
   const readOnly = useReadOnly();
+  const t = useT();
 
   const dirty = JSON.stringify(hours) !== JSON.stringify(initialHours);
 
@@ -45,18 +47,15 @@ export function HoursSection({
       return;
     }
 
-    toast.success("Orari u ruajt.");
+    toast.success(t("settings.hoursSaved"));
     router.refresh();
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Orari i punës</CardTitle>
-        <CardDescription>
-          Klientët mund të rezervojnë vetëm brenda këtyre orareve. Ndryshimet prekin
-          rezervimet e reja, jo ato ekzistuese.
-        </CardDescription>
+        <CardTitle className="text-base">{t("settings.hoursTitle")}</CardTitle>
+        <CardDescription>{t("settings.hoursHint")}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-5">
@@ -64,12 +63,12 @@ export function HoursSection({
 
         {readOnly ? (
           <p className="text-sm text-muted-foreground">
-            Llogaria është e pezulluar, ndaj orari nuk ndryshohet dot.
+            {t("suspended.hours")}
           </p>
         ) : (
           <Button onClick={save} disabled={saving || !dirty}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {dirty ? "Ruaj orarin" : "Asgjë për të ruajtur"}
+            {dirty ? t("settings.saveHours") : t("common.nothingToSave")}
           </Button>
         )}
       </CardContent>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { formatDayMonthFromInstant, formatTime } from "@/lib/availability";
+import { useT } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 
 type NotificationKind =
@@ -46,6 +47,7 @@ const TONES: Record<NotificationKind, string> = {
 
 export function NotificationsBell({ businessId }: { businessId: string }) {
   const router = useRouter();
+  const t = useT();
   // Një klient i vetëm: leximi dhe abonimi duhet të ndajnë të njëjtin sesion,
   // përndryshe socket-i lidhet i paautentikuar.
   const [supabase] = useState(() => createClient());
@@ -195,7 +197,7 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={unread > 0 ? `${unread} njoftime të palexuara` : "Njoftimet"}
+        aria-label={unread > 0 ? t("notifications.unread", { count: unread }) : t("notifications.title")}
         aria-expanded={open}
         className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
@@ -210,14 +212,14 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
       {open && (
         <div className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-            <p className="font-semibold">Njoftimet</p>
+            <p className="font-semibold">{t("notifications.title")}</p>
             {unread > 0 && (
               <button
                 type="button"
                 onClick={markAllRead}
                 className="text-sm font-medium text-primary hover:underline"
               >
-                Shëno të lexuara
+                {t("notifications.markRead")}
               </button>
             )}
           </div>
@@ -232,7 +234,7 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
             ) : items.length === 0 ? (
               <div className="px-4 py-10 text-center">
                 <Bell className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Asnjë njoftim ende</p>
+                <p className="text-sm text-muted-foreground">{t("notifications.empty")}</p>
               </div>
             ) : (
               <ul className="divide-y divide-border">
