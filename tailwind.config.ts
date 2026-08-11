@@ -58,10 +58,36 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        // Konfirmimi i rezervimit: shenja vizatohet, unaza shpërndahet, letrat bien.
+        "check-draw": {
+          from: { strokeDashoffset: "32" },
+          to: { strokeDashoffset: "0" },
+        },
+        "ring-out": {
+          from: { transform: "scale(0.6)", opacity: "0.55" },
+          to: { transform: "scale(1.9)", opacity: "0" },
+        },
+        "badge-pop": {
+          "0%": { transform: "scale(0.3)", opacity: "0" },
+          "60%": { transform: "scale(1.12)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        confetti: {
+          "0%": { transform: "translate3d(0,0,0) rotate(0deg)", opacity: "0" },
+          "12%": { opacity: "1" },
+          "100%": {
+            transform: "translate3d(var(--dx), var(--dy), 0) rotate(var(--spin))",
+            opacity: "0",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "check-draw": "check-draw 0.45s cubic-bezier(0.65,0,0.35,1) 0.25s backwards",
+        "ring-out": "ring-out 1.1s ease-out 0.15s",
+        "badge-pop": "badge-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) backwards",
+        confetti: "confetti 1.15s cubic-bezier(0.2,0.6,0.35,1) backwards",
       },
     },
   },

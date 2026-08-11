@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getT } from "@/lib/i18n";
+import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -15,9 +16,7 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function suspensionError(): Promise<{ ok: false; error: string } | null> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   const t = getT();
   if (!user) return { ok: false, error: t("err.session") };
 

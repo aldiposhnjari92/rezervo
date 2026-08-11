@@ -4,14 +4,8 @@ import { OwnerShell } from "./shell";
 import { SuspendedBanner } from "./suspended-banner";
 
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
-  const { user, business } = await requireBusiness();
-  const admin = await isPlatformAdmin();
-
-  // Google i jep këto te user_metadata; me email/fjalëkalim mungojnë dhe
-  // avatari bie te inicialet.
-  const metadata = (user.user_metadata ?? {}) as Record<string, unknown>;
-  const name = typeof metadata.full_name === "string" ? metadata.full_name : null;
-  const avatarUrl = typeof metadata.avatar_url === "string" ? metadata.avatar_url : null;
+  // Paralel: e dyta nuk pret të parën, dhe të dyja janë shkuardhje veç e veç.
+  const [{ user, business }, admin] = await Promise.all([requireBusiness(), isPlatformAdmin()]);
 
   return (
     <OwnerShell
@@ -19,7 +13,12 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
       businessName={business.name}
       slug={business.slug}
       isAdmin={admin}
-      user={{ email: user.email ?? "", name, avatarUrl }}
+      user={{
+        email: user.email ?? "",
+        // Google i jep këto; me email/fjalëkalim mungojnë dhe avatari bie te inicialet.
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+      }}
     >
       {business.suspended_at && (
         <SuspendedBanner

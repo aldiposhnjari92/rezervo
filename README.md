@@ -315,6 +315,57 @@ Të dy fliten me `fetch` mbi HTTP, pa SDK. Pa çelës, email-i shkruhet në log 
 asnjë veprim nuk bllokohet. Për një provider tjetër, shtoje te `PROVIDERS` në
 [`src/lib/email.ts`](src/lib/email.ts) — asgjë tjetër nuk ndryshon.
 
+### WhatsApp
+
+Dy rrugë, dhe rruga zgjidhet vetë nga çelësat:
+
+| Çelësat | Rruga | Kush e dërgon | Kostoja |
+|---|---|---|---|
+| asnjë | `wa.me` | pronari, me një prekje | 0 |
+| `WHATSAPP_TOKEN` + `WHATSAPP_PHONE_ID` | Cloud API (Meta) | sistemi, vetë | Meta faturon çdo bisedë |
+
+**Pa çelësa punon që sot.** Aplikacioni ndërton linqe `wa.me` me tekstin e
+shkruar tashmë; pronari e hap dhe dërgon nga numri i vet. Kopsat te dialogu i
+rezervimit dhe te lista e klientëve janë pikërisht kjo rrugë, dhe rrinë aty
+gjithmonë — edhe kur dërgimi automatik është i ndezur, sepse një mesazh i
+shkruar me dorë nuk zëvendësohet nga një shabllon.
+
+**Me çelësa niset vetë**: konfirmimi te klienti dhe njoftimi te pronari sapo
+mbërrin një rezervim, plus kujtesat te `/api/cron/reminders`.
+
+> **Meta lejon tekst të lirë vetëm brenda 24 orëve pasi klienti të shkruajë i
+> pari.** Klientët tanë rezervojnë nga një formular në web, ndaj ajo dritare nuk
+> hapet kurrë: mesazhet e nisura nga ne duhet të jenë **shabllone të miratuara**.
+> Pa `WHATSAPP_TEMPLATE_*` dërgimi provohet si tekst i lirë dhe Meta e refuzon.
+
+| Variabla | Për çfarë |
+|---|---|
+| `WHATSAPP_TOKEN` | token i përhershëm i një system user-i te Meta |
+| `WHATSAPP_PHONE_ID` | ID-ja e numrit te WhatsApp Business |
+| `WHATSAPP_TEMPLATE_CONFIRMATION` | emri i shabllonit të konfirmimit |
+| `WHATSAPP_TEMPLATE_REMINDER` | emri i shabllonit të kujtesës |
+| `WHATSAPP_TEMPLATE_OWNER_ALERT` | emri i shabllonit të njoftimit te pronari |
+| `WHATSAPP_TEMPLATE_LANG` | gjuha e shabllonit (parazgjedhje `sq`) |
+
+Parametrat u kalohen shablloneve me radhë: `{{1}}` emri i klientit, `{{2}}`
+biznesi, `{{3}}` shërbimi, `{{4}}` data, `{{5}}` ora. (Te njoftimi i pronarit:
+klienti, shërbimi, data, ora.)
+
+### Kujtesat
+
+Asgjë në aplikacion nuk rri e pret orën, ndaj kujtesat i nis diçka nga jashtë:
+
+```bash
+curl -X POST https://<domeni>/api/cron/reminders \
+     -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Rruga kërkon `CRON_SECRET` (pa të është e fikur, 503) dhe
+`SUPABASE_SERVICE_ROLE_KEY`. Merr rezervimet që nisin pas ~24 orësh, dërgon një
+herë, dhe e shënon me `bookings.reminder_sent_at`. **Shënohet vetëm nëse mesazhi
+iku vërtet** — pa çelësat e WhatsApp-it rezervimi mbetet i pashënuar dhe pronari
+e dërgon vetë.
+
 ### Ngjyrat e grafikëve
 
 Të validuara me validatorin e paletës mbi sfond të bardhë — bandë ndriçimi,

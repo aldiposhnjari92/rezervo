@@ -88,6 +88,44 @@
   }
 }
 
+/**
+ * Printimi — bëhet vetëm te fatura.
+ *
+ * Shtylla anësore, shiriti i poshtëm dhe koka janë navigim: te letra zënë
+ * gjysmën e faqes pa i thënë asgjë atij që e mban në dorë. Ngjyrat kthehen në
+ * bardhë e zi, sepse tema e errët do të printonte një drejtkëndësh të zi.
+ */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --muted-foreground: 0 0% 35%;
+    --border: 0 0% 80%;
+  }
+
+  /*
+    Vetëm shtylla dhe navigimi. JO `header`: fatura ka kokën e vet — shitësin
+    dhe numrin — dhe një rregull i përgjithshëm do ta fshinte pikërisht atë.
+    Koka e aplikacionit hiqet me `print:hidden` te `shell.tsx`.
+  */
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  /* Kryesorja rri e shtrirë: pa shtyllë anësore, s'ka pse të mbetet e zhvendosur. */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+}
+
 @layer utilities {
   /* Rreshtë horizontal me scroll të butë në mobile, pa scrollbar të dukshëm */
   .no-scrollbar {

@@ -83,3 +83,36 @@ export async function deleteMyAccount(): Promise<Result> {
 
   return { ok: true };
 }
+
+// ---------------------------------------------------------------------------
+//  Faturat e abonimit
+// ---------------------------------------------------------------------------
+
+/**
+ * Lëshon faturën e abonimit për një muaj.
+ *
+ * Si te pezullimi, leja kontrollohet brenda funksionit në Postgres, jo këtu.
+ * Një muaj jep vetëm një faturë: thirrja e dytë kthen atë që ekziston, ndaj
+ * lëshimi dy herë nuk krijon dy numra.
+ */
+export async function issueSubscriptionInvoice(input: {
+  businessId: string;
+  /** Çdo datë brenda muajit; funksioni e sjell te dita e parë. */
+  periodStart: string;
+  amount?: number;
+}): Promise<Result> {
+  const supabase = createClient();
+
+  const { error } = await supabase.rpc("issue_subscription_invoice", {
+    p_business_id: input.businessId,
+    p_period_start: input.periodStart,
+    p_amount: input.amount ?? 1000,
+  });
+
+  if (error) return { ok: false, error: getT()("err.invoiceFailed") };
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/${input.businessId}`);
+  revalidatePath("/invoices");
+  return { ok: true };
+}

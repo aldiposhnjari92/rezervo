@@ -32,6 +32,49 @@ export type Business = {
   /** "HH:mm" ose null. */
   break_start: string | null;
   break_end: string | null;
+  /** Hyjnë te koka e faturës; të dyja opsionale. */
+  nipt: string | null;
+  address: string | null;
+};
+
+export type InvoiceKind = "booking" | "subscription";
+
+export type InvoiceLine = {
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+};
+
+/**
+ * Fatura ruan shitësin, blerësin dhe rreshtat si fotografi të momentit — nëse
+ * biznesi ndryshon emrin nesër, fatura e djeshme mbetet ashtu siç u dha.
+ *
+ * SHËNIM: nuk është faturë e fiskalizuar. Nuk ka NSLF/NIVF dhe asgjë nuk i
+ * dërgohet sistemit të tatimeve.
+ */
+export type Invoice = {
+  id: string;
+  business_id: string;
+  kind: InvoiceKind;
+  number: string;
+  issued_on: string;
+  booking_id: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  seller_name: string;
+  seller_nipt: string | null;
+  seller_address: string | null;
+  buyer_name: string;
+  buyer_nipt: string | null;
+  buyer_address: string | null;
+  lines: InvoiceLine[];
+  subtotal: number;
+  vat_rate: number;
+  vat_amount: number;
+  total: number;
+  note: string | null;
+  created_at: string;
 };
 
 export type Closure = {

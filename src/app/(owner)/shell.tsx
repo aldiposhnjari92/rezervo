@@ -129,7 +129,7 @@ export function OwnerShell({
       {/* ------------------------------------------------------------ përmbajtja */}
       <div className={cn("transition-[padding] duration-200", collapsed ? "lg:pl-[4.5rem]" : "lg:pl-60")}>
         {/* koka */}
-        <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur print:hidden">
           <div className="flex h-14 items-center justify-between gap-3 px-4 lg:h-16 lg:px-8">
             <div className="min-w-0 lg:hidden">
               <p className="truncate text-sm font-semibold leading-tight">{businessName}</p>

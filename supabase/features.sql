@@ -11,7 +11,9 @@
 -- ---------------------------------------------------------------------
 alter table public.businesses add column if not exists buffer_minutes       int not null default 0;
 alter table public.businesses add column if not exists min_notice_minutes   int not null default 30;
-alter table public.businesses add column if not exists booking_window_days  int not null default 7;
+alter table public.businesses add column if not exists booking_window_days  int not null default 30;
+-- Bazat e krijuara para se dritarja të zgjatej e mbajnë ende 7-shen si parazgjedhje.
+alter table public.businesses alter column booking_window_days set default 30;
 alter table public.businesses add column if not exists break_start          time;
 alter table public.businesses add column if not exists break_end            time;
 
@@ -321,6 +323,11 @@ begin
   end if;
 
   select jsonb_build_object(
+    -- Numri i shërbimeve aktive vjen bashkë me pjesën tjetër, e nuk kërkon një
+    -- pyetje më vete: ajo do të ishte një shkuardhje e dytë rrjeti vetëm për
+    -- një numër, dhe do të duhej të priste `business_id`-në.
+    'services_active',  (select count(*) from public.services
+                          where business_id = v_bid and is_active),
     'bookings_total',   (select count(*) from public.bookings where business_id = v_bid),
     'bookings_period',  (select count(*) from public.bookings
                           where business_id = v_bid

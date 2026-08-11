@@ -10,6 +10,7 @@ const PROTECTED_PREFIXES = [
   "/calendar",
   "/customers",
   "/services",
+  "/invoices",
   "/settings",
   "/setup",
   "/account",
@@ -74,6 +75,9 @@ function withSecurityHeaders(response: NextResponse, nonce: string, isDev: boole
   return response;
 }
 
+/** Emri i header-it me përdoruesin e verifikuar. Vendoset VETËM nga middleware-i. */
+export const SESSION_HEADER = "x-rezervo-session";
+
 export async function middleware(request: NextRequest) {
   const isDev = process.env.NODE_ENV !== "production";
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
@@ -82,6 +86,16 @@ export async function middleware(request: NextRequest) {
   // ta vendosë te skripti inline i temës.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+
+  /*
+   * Fshihet PARA çdo dege.
+   *
+   * Ky header e kursen aplikacionin nga një `getUser()` i dytë (shih më poshtë).
+   * Nëse do të linim të kalonte një vlerë të ardhur nga jashtë, kushdo do të
+   * mund të shkruante se kush është. Fshirja këtu, pa asnjë kusht, do të thotë
+   * se e vendos VETËM ky funksion, dhe vetëm pasi Supabase e ka verifikuar.
+   */
+  requestHeaders.delete(SESSION_HEADER);
 
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_PREFIXES.some(
@@ -148,6 +162,34 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  /*
+   * Përdoruesi i verifikuar i kalohet aplikacionit.
+   *
+   * `getUser()` është një shkuardhje e plotë te Supabase (~110ms nga këtu).
+   * Pa këtë, e njëjta kërkesë e bënte DY herë: një herë këtu dhe një herë te
+   * layout-i — thjesht për të mësuar sërish atë që sapo e dimë.
+   *
+   * Rreziku i një header-i të falsifikuar mbetet i vogël edhe po të shpëtonte
+   * fshirja më sipër: çdo prekje e të dhënave kalon nga RLS-ja, e cila lexon
+   * JWT-në te cookie-ja, jo këtë header. Ky ndikon vetëm te ajo që aplikacioni
+   * MENDON se je, jo te ajo që baza të lejon të bësh.
+   */
+  if (user) {
+    const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+    requestHeaders.set(
+      SESSION_HEADER,
+      JSON.stringify({
+        id: user.id,
+        email: user.email ?? null,
+        createdAt: user.created_at,
+        lastSignInAt: user.last_sign_in_at ?? null,
+        name: typeof meta.full_name === "string" ? meta.full_name : null,
+        avatarUrl: typeof meta.avatar_url === "string" ? meta.avatar_url : null,
+      }),
+    );
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();

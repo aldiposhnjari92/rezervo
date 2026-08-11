@@ -74,8 +74,8 @@ eq("1 day notice -> nothing left today",
      rules:{minNoticeMinutes:1440}, now:NOW}).availableCount, 0);
 
 console.log("\n--- booking window ---");
-eq("default window = 7 days",
-   a.buildAvailability({workingHours:HOURS,durationMinutes:30,taken:[],now:PAST}).length, 7);
+eq("default window = 30 days",
+   a.buildAvailability({workingHours:HOURS,durationMinutes:30,taken:[],now:PAST}).length, 30);
 eq("window from rules = 14",
    a.buildAvailability({workingHours:HOURS,durationMinutes:30,taken:[],
      rules:{bookingWindowDays:14}, now:PAST}).length, 14);

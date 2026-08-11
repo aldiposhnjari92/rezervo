@@ -80,6 +80,16 @@ export function formatters(locale: Locale) {
     dayMonth,
 
     /**
+     * "8 Gusht 2026" — për fushat ku data zgjidhet, jo lexohet në kontekst.
+     * Viti nuk hiqet: një mbyllje mund të vendoset edhe për janarin tjetër, dhe
+     * "8 Janar" pa vit nuk thotë cilin.
+     */
+    dayMonthYear: (date: string) => {
+      const d = new Date(`${date}T12:00:00Z`);
+      return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    },
+
+    /**
      * Nga një moment i saktë. Kalon nëpër datën lokale të Tiranës — një takim
      * në 00:30 i përket ditës shqiptare, jo asaj UTC.
      */

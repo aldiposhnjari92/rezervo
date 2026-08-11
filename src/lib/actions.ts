@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isReservedSlug, isValidSlug } from "@/lib/slug";
 import { normalizeAlbanianPhone } from "@/lib/phone";
@@ -70,9 +71,7 @@ export async function createBusiness(input: {
   workingHours: unknown;
 }): Promise<ActionError | void> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { ok: false, error: t("err.session") };
 
   const name = input.name.trim();
@@ -129,14 +128,15 @@ export async function updateBusiness(input: {
   name: string;
   phone: string;
   workingHours: unknown;
+  /** Hyjnë te koka e faturës; të dyja opsionale. */
+  nipt?: string;
+  address?: string;
 }): Promise<Result> {
   const blocked = await suspensionError();
   if (blocked) return blocked;
 
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { ok: false, error: t("err.session") };
 
   const name = input.name.trim();
@@ -149,9 +149,33 @@ export async function updateBusiness(input: {
   const workingHours = sanitizeWorkingHours(input.workingHours);
   if (!workingHours) return { ok: false, error: t("err.hours") };
 
+  /**
+   * NIPT-i dhe adresa shkruhen VETËM kur dërgohen.
+   *
+   * Skedat e rregullimeve e thërrasin këtë veprim secila me fushat e veta: skeda
+   * e orarit dërgon vetëm orarin. Po t'i kthenim fushat që mungojnë në `null`,
+   * ruajtja e orarit do të fshinte NIPT-in e shkruar te skeda tjetër — pa asnjë
+   * gabim në ekran, dhe pronari do ta merrte vesh nga një faturë pa kokë.
+   */
+  const patch: Record<string, unknown> = { name, phone, working_hours: workingHours };
+
+  if (input.nipt !== undefined) {
+    // NIPT-i shqiptar: shkronjë, 8 shifra, shkronjë. E njëjta rregull si te baza.
+    const nipt = input.nipt.trim().toUpperCase() || null;
+    if (nipt && !/^[A-Z][0-9]{8}[A-Z]$/.test(nipt))
+      return { ok: false, error: t("err.nipt") };
+    patch.nipt = nipt;
+  }
+
+  if (input.address !== undefined) {
+    const address = input.address.trim() || null;
+    if (address && address.length > 160) return { ok: false, error: t("err.address") };
+    patch.address = address;
+  }
+
   const { error } = await supabase
     .from("businesses")
-    .update({ name, phone, working_hours: workingHours })
+    .update(patch)
     .eq("owner_id", user.id);
 
   if (error) return { ok: false, error: t("err.saveFailed") };
@@ -193,9 +217,7 @@ export async function createService(input: {
   if (blocked) return blocked;
 
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { ok: false, error: t("err.session") };
 
   const validation = validateService(input);

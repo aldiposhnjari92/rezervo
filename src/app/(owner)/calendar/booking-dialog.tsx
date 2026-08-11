@@ -1,7 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { Check, Loader2, Phone, RotateCcw, UserX, X } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Check, Loader2, Phone, RotateCcw, UserX, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,10 @@ import { formatAlbanianPhone } from "@/lib/phone";
 import type { BookingStatus, BookingWithService } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updateBookingStatus } from "@/lib/actions";
+import { issueBookingInvoice } from "@/lib/invoice-actions";
+import { WhatsAppButton } from "@/components/whatsapp-button";
+import { confirmationText, reminderText } from "@/lib/whatsapp-messages";
+import { useRouter } from "next/navigation";
 import { useFormat, useT } from "@/lib/i18n/provider";
 import { useReadOnly } from "../read-only";
 
@@ -32,15 +36,41 @@ const STATUS_VARIANT: Record<
 
 export function BookingDialog({
   booking,
+  businessName,
+  businessPhone,
   onClose,
 }: {
   booking: BookingWithService | null;
+  businessName: string;
+  businessPhone: string | null;
   onClose: () => void;
 }) {
   const [pending, startTransition] = useTransition();
+  const [invoicing, setInvoicing] = useState(false);
   const readOnly = useReadOnly();
+  const router = useRouter();
   const t = useT();
   const fmt = useFormat();
+
+  /**
+   * Fatura lëshohet vetëm për një rezervim që u krye.
+   *
+   * Baza e kthen atë ekzistuese nëse rezervimi është faturuar tashmë, ndaj
+   * klikimi i dytë nuk jep numër të dytë — thjesht hap të njëjtën faturë.
+   */
+  async function issueInvoice() {
+    if (!booking) return;
+    setInvoicing(true);
+    const result = await issueBookingInvoice(booking.id);
+    setInvoicing(false);
+
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(t("invoices.issued", { number: result.data?.number ?? "" }));
+    router.push(`/invoices/${result.data?.id}`);
+  }
 
   function changeStatus(status: BookingStatus) {
     if (!booking) return;
@@ -61,6 +91,16 @@ export function BookingDialog({
       onClose();
     });
   }
+
+  /** Të njëjtat të dhëna që përdor dërgimi automatik, që tekstet të mos ndryshojnë. */
+  const messageFacts = {
+    businessName,
+    serviceName: booking?.services?.name ?? t("booking.deletedService"),
+    customerName: booking?.customer_name ?? "",
+    date: booking ? fmt.dayMonthFromInstant(booking.start_time) : "",
+    time: booking ? fmt.time(booking.start_time) : "",
+    businessPhone,
+  };
 
   const isOpen = booking?.status === "confirmed";
   // Ora e nisjes, jo dita: një takim që nisi 10 minuta më parë ka kaluar.
@@ -175,6 +215,45 @@ export function BookingDialog({
                   <RotateCcw className="h-4 w-4" />
                 )}
                 {t("booking.restore")}
+              </Button>
+            )}
+
+            {/*
+              WhatsApp me dorë: punon pa asnjë çelës dhe pa faturë. Kujtesa i
+              ofrohet vetëm një takimi që s'ka ndodhur ende — pas tij s'ka çfarë
+              të kujtohet.
+            */}
+            {!readOnly && booking.status !== "cancelled" && (
+              <div className={cn("grid gap-2", hasPassed ? "grid-cols-1" : "grid-cols-2")}>
+                <WhatsAppButton
+                  phone={booking.customer_phone}
+                  label={t("whatsapp.message")}
+                  message={confirmationText(messageFacts)}
+                />
+                {!hasPassed && (
+                  <WhatsAppButton
+                    phone={booking.customer_phone}
+                    label={t("whatsapp.remind")}
+                    message={reminderText(messageFacts)}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Fatura ka kuptim vetëm për një shitje që ndodhi vërtet. */}
+            {!readOnly && booking.status !== "cancelled" && booking.status !== "no_show" && (
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={invoicing || pending}
+                onClick={issueInvoice}
+              >
+                {invoicing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+                {t("invoices.issue")}
               </Button>
             )}
           </>

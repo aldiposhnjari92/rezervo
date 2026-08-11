@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getT } from "@/lib/i18n";
 import { createPublicClient } from "@/lib/supabase/public";
 import { normalizeAlbanianPhone } from "@/lib/phone";
-import { sendWhatsAppReminder } from "@/lib/notifications";
+import { notifyOwnerNewBooking, sendBookingConfirmation } from "@/lib/notifications";
 
 export type CreatedBooking = {
   id: string;
@@ -64,11 +64,30 @@ export async function submitBooking(input: {
     return { ok: false, error: result?.error ?? "Nuk u krye dot rezervimi." };
   }
 
-  // V1: mock — vetëm console.log. Këtu do të lidhet WhatsApp API-ja e vërtetë.
-  await sendWhatsAppReminder(phone, result.booking.start_time, {
-    businessName: result.booking.business_name,
-    customerName: result.booking.customer_name,
+  /**
+   * Njoftimet janë "best effort" — rezervimi është kryer tashmë.
+   *
+   * Numri i pronarit merret nga serveri, JO nga klienti: po ta dërgonte
+   * shfletuesi, kushdo mund ta bënte sistemin t'i shkruante një numri të tijin.
+   */
+  const { data: publicBusiness } = await supabase.rpc("get_public_business", {
+    p_slug: input.slug,
   });
+  const ownerPhone = (publicBusiness as { phone?: string | null } | null)?.phone ?? null;
+
+  const notice = {
+    customerName: result.booking.customer_name,
+    customerPhone: phone,
+    serviceName: result.booking.service_name,
+    businessName: result.booking.business_name,
+    businessPhone: ownerPhone,
+    time: result.booking.start_time,
+  };
+
+  await Promise.all([
+    sendBookingConfirmation(notice),
+    notifyOwnerNewBooking(ownerPhone, notice),
+  ]);
 
   // Pronari e sheh menjëherë rezervimin e ri në dashboard.
   revalidatePath("/calendar");

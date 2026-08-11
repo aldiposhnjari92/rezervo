@@ -26,7 +26,6 @@ export default async function OwnerDashboardPage({
 }: {
   searchParams: { days?: string };
 }) {
-  const { business } = await requireBusiness();
   const supabase = createClient();
   const t = getT();
   const fmt = getFormat();
@@ -35,16 +34,15 @@ export default async function OwnerDashboardPage({
     ? Number(searchParams.days)
     : 30;
 
-  const [{ data, error }, { count: servicesCount }] = await Promise.all([
+  // `owner_dashboard` shkon vetë te biznesi i përdoruesit të kyçur, ndaj nuk
+  // pret dot rreshtin e biznesit — të dyja nisen njëkohësisht.
+  const [{ business }, { data, error }] = await Promise.all([
+    requireBusiness(),
     supabase.rpc("owner_dashboard", { p_days: days }),
-    supabase
-      .from("services")
-      .select("id", { count: "exact", head: true })
-      .eq("business_id", business.id)
-      .eq("is_active", true),
   ]);
 
   const d = data as OwnerDashboard | null;
+  const servicesCount = d?.services_active ?? 0;
 
   if (!d) {
     return (

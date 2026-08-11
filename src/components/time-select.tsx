@@ -2,6 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 
+import { Dropdown, DropdownItem } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
 
 /**
@@ -37,29 +38,56 @@ export function TimeSelect({
   disabled?: boolean;
   className?: string;
 }) {
+  /**
+   * Një orar i ruajtur më parë mund të mos bjerë në hapat e tanishëm (p.sh.
+   * "09:20" kur lista shkon nga 15 në 15). Ora e tanishme hyn në listë në vendin
+   * e vet — "HH:MM" renditet si tekst njësoj si në kohë.
+   */
+  const times = options.includes(value) ? options : [...options, value].sort();
+
   return (
-    <div className={cn("relative", className)}>
-      <select
-        aria-label={label}
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "h-10 w-full appearance-none rounded-lg border border-border bg-background pl-3 pr-8",
-          "text-sm tabular-nums transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-        )}
-      >
-        {/* Një vlerë e ruajtur më parë mund të mos bjerë në hapat e tanishëm. */}
-        {!options.includes(value) && <option value={value}>{value}</option>}
-        {options.map((time) => (
-          <option key={time} value={time}>
-            {time}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-    </div>
+    <Dropdown
+      className={className}
+      panelClassName="left-0 min-w-full"
+      trigger={({ open, toggle }) => (
+        <button
+          type="button"
+          onClick={toggle}
+          disabled={disabled}
+          aria-label={label}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          className={cn(
+            "flex h-10 w-full items-center justify-between gap-1 rounded-lg border border-border bg-background pl-3 pr-2.5",
+            "text-sm tabular-nums transition-colors hover:bg-muted",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            open && "ring-2 ring-ring",
+          )}
+        >
+          {value}
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      )}
+    >
+      {({ close }) => (
+        // Lista e orëve është e gjatë; panelin e mban të shkurtër vetë rrëshqitja.
+        <div className="max-h-64 overflow-y-auto">
+          {times.map((time) => (
+            <DropdownItem
+              key={time}
+              selected={time === value}
+              className="tabular-nums"
+              onSelect={() => {
+                close();
+                onChange(time);
+              }}
+            >
+              {time}
+            </DropdownItem>
+          ))}
+        </div>
+      )}
+    </Dropdown>
   );
 }

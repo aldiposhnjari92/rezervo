@@ -79,7 +79,7 @@ const PW = "TestPass123!";
   console.log("\n=== 2. Rules appear in the public payload ===");
   check("buffer default 0", pub.body.buffer_minutes === 0);
   check("notice default 30", pub.body.min_notice_minutes === 30);
-  check("window default 7", pub.body.booking_window_days === 7);
+  check("window default 30", pub.body.booking_window_days === 30);
   check("closures array present", Array.isArray(pub.body.closures));
 
   // next Monday 10:00 Tirane

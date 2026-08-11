@@ -2,9 +2,9 @@ import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
+  Bell,
   CalendarCheck,
   Check,
-  MessageCircle,
   Quote,
   Shield,
   Sparkles,
@@ -24,7 +24,7 @@ import {
 
 const HIGHLIGHTS = [
   { icon: CalendarCheck, title: "landing.f1Title", body: "landing.f1Body" },
-  { icon: MessageCircle, title: "landing.f2Title", body: "landing.f2Body" },
+  { icon: Bell, title: "landing.f2Title", body: "landing.f2Body" },
   { icon: BarChart3, title: "landing.f3Title", body: "landing.f3Body" },
   { icon: Shield, title: "landing.f4Title", body: "landing.f4Body" },
 ] as const;
@@ -60,6 +60,7 @@ const TESTIMONIALS = [
 const INCLUDED = [
   "landing.inc1", "landing.inc2", "landing.inc3", "landing.inc4",
   "landing.inc5", "landing.inc6", "landing.inc7", "landing.inc8",
+  "landing.inc9", "landing.inc10",
 ] as const;
 
 const FAQ = [

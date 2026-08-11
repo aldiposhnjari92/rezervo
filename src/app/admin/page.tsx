@@ -13,9 +13,11 @@ import { getFormat, getT } from "@/lib/i18n";
 import type {
   AdminBusinessRow,
   AdminOverview,
+  AdminSubscriptionRow,
   DailyBookings,
   OrphanAccount,
 } from "@/lib/admin-types";
+import { Subscriptions } from "./subscriptions";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -26,17 +28,20 @@ export default async function AdminPage() {
   const t = getT();
   const fmt = getFormat();
 
-  const [overviewRes, dailyRes, businessesRes, orphansRes] = await Promise.all([
+  const [overviewRes, dailyRes, businessesRes, orphansRes, subsRes] = await Promise.all([
     supabase.rpc("admin_overview"),
     supabase.rpc("admin_daily_bookings", { p_days: 30 }),
     supabase.rpc("admin_businesses"),
     supabase.rpc("admin_orphan_accounts"),
+    supabase.rpc("admin_subscriptions"),
   ]);
 
   const overview = overviewRes.data as AdminOverview | null;
   const daily = (dailyRes.data ?? []) as DailyBookings[];
   const businesses = (businessesRes.data ?? []) as AdminBusinessRow[];
   const orphans = (orphansRes.data ?? []) as OrphanAccount[];
+  const subscriptions = (subsRes.data ?? []) as AdminSubscriptionRow[];
+  const subscribed = subscriptions.filter((s) => s.billed_this_month).length;
 
   if (!overview) {
     return (
@@ -99,6 +104,19 @@ export default async function AdminPage() {
         />
       </div>
 
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile
+          label={t("admin.subscribed")}
+          value={subscribed}
+          hint={t("admin.subscribedHint", { total: subscriptions.length })}
+        />
+        <StatTile
+          label={t("admin.mrr")}
+          value={fmt.money(subscriptions.reduce((sum, s) => sum + s.this_month_total, 0))}
+          hint={t("admin.mrrHint")}
+        />
+      </div>
+
       {/* ---------------------------------------------------------------- grafikët */}
       <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <BookingsChart data={daily} />
@@ -111,6 +129,9 @@ export default async function AdminPage() {
           }}
         />
       </div>
+
+      {/* ------------------------------------------------------------- abonimet */}
+      <Subscriptions rows={subscriptions} />
 
       {/* ---------------------------------------------------------------- bizneset */}
       <Card className="overflow-hidden">

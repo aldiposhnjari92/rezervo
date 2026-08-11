@@ -12,6 +12,8 @@ import { Segmented, SegmentedButton } from "@/components/segmented";
 import { StatTile } from "@/components/stat-tile";
 import { formatAlbanianPhone } from "@/lib/phone";
 import type { CustomerRow } from "@/lib/types";
+import { WhatsAppButton } from "@/components/whatsapp-button";
+import { openingText } from "@/lib/whatsapp-messages";
 import { cn } from "@/lib/utils";
 
 type SortKey = "recent" | "visits" | "spent" | "noshows";
@@ -37,7 +39,13 @@ function toneFor(c: CustomerRow) {
   return "plain" as const;
 }
 
-export function CustomersList({ customers }: { customers: CustomerRow[] }) {
+export function CustomersList({
+  customers,
+  businessName,
+}: {
+  customers: CustomerRow[];
+  businessName: string;
+}) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
   const t = useT();
@@ -203,6 +211,16 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                         ) : (
                           <span className="text-xs text-muted-foreground">{t("common.noPhone")}</span>
                         )}
+                        {c.customer_phone && (
+                          <WhatsAppButton
+                            phone={c.customer_phone}
+                            size="icon"
+                            variant="ghost"
+                            label={t("whatsapp.messageCustomer")}
+                            message={openingText(c.customer_name, businessName)}
+                            className="ml-1 align-middle text-muted-foreground hover:text-foreground"
+                          />
+                        )}
                       </td>
                     </tr>
                   );
@@ -262,13 +280,21 @@ export function CustomersList({ customers }: { customers: CustomerRow[] }) {
                   </div>
 
                   {c.customer_phone && (
-                    <a
-                      href={`tel:${c.customer_phone}`}
-                      className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-border bg-background py-2.5 text-sm font-medium text-primary"
-                    >
-                      <Phone className="h-4 w-4" />
-                      <span className="tabular-nums">{formatAlbanianPhone(c.customer_phone)}</span>
-                    </a>
+                    <div className="mt-3 flex gap-2">
+                      <a
+                        href={`tel:${c.customer_phone}`}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background py-2.5 text-sm font-medium text-primary"
+                      >
+                        <Phone className="h-4 w-4" />
+                        <span className="tabular-nums">{formatAlbanianPhone(c.customer_phone)}</span>
+                      </a>
+                      <WhatsAppButton
+                        phone={c.customer_phone}
+                        label={t("whatsapp.message")}
+                        message={openingText(c.customer_name, businessName)}
+                        className="shrink-0"
+                      />
+                    </div>
                   )}
                 </li>
               );

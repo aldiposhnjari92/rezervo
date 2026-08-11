@@ -7,14 +7,13 @@ export const metadata: Metadata = { title: "Llogaria ime" };
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const { user } = await requireBusiness();
-  const admin = await isPlatformAdmin();
+  const [{ user }, admin] = await Promise.all([requireBusiness(), isPlatformAdmin()]);
 
   return (
     <AccountForm
       email={user.email ?? ""}
-      createdAt={user.created_at}
-      lastSignInAt={user.last_sign_in_at ?? null}
+      createdAt={user.createdAt}
+      lastSignInAt={user.lastSignInAt}
       isAdmin={admin}
     />
   );

@@ -9,7 +9,15 @@ export const SLOT_STEP_MINUTES = 30;
 
 /** Vlerat e parazgjedhura kur biznesi s'ka vendosur rregulla të vetat. */
 export const DEFAULT_MIN_NOTICE_MINUTES = 30;
-export const DEFAULT_BOOKING_WINDOW_DAYS = 7;
+
+/**
+ * Një muaj përpara, jo një javë.
+ *
+ * Me 7 ditë, një klient që donte të rezervonte "pas dy javësh" thjesht nuk e
+ * shihte dot datën — dhe pyeste në telefon, pikërisht atë që faqja duhej të
+ * hiqte. Biznesi mund ta shkurtojë sërish nga Rregullimet (7/14/30/60).
+ */
+export const DEFAULT_BOOKING_WINDOW_DAYS = 30;
 
 /** Ende e përdorur si gjatësi parazgjedhur e dritares në UI. */
 export const BOOKING_WINDOW_DAYS = DEFAULT_BOOKING_WINDOW_DAYS;

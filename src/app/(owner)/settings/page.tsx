@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/page-header";
 import { getT } from "@/lib/i18n";
+import { whatsappRoute } from "@/lib/whatsapp-messages";
 import { isPlatformAdmin, requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { todayInTirane } from "@/lib/availability";
@@ -56,7 +57,10 @@ export default async function SettingsPage({
           name={business.name}
           slug={business.slug}
           phone={business.phone ?? ""}
+          nipt={business.nipt ?? ""}
+          address={business.address ?? ""}
           workingHours={business.working_hours}
+          whatsappAuto={whatsappRoute() === "cloud"}
         />
       )}
 

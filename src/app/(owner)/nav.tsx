@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, LayoutDashboard, Scissors, Settings, Users } from "lucide-react";
+import { CalendarDays, FileText, LayoutDashboard, Scissors, Settings, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/provider";
@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/calendar", key: "nav.calendar", icon: CalendarDays },
   { href: "/customers", key: "nav.customers", icon: Users },
   { href: "/services", key: "nav.services", icon: Scissors },
+  { href: "/invoices", key: "nav.invoices", icon: FileText },
   { href: "/settings", key: "nav.settings", icon: Settings },
 ] as const;
 

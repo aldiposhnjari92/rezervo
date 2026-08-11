@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { DateSelect } from "@/components/date-select";
 import { TimeSelect, timeOptions } from "@/components/time-select";
 import { todayInTirane } from "@/lib/availability";
 import { addClosure, removeClosure, updateBookingRules } from "@/lib/owner-actions";
@@ -225,13 +226,13 @@ export function BookingRules({
         <CardContent className="space-y-4">
           {!readOnly && (
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="date"
+            <DateSelect
+              label={t("rules.closureDate")}
               value={newDate}
               min={todayInTirane()}
-              onChange={(e) => setNewDate(e.target.value)}
+              onChange={setNewDate}
               disabled={pending}
-              className="h-11 rounded-lg border border-border bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+              className="sm:w-56"
             />
             <Input
               value={reason}

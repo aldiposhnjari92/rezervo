@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
+import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeAlbanianPhone } from "@/lib/phone";
-import { notifyOwnerNewBooking } from "@/lib/notifications";
 import { getT } from "@/lib/i18n";
 import type { DictKey } from "@/lib/i18n/sq";
 import { suspensionError } from "@/lib/suspension";
@@ -70,12 +70,10 @@ export async function createManualBooking(input: {
   const result = data as { ok: boolean; error?: string };
   if (!result?.ok) return { ok: false, error: result?.error ?? "Rezervimi nuk u shtua." };
 
-  await notifyOwnerNewBooking(phone, {
-    customerName: name,
-    serviceName: "shtuar me dorë",
-    time: start,
-  });
-
+  /*
+    Pa njoftim këtu: rezervimin e shtoi vetë pronari, ndaj s'ka kujt t'i thuhet.
+    Klientit i shkruhet me dorë nga kopsa e WhatsApp-it te dialogu i rezervimit.
+  */
   refreshOwnerViews();
   return { ok: true };
 }
@@ -95,9 +93,7 @@ export async function updateBookingRules(input: {
   if (blocked) return blocked;
 
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { ok: false, error: t("err.session") };
 
   const { bufferMinutes, minNoticeMinutes, bookingWindowDays } = input;
@@ -151,9 +147,7 @@ export async function addClosure(input: { date: string; reason?: string }): Prom
   if (blocked) return blocked;
 
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return { ok: false, error: t("err.session") };
 
   const { data: business } = await supabase

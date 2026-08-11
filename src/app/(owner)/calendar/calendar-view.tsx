@@ -64,6 +64,8 @@ export function CalendarView({
   bookings,
   workingHours,
   services,
+  businessName,
+  businessPhone,
 }: {
   view: View;
   date: string;
@@ -71,6 +73,8 @@ export function CalendarView({
   bookings: BookingWithService[];
   workingHours: WorkingHours;
   services: Pick<Service, "id" | "name" | "duration_minutes" | "price">[];
+  businessName: string;
+  businessPhone: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -181,7 +185,12 @@ export function CalendarView({
         )}
       </div>
 
-      <BookingDialog booking={selected} onClose={() => setSelected(null)} />
+      <BookingDialog
+        booking={selected}
+        businessName={businessName}
+        businessPhone={businessPhone}
+        onClose={() => setSelected(null)}
+      />
 
       <ManualBookingDialog
         open={adding}

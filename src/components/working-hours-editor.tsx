@@ -108,9 +108,14 @@ export function WorkingHoursEditor({
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border">
+      {/*
+        Pa `overflow-hidden`: brenda rreshtave hapen menytë e orëve, dhe një
+        prind që pret do t'i priste ato në gjysmë. Qoshet i rrumbullakos secila
+        pjesë vetë — koka lart, rreshti i fundit poshtë.
+      */}
+      <div className="rounded-2xl border border-border">
         {/* koka: një veprim i vetëm, jo një për çdo rresht */}
-        <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-2">
+        <div className="flex items-center justify-between gap-3 rounded-t-2xl border-b border-border bg-muted/40 px-3 py-2">
           <span className="text-xs text-muted-foreground">
             {openCount === 0
               ? t("hours.noWorkDays")
@@ -140,6 +145,7 @@ export function WorkingHoursEditor({
                 key={day}
                 className={cn(
                   "flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 transition-colors",
+                  "last:rounded-b-2xl",
                   !isOpen && "bg-muted/20",
                 )}
               >
@@ -186,7 +192,7 @@ export function WorkingHoursEditor({
                     </div>
                   </div>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Mbyllur</span>
+                  <span className="text-sm text-muted-foreground">{t("hours.closed")}</span>
                 )}
               </div>
             );

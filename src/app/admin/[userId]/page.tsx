@@ -14,6 +14,7 @@ import { formatAlbanianPhone } from "@/lib/phone";
 import type { AdminAccount } from "@/lib/admin-types";
 import { DAY_KEYS } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { SubscriptionInvoice } from "./subscription-invoice";
 import { SuspendControl } from "./suspend-control";
 
 export const metadata: Metadata = { title: "Llogaria" };
@@ -201,6 +202,9 @@ export default async function AdminAccountPage({ params }: { params: { userId: s
           </ul>
         </Card>
       )}
+
+      {/* ------------------------------------------------------ fatura e abonimit */}
+      {business && <SubscriptionInvoice businessId={business.id} />}
 
       {/* ---------------------------------------------------------- pezullimi */}
       {business && (

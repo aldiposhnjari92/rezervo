@@ -42,6 +42,21 @@ export type AdminBusinessRow = {
   last_booking: string | null;
 };
 
+/** Regjistri i abonimeve: fatura e muajit është dëshmia që biznesi është i abonuar. */
+export type AdminSubscriptionRow = {
+  business_id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  owner_email: string;
+  suspended_at: string | null;
+  invoices_count: number;
+  total_billed: number;
+  last_period_start: string | null;
+  billed_this_month: boolean;
+  this_month_total: number;
+};
+
 export type OrphanAccount = {
   user_id: string;
   email: string;
@@ -130,6 +145,7 @@ export type OwnerDaily = {
 };
 
 export type OwnerDashboard = {
+  services_active: number;
   bookings_total: number;
   bookings_period: number;
   upcoming: number;

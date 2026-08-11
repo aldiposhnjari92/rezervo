@@ -65,7 +65,14 @@ console.log("\n=== 4. Çdo faqe e pronarit dhe e adminit ka një kokë ===");
 {
   // Kalendari e ka titullin brenda shiritit të veglave, midis shigjetave —
   // ndaj është i vetmi që e mban vetë, me të njëjtën shkallë tipografike.
-  const OWN_HEADING = ["(owner)/calendar/calendar-view.tsx"];
+  //
+  // Fatura është dokument, jo faqe: koka e saj është vetë fatura — shitësi dhe
+  // numri. Një `PageHeader` me fjalën "Faturë" mbi një fletë që thotë tashmë
+  // "Faturë nr. F-2026-0001" do të ishte i dyfishtë, dhe do të dilte te letra.
+  const OWN_HEADING = [
+    "(owner)/calendar/calendar-view.tsx",
+    "(owner)/invoices/[id]/invoice-sheet.tsx",
+  ];
   const pages = files.filter(
     (f) =>
       (f.path.startsWith("app/(owner)/") || f.path.startsWith("app/admin/")) &&
@@ -81,6 +88,30 @@ console.log("\n=== 4. Çdo faqe e pronarit dhe e adminit ka një kokë ===");
       family.some((f) => f.text.includes("<PageHeader")) ||
       family.some((f) => OWN_HEADING.some((o) => f.path.endsWith(o)));
     check(`${p.path} ka kokë`, hasHeader);
+  }
+}
+
+console.log("\n=== 5. Asnjë zgjedhës i vizatuar nga sistemi ===");
+{
+  // `<select>`-i dhe `input[type=date]` e marrin pamjen nga sistemi operativ,
+  // jo nga tema: mbi ndërfaqen e errët hapej listë — ose kalendar — i bardhë
+  // sistemi, dhe data shkruhej sipas gjuhës së shfletuesit, jo sipas asaj që ka
+  // zgjedhur përdoruesi. Zgjedhësit ndërtohen me `Dropdown`/`DateSelect`.
+  // Komentet hiqen para kontrollit — arsyeja e mësipërme i përmend vetë emrat.
+  const NATIVE = [
+    ["<select> vendas", /<select[\s/>]/],
+    ["input[type=date]", /type=["']date["']/],
+    ["input[type=time]", /type=["']time["']/],
+    ["input[type=datetime-local]", /type=["']datetime-local["']/],
+  ];
+  const code = files.map((f) => ({
+    path: f.path,
+    text: f.text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, ""),
+  }));
+
+  for (const [name, pattern] of NATIVE) {
+    const offenders = code.filter((f) => pattern.test(f.text)).map((f) => f.path);
+    check(`asnjë ${name}`, offenders.length === 0, offenders.join(", "));
   }
 }
 

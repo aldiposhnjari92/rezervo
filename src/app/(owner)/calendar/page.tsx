@@ -73,6 +73,8 @@ export default async function DashboardPage({
         bookings={(bookings ?? []) as BookingWithService[]}
         workingHours={business.working_hours}
         services={(services ?? []) as Pick<Service, "id" | "name" | "duration_minutes" | "price">[]}
+        businessName={business.name}
+        businessPhone={business.phone}
       />
     </div>
   );

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateSelect } from "@/components/date-select";
 import { TimeSelect, timeOptions } from "@/components/time-select";
 import { tiraneInstant, todayInTirane } from "@/lib/availability";
 import { createManualBooking } from "@/lib/owner-actions";
@@ -140,14 +141,13 @@ export function ManualBookingDialog({
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="mb-date">{t("manual.date")}</Label>
-              <input
+              <DateSelect
                 id="mb-date"
-                type="date"
+                label={t("manual.date")}
                 value={date}
                 min={todayInTirane()}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={setDate}
                 disabled={saving}
-                className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
               />
             </div>
             <div className="space-y-2">

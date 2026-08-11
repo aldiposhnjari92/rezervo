@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,22 +27,35 @@ export function BusinessSection({
   name: initialName,
   slug,
   phone: initialPhone,
+  nipt: initialNipt,
+  address: initialAddress,
   workingHours,
+  whatsappAuto,
 }: {
   name: string;
   slug: string;
   phone: string;
+  nipt: string;
+  address: string;
   workingHours: WorkingHours;
+  /** A i dërgon vetë sistemi mesazhet, apo i nis pronari me dorë. */
+  whatsappAuto: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
+  const [nipt, setNipt] = useState(initialNipt);
+  const [address, setAddress] = useState(initialAddress);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const readOnly = useReadOnly();
   const t = useT();
 
-  const dirty = name !== initialName || phone !== initialPhone;
+  const dirty =
+    name !== initialName ||
+    phone !== initialPhone ||
+    nipt !== initialNipt ||
+    address !== initialAddress;
 
   async function copyLink() {
     const url = `${window.location.origin}/${slug}`;
@@ -67,7 +80,7 @@ export function BusinessSection({
     }
 
     setSaving(true);
-    const result = await updateBusiness({ name, phone, workingHours });
+    const result = await updateBusiness({ name, phone, nipt, address, workingHours });
     setSaving(false);
 
     if (!result.ok) {
@@ -142,6 +155,49 @@ export function BusinessSection({
             <p className="text-xs text-muted-foreground">
               {t("settings.phoneHint")}
             </p>
+          </div>
+
+          {/*
+            Pronari duhet ta dijë nëse mesazhi shkon vetë apo e pret atë. Pa këtë
+            rresht, "kujtesa" duket si diçka që ndodh — dhe nuk ndodh.
+          */}
+          <p className="flex items-start gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-xs text-muted-foreground">
+            <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {whatsappAuto ? t("whatsapp.autoOn") : t("whatsapp.autoOff")}
+          </p>
+
+          {/* Identiteti që del te koka e faturave. */}
+          <div className="space-y-2">
+            <Label htmlFor="settings-nipt">
+              {t("settings.nipt")}{" "}
+              <span className="font-normal text-muted-foreground">{t("common.optional")}</span>
+            </Label>
+            <Input
+              id="settings-nipt"
+              value={nipt}
+              onChange={(e) => setNipt(e.target.value.toUpperCase())}
+              placeholder="L41234567M"
+              maxLength={10}
+              disabled={saving || readOnly}
+              className="uppercase"
+            />
+            <p className="text-xs text-muted-foreground">{t("settings.niptHint")}</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="settings-address">
+              {t("settings.address")}{" "}
+              <span className="font-normal text-muted-foreground">{t("common.optional")}</span>
+            </Label>
+            <Input
+              id="settings-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Rr. Myslym Shyri 12, Tiranë"
+              maxLength={160}
+              disabled={saving || readOnly}
+            />
+            <p className="text-xs text-muted-foreground">{t("settings.addressHint")}</p>
           </div>
 
           {readOnly ? (
