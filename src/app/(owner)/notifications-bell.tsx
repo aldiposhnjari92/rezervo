@@ -209,8 +209,16 @@ export function NotificationsBell({ businessId }: { businessId: string }) {
         )}
       </button>
 
+      {/*
+        Në telefon paneli nuk varet nga kambana, po nga ekrani.
+        Kambana nuk rri në skajin e djathtë — pas saj vijnë gjuha, tema dhe
+        menyja e llogarisë — ndaj `right-0` e nisi panelin prej aty dhe një panel
+        i gjerë sa ekrani dilte jashtë anës së majtë e pritej përgjysmë. I ngulur
+        në mes të ekranit hyn gjithnjë i tëri; nga `sm` e lart, ku gjerësia e tij
+        është 22rem, kthehet te varja nën kambanë.
+      */}
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+        <div className="fixed left-1/2 top-16 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-11 sm:w-[22rem] sm:translate-x-0">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <p className="font-semibold">{t("notifications.title")}</p>
             {unread > 0 && (

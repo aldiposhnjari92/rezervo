@@ -162,7 +162,22 @@ export function CalendarView({
       </div>
 
       {/* --------------------------------------------------------------- pamja */}
-      <div className={cn("flex min-h-0 flex-1 flex-col transition-opacity", pending && "opacity-60")}>
+      {/*
+        Në telefon rrjeta merr të paktën 75dvh. Shiriti i veglave dhe statistikat
+        i hanin gjysmën e ekranit, dhe nga dita mbetej një shirit i hollë; tani
+        faqja rrëshqet pak nën to, por kalendari mbetet kalendar. Nga `sm` e lart
+        lartësia vjen prej faqes — `min-h-0` që kartela të rrëshqasë brenda vetes.
+
+        Muaji bën përjashtim: lartësinë e tij e cakton rrjeta katrore, ndaj një
+        dysheme prej 75dvh do t'i linte vetëm bosh nën rreshtin e fundit.
+      */}
+      <div
+        className={cn(
+          "flex flex-1 flex-col transition-opacity sm:min-h-0",
+          view === "month" ? "min-h-0" : "min-h-[75dvh]",
+          pending && "opacity-60",
+        )}
+      >
         {view === "month" ? (
           <MonthView
             date={date}
@@ -254,86 +269,94 @@ function MonthView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      {/* kokat e ditëve */}
-      <div className="grid shrink-0 grid-cols-7 border-b border-border bg-muted/40">
-        {DAY_KEYS.map((key) => (
-          <div
-            key={key}
-            className="py-2 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
-          >
-            {fmt.dayShort(key)}
-          </div>
-        ))}
-      </div>
-
-      {/* Rreshtat ndajnë njësoj lartësinë që mbetet; nën `min-h` ndalen së
-          ngjeshuri dhe muaji rrëshqet brenda kartelës. */}
+      {/* Në telefon dita është katror me brinjë të paktën 75px — 7 × 75 = 525px,
+          më gjerë se ekrani, ndaj muaji rrëshqet anash. Kokat rrinë brenda së
+          njëjtës enë rrëshqitëse, që data të mos ndahet kurrë nga kolona e vet.
+          Nga `sm` e lart rreshtat ndajnë njësoj lartësinë që mbetet. */}
       <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-        <div className="grid flex-1 auto-rows-[minmax(84px,1fr)] grid-cols-7 sm:auto-rows-[minmax(96px,1fr)]">
-        {grid.map((day, index) => {
-          const dayBookings = (byDate.get(day) ?? []).filter((b) => b.status !== "cancelled");
-          const outside = !isSameMonth(day, month);
-          const isToday = day === today;
-          const visible = dayBookings.slice(0, 2);
-          const overflow = dayBookings.length - visible.length;
+        <div className="flex min-w-[525px] flex-1 flex-col sm:min-w-0">
+        {/* kokat e ditëve */}
+        <div className="sticky top-0 z-30 shrink-0 bg-card">
+          <div className="grid grid-cols-7 border-b border-border bg-muted/40">
+            {DAY_KEYS.map((key) => (
+              <div
+                key={key}
+                className="py-2 text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+              >
+                {fmt.dayShort(key)}
+              </div>
+            ))}
+          </div>
+        </div>
 
-          return (
-            <div
-              key={day}
-              className={cn(
-                "border-b border-r border-border p-1.5",
-                index % 7 === 6 && "border-r-0",
-                index >= grid.length - 7 && "border-b-0",
-                outside && "bg-muted/30",
-              )}
-            >
-              <button
-                type="button"
-                onClick={() => onPickDay(day)}
+        <div className="grid flex-1 auto-rows-auto grid-cols-7 sm:auto-rows-[minmax(96px,1fr)]">
+          {grid.map((day, index) => {
+            const dayBookings = (byDate.get(day) ?? []).filter((b) => b.status !== "cancelled");
+            const outside = !isSameMonth(day, month);
+            const isToday = day === today;
+            const visible = dayBookings.slice(0, 2);
+            const overflow = dayBookings.length - visible.length;
+
+            return (
+              <div
+                key={day}
                 className={cn(
-                  "mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium tabular-nums transition-colors",
-                  isToday
-                    ? "bg-primary text-primary-foreground"
-                    : outside
-                      ? "text-muted-foreground/60 hover:bg-muted"
-                      : "hover:bg-muted",
+                  // Brenda 75px-ve hyjnë data dhe dy rezervime vetëm nëse gjithçka
+                // shtrëngohet; nga `sm` e lart kthehen përmasat e plota.
+                "aspect-square overflow-hidden border-b border-r border-border p-1 sm:aspect-auto sm:p-1.5",
+                  index % 7 === 6 && "border-r-0",
+                  index >= grid.length - 7 && "border-b-0",
+                  outside && "bg-muted/30",
                 )}
               >
-                {Number(day.slice(8))}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onPickDay(day)}
+                  className={cn(
+                    "mb-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium tabular-nums transition-colors sm:mb-1 sm:h-6 sm:w-6 sm:text-xs",
+                    isToday
+                      ? "bg-primary text-primary-foreground"
+                      : outside
+                        ? "text-muted-foreground/60 hover:bg-muted"
+                        : "hover:bg-muted",
+                  )}
+                >
+                  {Number(day.slice(8))}
+                </button>
 
-              <div className="space-y-1">
-                {visible.map((booking) => (
-                  <button
-                    key={booking.id}
-                    type="button"
-                    onClick={() => onPickBooking(booking)}
-                    className={cn(
-                      "flex w-full items-center gap-1 rounded px-1 py-0.5 text-left text-[11px] leading-tight transition-opacity hover:opacity-80",
-                      STATUS_BLOCK[booking.status],
-                      "border-l-2",
-                    )}
-                  >
-                    <span className="shrink-0 font-medium tabular-nums">
-                      {fmt.time(booking.start_time)}
-                    </span>
-                    <span className="truncate">{booking.customer_name}</span>
-                  </button>
-                ))}
+                <div className="space-y-0.5 sm:space-y-1">
+                  {visible.map((booking) => (
+                    <button
+                      key={booking.id}
+                      type="button"
+                      onClick={() => onPickBooking(booking)}
+                      className={cn(
+                        "flex w-full items-center gap-1 rounded px-1 py-0 text-left text-[10px] leading-tight transition-opacity hover:opacity-80 sm:py-0.5 sm:text-[11px]",
+                        STATUS_BLOCK[booking.status],
+                        "border-l-2",
+                      )}
+                    >
+                      <span className="shrink-0 font-medium tabular-nums">
+                        {fmt.time(booking.start_time)}
+                      </span>
+                      <span className="truncate">{booking.customer_name}</span>
+                    </button>
+                  ))}
 
-                {overflow > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => onPickDay(day)}
-                    className="w-full px-1 text-left text-[11px] font-medium text-muted-foreground hover:text-foreground"
-                  >
-                    {t("calendar.more", { count: overflow })}
-                  </button>
-                )}
+                  {overflow > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onPickDay(day)}
+                      className="w-full truncate px-1 text-left text-[10px] font-medium leading-tight text-muted-foreground hover:text-foreground sm:text-[11px]"
+                    >
+                      {t("calendar.more", { count: overflow })}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
         </div>
       </div>
     </div>

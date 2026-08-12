@@ -28,7 +28,9 @@ export function StatTile({
       <p className="text-xs text-muted-foreground">{label}</p>
       <p
         className={cn(
-          "mt-1.5 truncate text-2xl font-semibold tracking-tight tabular-nums",
+          // Në telefon dy blloqe ndajnë ekranin; me `text-2xl` një shumë si
+          // "184.000 Lek" mbaronte me "…" pikërisht te njësia.
+          "mt-1.5 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl",
           tone === "warning" && "text-amber-700 dark:text-amber-400",
           tone === "positive" && "text-emerald-700 dark:text-emerald-400",
         )}
