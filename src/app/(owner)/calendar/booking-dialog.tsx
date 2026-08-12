@@ -110,7 +110,8 @@ export function BookingDialog({
 
   return (
     <Dialog open={Boolean(booking)} onOpenChange={(next) => !next && !pending && onClose()}>
-      <DialogContent className="max-w-md">
+      {/* Në telefon hapësirat shtrëngohen: e njëjta përmbajtje, dritare më e ulët. */}
+      <DialogContent className="max-w-md gap-3 p-4 sm:gap-4 sm:p-5">
         {booking && (
           <>
             <DialogHeader>
@@ -275,7 +276,7 @@ function Row({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-4 px-3 py-2.5",
+        "flex items-center justify-between gap-4 px-3 py-2 sm:py-2.5",
         !last && "border-b border-border",
       )}
     >

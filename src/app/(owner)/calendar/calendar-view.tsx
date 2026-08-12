@@ -396,43 +396,6 @@ function TimeGrid({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      {/* kokat e ditëve (vetëm java) */}
-      {variant === "week" && (
-        <div className="flex shrink-0 border-b border-border bg-muted/40">
-          <div className="w-12 shrink-0 sm:w-14" />
-          <div className="grid flex-1 grid-cols-7">
-            {dates.map((day) => {
-              const isToday = day === today;
-              const count = (byDate.get(day) ?? []).filter((b) => b.status !== "cancelled").length;
-
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => onPickDay(day)}
-                  className="flex flex-col items-center gap-0.5 py-2 transition-colors hover:bg-muted/60"
-                >
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                    {fmt.dayShort(DAY_KEYS[(new Date(`${day}T12:00:00Z`).getUTCDay() + 6) % 7])}
-                  </span>
-                  <span
-                    className={cn(
-                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
-                      isToday && "bg-primary text-primary-foreground",
-                    )}
-                  >
-                    {Number(day.slice(8))}
-                  </span>
-                  {count > 0 && (
-                    <span className="text-[10px] text-muted-foreground">{count}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {isEmpty && variant === "day" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
           <CalendarX2 className="mb-3 h-8 w-8 text-muted-foreground" />
@@ -442,102 +405,149 @@ function TimeGrid({
           </p>
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto py-3">
-          <div
-            className={cn("flex flex-1", variant === "week" && "min-w-[640px]")}
-            style={{ minHeight }}
-          >
-            {/* boshti i orëve */}
-            <div className="relative w-12 shrink-0 sm:w-14">
-              {hours.map((minute) => (
-                <span
-                  key={minute}
-                  className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-muted-foreground"
-                  style={{ top: `${pct(minute)}%` }}
-                >
-                  {String(Math.floor(minute / 60)).padStart(2, "0")}:00
-                </span>
-              ))}
-            </div>
-
-            {/* kolonat e ditëve */}
-            <div className={cn("relative flex-1", variant === "week" ? "grid grid-cols-7" : "flex")}>
-              {/* vijat e orëve */}
-              <div className="pointer-events-none absolute inset-0">
-                {hours.map((minute) => (
-                  <div
-                    key={minute}
-                    className="absolute inset-x-0 border-t border-border"
-                    style={{ top: `${pct(minute)}%` }}
-                  />
-                ))}
-              </div>
-
-              {dates.map((day) => {
-                const dayBookings = byDate.get(day) ?? [];
-                const positioned = layoutDay(dayBookings);
-                const isToday = day === today;
-
-                return (
-                  <div
-                    key={day}
-                    className={cn(
-                      "relative flex-1 border-l border-border first:border-l-0",
-                      isToday && variant === "week" && "bg-primary/[0.03]",
-                    )}
-                  >
-                    {/* vija e orës aktuale */}
-                    {mounted && isToday && nowMin >= startMin && nowMin <= endMin && (
-                      <div
-                        className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-red-500"
-                        style={{ top: `${pct(nowMin)}%` }}
-                      >
-                        <span className="absolute -left-1 -top-[5px] h-2 w-2 rounded-full bg-red-500" />
-                      </div>
-                    )}
-
-                    {positioned.map(({ booking, startMin: s, endMin: e, lane, lanes }) => {
-                      // Emri i shërbimit hiqet te rezervimet e shkurtra. Matet me
-                      // kohëzgjatjen, jo me pixel-a: blloku shtrihet bashkë me
-                      // rrjetën, ndaj lartësia e tij nuk dihet paraprakisht.
-                      const compact = e - s < 40;
+        /* Një enë e vetme rrëshqitëse. Kokat e ditëve rrinë BRENDA saj dhe mbi
+           të njëjtën gjerësi minimale si rrjeta: ndryshe, në telefon rrjeta
+           lëvizte anash ndërsa datat qëndronin — dhe ora binte nën ditën e
+           gabuar. `sticky` i mban ato në pamje kur rrëshqet lart e poshtë. */
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+          <div className={cn("flex flex-1 flex-col", variant === "week" && "min-w-[640px]")}>
+            {variant === "week" && (
+              <div className="sticky top-0 z-30 shrink-0 bg-card">
+                <div className="flex border-b border-border bg-muted/40">
+                  <div className="w-12 shrink-0 sm:w-14" />
+                  <div className="grid flex-1 grid-cols-7">
+                    {dates.map((day) => {
+                      const isToday = day === today;
+                      const count = (byDate.get(day) ?? []).filter(
+                        (b) => b.status !== "cancelled",
+                      ).length;
 
                       return (
                         <button
-                          key={booking.id}
+                          key={day}
                           type="button"
-                          onClick={() => onPickBooking(booking)}
-                          className={cn(
-                            "absolute z-10 overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left transition-shadow hover:shadow-md",
-                            STATUS_BLOCK[booking.status],
-                          )}
-                          style={{
-                            top: `${pct(s)}%`,
-                            height: `calc(${((e - s) / totalMin) * 100}% - 2px)`,
-                            minHeight: 18,
-                            left: `calc(${(lane / lanes) * 100}% + 2px)`,
-                            width: `calc(${100 / lanes}% - 4px)`,
-                          }}
+                          onClick={() => onPickDay(day)}
+                          className="flex flex-col items-center gap-0.5 py-2 transition-colors hover:bg-muted/60"
                         >
+                          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                            {fmt.dayShort(
+                              DAY_KEYS[(new Date(`${day}T12:00:00Z`).getUTCDay() + 6) % 7],
+                            )}
+                          </span>
                           <span
                             className={cn(
-                              "block truncate text-[11px] font-medium leading-tight",
-                              compact && "text-[10px]",
+                              "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
+                              isToday && "bg-primary text-primary-foreground",
                             )}
                           >
-                            {fmt.time(booking.start_time)} {booking.customer_name}
+                            {Number(day.slice(8))}
                           </span>
-                          {!compact && (
-                            <span className="block truncate text-[11px] leading-tight opacity-70">
-                              {booking.services?.name ?? t("booking.deletedService")}
-                            </span>
+                          {count > 0 && (
+                            <span className="text-[10px] text-muted-foreground">{count}</span>
                           )}
                         </button>
                       );
                     })}
                   </div>
-                );
-              })}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-1 flex-col py-3">
+              <div className="flex flex-1" style={{ minHeight }}>
+                {/* boshti i orëve */}
+                <div className="relative w-12 shrink-0 sm:w-14">
+                  {hours.map((minute) => (
+                    <span
+                      key={minute}
+                      className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-muted-foreground"
+                      style={{ top: `${pct(minute)}%` }}
+                    >
+                      {String(Math.floor(minute / 60)).padStart(2, "0")}:00
+                    </span>
+                  ))}
+                </div>
+
+                {/* kolonat e ditëve */}
+                <div className={cn("relative flex-1", variant === "week" ? "grid grid-cols-7" : "flex")}>
+                  {/* vijat e orëve */}
+                  <div className="pointer-events-none absolute inset-0">
+                    {hours.map((minute) => (
+                      <div
+                        key={minute}
+                        className="absolute inset-x-0 border-t border-border"
+                        style={{ top: `${pct(minute)}%` }}
+                      />
+                    ))}
+                  </div>
+
+                  {dates.map((day) => {
+                    const dayBookings = byDate.get(day) ?? [];
+                    const positioned = layoutDay(dayBookings);
+                    const isToday = day === today;
+
+                    return (
+                      <div
+                        key={day}
+                        className={cn(
+                          "relative flex-1 border-l border-border first:border-l-0",
+                          isToday && variant === "week" && "bg-primary/[0.03]",
+                        )}
+                      >
+                        {/* vija e orës aktuale */}
+                        {mounted && isToday && nowMin >= startMin && nowMin <= endMin && (
+                          <div
+                            className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-red-500"
+                            style={{ top: `${pct(nowMin)}%` }}
+                          >
+                            <span className="absolute -left-1 -top-[5px] h-2 w-2 rounded-full bg-red-500" />
+                          </div>
+                        )}
+
+                        {positioned.map(({ booking, startMin: s, endMin: e, lane, lanes }) => {
+                          // Emri i shërbimit hiqet te rezervimet e shkurtra. Matet me
+                          // kohëzgjatjen, jo me pixel-a: blloku shtrihet bashkë me
+                          // rrjetën, ndaj lartësia e tij nuk dihet paraprakisht.
+                          const compact = e - s < 40;
+
+                          return (
+                            <button
+                              key={booking.id}
+                              type="button"
+                              onClick={() => onPickBooking(booking)}
+                              className={cn(
+                                "absolute z-10 overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left transition-shadow hover:shadow-md",
+                                STATUS_BLOCK[booking.status],
+                              )}
+                              style={{
+                                top: `${pct(s)}%`,
+                                height: `calc(${((e - s) / totalMin) * 100}% - 2px)`,
+                                minHeight: 18,
+                                left: `calc(${(lane / lanes) * 100}% + 2px)`,
+                                width: `calc(${100 / lanes}% - 4px)`,
+                              }}
+                            >
+                              <span
+                                className={cn(
+                                  "block truncate text-[11px] font-medium leading-tight",
+                                  compact && "text-[10px]",
+                                )}
+                              >
+                                {fmt.time(booking.start_time)} {booking.customer_name}
+                              </span>
+                              {!compact && (
+                                <span className="block truncate text-[11px] leading-tight opacity-70">
+                                  {booking.services?.name ?? t("booking.deletedService")}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

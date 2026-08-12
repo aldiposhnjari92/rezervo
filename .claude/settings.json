@@ -157,7 +157,8 @@
       "Bash(grep -oE '>[^<>{}]{6,}<' src/app/page.tsx)",
       "Bash(grep -vE '^\\\\s*$')",
       "Bash(grep -nE '\"[A-ZÇ][^\"]{4,}\"|>[A-ZÇ][^<>{]{4,}<|\\\\{[A-ZÇ]')",
-      "Bash(grep -oE '\"[A-ZÇ][^\"]{3,}\"|>[A-ZÇ][^<>{]{3,}<' src/app/landing-visual.tsx)"
+      "Bash(grep -oE '\"[A-ZÇ][^\"]{3,}\"|>[A-ZÇ][^<>{]{3,}<' src/app/landing-visual.tsx)",
+      "Bash(NEXT_DIST_DIR=.next-check npx next build)"
     ],
     "additionalDirectories": [
       "/home/aldi/Desktop/development/rezervo/src/app/[slug]",
